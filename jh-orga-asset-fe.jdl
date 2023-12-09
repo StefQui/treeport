@@ -1,0 +1,31 @@
+entity Organisation {
+	name String
+}
+
+entity Asset {
+	name String,
+    type AssetType
+}
+
+relationship ManyToMany {
+    Asset{childrens} to Asset
+}
+relationship OneToOne {
+	Asset{orga} to Organisation
+}
+relationship ManyToOne {
+	Asset{parent} to Asset
+}
+
+
+enum AssetType {
+    SITE, RESOURCE
+}
+
+paginate Organisation, Asset with pagination
+
+// dto
+dto * with mapstruct
+// Set service options to all except few
+// Set an angular suffix
+// angularSuffix * with sma

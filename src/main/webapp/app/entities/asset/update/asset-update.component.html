@@ -1,0 +1,96 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2 id="jhi-asset-heading" data-cy="AssetCreateUpdateHeading" jhiTranslate="treeportApp.asset.home.createOrEditLabel">
+        Create or edit a Asset
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="text" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" jhiTranslate="treeportApp.asset.name" for="field_name">Name</label>
+          <input type="text" class="form-control" name="name" id="field_name" data-cy="name" formControlName="name" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" jhiTranslate="treeportApp.asset.type" for="field_type">Type</label>
+          <select class="form-control" name="type" formControlName="type" id="field_type" data-cy="type">
+            <option [ngValue]="null">{{ 'treeportApp.AssetType.null' | translate }}</option>
+            <option *ngFor="let assetType of assetTypeValues" [value]="assetType">
+              {{ 'treeportApp.AssetType.' + assetType | translate }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" jhiTranslate="treeportApp.asset.orga" for="field_orga">Orga</label>
+          <select
+            class="form-control"
+            id="field_orga"
+            data-cy="orga"
+            name="orga"
+            formControlName="orga"
+            [compareWith]="compareOrganisation"
+          >
+            <option [ngValue]="null"></option>
+            <option [ngValue]="organisationOption" *ngFor="let organisationOption of organisationsSharedCollection">
+              {{ organisationOption.id }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" jhiTranslate="treeportApp.asset.parent" for="field_parent">Parent</label>
+          <select
+            class="form-control"
+            id="field_parent"
+            data-cy="parent"
+            name="parent"
+            formControlName="parent"
+            [compareWith]="compareAsset"
+          >
+            <option [ngValue]="null"></option>
+            <option [ngValue]="assetOption" *ngFor="let assetOption of assetsSharedCollection">{{ assetOption.id }}</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label jhiTranslate="treeportApp.asset.childrens" for="field_childrens">Childrens</label>
+          <select
+            class="form-control"
+            id="field_childrens"
+            data-cy="childrens"
+            multiple
+            name="childrens"
+            formControlName="childrens"
+            [compareWith]="compareAsset"
+          >
+            <option [ngValue]="assetOption" *ngFor="let assetOption of assetsSharedCollection">{{ assetOption.id }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

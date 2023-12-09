@@ -1,0 +1,29 @@
+{
+  "treeportApp": {
+    "asset": {
+      "home": {
+        "title": "Assets",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Asset",
+        "createOrEditLabel": "Créer ou éditer un Asset",
+        "notFound": "Aucun Asset trouvé"
+      },
+      "created": "Un nouveau Asset a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Asset avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Asset avec l'identifiant {{ param }} a été supprimé",
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Asset {{ id }} ?"
+      },
+      "detail": {
+        "title": "Asset"
+      },
+      "id": "ID",
+      "name": "Name",
+      "type": "Type",
+      "orga": "Orga",
+      "parent": "Parent",
+      "childrens": "Childrens",
+      "asset": "Asset"
+    }
+  }
+}

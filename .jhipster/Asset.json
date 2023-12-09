@@ -1,0 +1,41 @@
+{
+  "applications": "*",
+  "changelogDate": "20231203172057",
+  "dto": "mapstruct",
+  "entityTableName": "asset",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "type",
+      "fieldType": "AssetType",
+      "fieldValues": "SITE,RESOURCE"
+    }
+  ],
+  "name": "Asset",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "organisation",
+      "relationshipName": "orga",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    },
+    {
+      "otherEntityName": "asset",
+      "relationshipName": "parent",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "asset",
+      "relationshipName": "childrens",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-many"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

@@ -19,6 +19,11 @@
         </div>
 
         <div class="mb-3">
+          <label class="form-label" jhiTranslate="treeportApp.asset.content" for="field_content">Content</label>
+          <input type="text" class="form-control" name="content" id="field_content" data-cy="content" formControlName="content" />
+        </div>
+
+        <div class="mb-3">
           <label class="form-label" jhiTranslate="treeportApp.asset.type" for="field_type">Type</label>
           <select class="form-control" name="type" formControlName="type" id="field_type" data-cy="type">
             <option [ngValue]="null">{{ 'treeportApp.AssetType.null' | translate }}</option>

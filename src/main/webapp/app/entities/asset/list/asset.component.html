@@ -44,6 +44,12 @@
               <fa-icon class="p-1" icon="sort"></fa-icon>
             </div>
           </th>
+          <th scope="col" jhiSortBy="content">
+            <div class="d-flex">
+              <span jhiTranslate="treeportApp.asset.content">Content</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
           <th scope="col" jhiSortBy="type">
             <div class="d-flex">
               <span jhiTranslate="treeportApp.asset.type">Type</span>
@@ -71,6 +77,7 @@
             <a [routerLink]="['/asset', asset.id, 'view']">{{ asset.id }}</a>
           </td>
           <td>{{ asset.name }}</td>
+          <td>{{ asset.content }}</td>
           <td jhiTranslate="{{ 'treeportApp.AssetType.' + asset.type }}">{{ asset.type }}</td>
           <td>
             <div *ngIf="asset.orga">

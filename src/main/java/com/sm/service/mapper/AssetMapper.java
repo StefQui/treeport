@@ -24,6 +24,7 @@ public class AssetMapper {
             .orga(organisationMapper.toBasicDto(a.getOrgaId()))
             .id(a.getId())
             .name(a.getName())
+            .content(a.getContent())
             .parent(toBasicDto(a.getParentId()))
             .type(a.getType())
             .childrens(toDtos(a.getChildrenIds()))
@@ -44,6 +45,7 @@ public class AssetMapper {
             .id(assetDTO.getId())
             .orgaId(assetDTO.getOrga().getId())
             .name(assetDTO.getName())
+            .content(assetDTO.getContent())
             .type(assetDTO.getType())
             .childrenIds(assetDTO.getChildrens() != null ? toBasicEntitys(assetDTO.getChildrens()) : new ArrayList<>())
             .parentId(assetDTO.getParent() != null ? toBasicEntity(assetDTO.getParent()) : null)
@@ -56,6 +58,7 @@ public class AssetMapper {
 
     public void partialUpdate(Asset existingAsset, AssetDTO assetDTO) {
         existingAsset.setName(assetDTO.getName());
+        existingAsset.setContent(assetDTO.getContent());
         existingAsset.setOrgaId(assetDTO.getOrga().getId());
         existingAsset.setType(assetDTO.getType());
         existingAsset.setParentId(assetDTO.getParent() != null ? assetDTO.getParent().getId() : null);

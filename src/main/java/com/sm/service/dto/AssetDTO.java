@@ -23,6 +23,8 @@ public class AssetDTO implements Serializable {
 
     private AssetType type;
 
+    private String content;
+
     private OrganisationDTO orga;
 
     private AssetDTO parent;

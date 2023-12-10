@@ -19,6 +19,7 @@ type AssetFormDefaults = Pick<NewAsset, 'id' | 'childrens' | 'assets'>;
 type AssetFormGroupContent = {
   id: FormControl<IAsset['id'] | NewAsset['id']>;
   name: FormControl<IAsset['name']>;
+  content: FormControl<IAsset['content']>;
   type: FormControl<IAsset['type']>;
   orga: FormControl<IAsset['orga']>;
   parent: FormControl<IAsset['parent']>;
@@ -44,6 +45,7 @@ export class AssetFormService {
         },
       ),
       name: new FormControl(assetRawValue.name),
+      content: new FormControl(assetRawValue.content),
       type: new FormControl(assetRawValue.type),
       orga: new FormControl(assetRawValue.orga),
       parent: new FormControl(assetRawValue.parent),

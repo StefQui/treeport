@@ -37,6 +37,9 @@ public class Asset implements Serializable {
     @Field("orgaId")
     private String orgaId;
 
+    @Field("content")
+    private String content;
+
     @Field("parentId")
     private String parentId;
 

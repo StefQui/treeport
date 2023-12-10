@@ -47,24 +47,22 @@ class OrganisationResourceIT {
 
     /**
      * Create an entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
     public static Organisation createEntity() {
-        Organisation organisation = new Organisation().name(DEFAULT_NAME);
-        return organisation;
+        return Organisation.builder().name(DEFAULT_NAME).build();
     }
 
     /**
      * Create an updated entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
     public static Organisation createUpdatedEntity() {
-        Organisation organisation = new Organisation().name(UPDATED_NAME);
-        return organisation;
+        return Organisation.builder().name(UPDATED_NAME).build();
     }
 
     @BeforeEach
@@ -154,7 +152,7 @@ class OrganisationResourceIT {
 
         // Update the organisation
         Organisation updatedOrganisation = organisationRepository.findById(organisation.getId()).orElseThrow();
-        updatedOrganisation.name(UPDATED_NAME);
+        updatedOrganisation.setName(UPDATED_NAME);
         OrganisationDTO organisationDTO = organisationMapper.toDto(updatedOrganisation);
 
         restOrganisationMockMvc
@@ -273,7 +271,7 @@ class OrganisationResourceIT {
         Organisation partialUpdatedOrganisation = new Organisation();
         partialUpdatedOrganisation.setId(organisation.getId());
 
-        partialUpdatedOrganisation.name(UPDATED_NAME);
+        partialUpdatedOrganisation.setName(UPDATED_NAME);
 
         restOrganisationMockMvc
             .perform(

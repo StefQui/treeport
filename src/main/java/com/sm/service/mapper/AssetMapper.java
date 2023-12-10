@@ -1,38 +1,70 @@
 package com.sm.service.mapper;
 
 import com.sm.domain.Asset;
-import com.sm.domain.Organisation;
 import com.sm.service.dto.AssetDTO;
-import com.sm.service.dto.OrganisationDTO;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
-import org.mapstruct.*;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 /**
  * Mapper for the entity {@link Asset} and its DTO {@link AssetDTO}.
  */
-@Mapper(componentModel = "spring")
-public interface AssetMapper extends EntityMapper<AssetDTO, Asset> {
-    @Mapping(target = "orga", source = "orga", qualifiedByName = "organisationId")
-    @Mapping(target = "parent", source = "parent", qualifiedByName = "assetId")
-    @Mapping(target = "childrens", source = "childrens", qualifiedByName = "assetIdSet")
-    AssetDTO toDto(Asset s);
+@Component
+@AllArgsConstructor
+public class AssetMapper {
 
-    @Mapping(target = "removeChildrens", ignore = true)
-    Asset toEntity(AssetDTO assetDTO);
+    private OrganisationMapper organisationMapper;
 
-    @Named("organisationId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    OrganisationDTO toDtoOrganisationId(Organisation organisation);
+    public AssetDTO toDto(Asset a) {
+        return AssetDTO
+            .builder()
+            .orga(organisationMapper.toBasicDto(a.getOrgaId()))
+            .id(a.getId())
+            .name(a.getName())
+            .parent(toBasicDto(a.getParentId()))
+            .type(a.getType())
+            .childrens(toDtos(a.getChildrenIds()))
+            .build();
+    }
 
-    @Named("assetId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    AssetDTO toDtoAssetId(Asset asset);
+    private List<AssetDTO> toDtos(List<String> childrenIds) {
+        return childrenIds.stream().map(id -> toBasicDto(id)).collect(Collectors.toList());
+    }
 
-    @Named("assetIdSet")
-    default Set<AssetDTO> toDtoAssetIdSet(Set<Asset> asset) {
-        return asset.stream().map(this::toDtoAssetId).collect(Collectors.toSet());
+    private AssetDTO toBasicDto(String parentId) {
+        return AssetDTO.builder().id(parentId).build();
+    }
+
+    public Asset toEntity(AssetDTO assetDTO) {
+        return Asset
+            .builder()
+            .id(assetDTO.getId())
+            .orgaId(assetDTO.getOrga().getId())
+            .name(assetDTO.getName())
+            .type(assetDTO.getType())
+            .childrenIds(assetDTO.getChildrens() != null ? toBasicEntitys(assetDTO.getChildrens()) : new ArrayList<>())
+            .parentId(assetDTO.getParent() != null ? toBasicEntity(assetDTO.getParent()) : null)
+            .build();
+    }
+
+    private String toBasicEntity(AssetDTO a) {
+        return a.getId();
+    }
+
+    public void partialUpdate(Asset existingAsset, AssetDTO assetDTO) {
+        existingAsset.setName(assetDTO.getName());
+        existingAsset.setOrgaId(assetDTO.getOrga().getId());
+        existingAsset.setType(assetDTO.getType());
+        existingAsset.setParentId(assetDTO.getParent() != null ? assetDTO.getParent().getId() : null);
+        existingAsset.setChildrenIds(
+            CollectionUtils.isEmpty(assetDTO.getChildrens()) ? new ArrayList<>() : toBasicEntitys(assetDTO.getChildrens())
+        );
+    }
+
+    private List<String> toBasicEntitys(List<AssetDTO> children) {
+        return children.stream().map(AssetDTO::getId).collect(Collectors.toList());
     }
 }

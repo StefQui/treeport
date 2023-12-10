@@ -199,6 +199,10 @@ dependencies {
     testImplementation "org.testcontainers:testcontainers"
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-api"
     implementation "org.apache.commons:commons-lang3"
+
+    compileOnly "org.projectlombok:lombok:1.18.30"
+    annotationProcessor "org.projectlombok:lombok:1.18.30"
+
     // Fix Mongock dependencies: https://github.com/mongock/mongock-jdk17/issues/6
     implementation "io.mongock:mongock-springboot-v3", {
         exclude group: "org.reflections", module: "reflections"
@@ -210,8 +214,8 @@ dependencies {
         exclude group: "org.javassist", module: "javassist"
     }
     testImplementation "org.testcontainers:mongodb"
-    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
-    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+//    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+//    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}"
     implementation "org.springframework.boot:spring-boot-loader-tools"
     implementation "org.springframework.boot:spring-boot-starter-actuator"

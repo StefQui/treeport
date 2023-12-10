@@ -14,12 +14,9 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface AssetRepository extends MongoRepository<Asset, String> {
-    @Query("{}")
-    Page<Asset> findAllWithEagerRelationships(Pageable pageable);
+    Page<Asset> findAll(Pageable pageable);
 
-    @Query("{}")
-    List<Asset> findAllWithEagerRelationships();
+    List<Asset> findAll();
 
-    @Query("{'id': ?0}")
-    Optional<Asset> findOneWithEagerRelationships(String id);
+    Optional<Asset> getById(String id);
 }

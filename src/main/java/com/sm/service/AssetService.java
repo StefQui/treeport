@@ -85,24 +85,9 @@ public class AssetService {
         return assetRepository.findAll(pageable).map(assetMapper::toDto);
     }
 
-    /**
-     * Get all the assets with eager load of many-to-many relationships.
-     *
-     * @return the list of entities.
-     */
-    public Page<AssetDTO> findAllWithEagerRelationships(Pageable pageable) {
-        return assetRepository.findAllWithEagerRelationships(pageable).map(assetMapper::toDto);
-    }
-
-    /**
-     * Get one asset by id.
-     *
-     * @param id the id of the entity.
-     * @return the entity.
-     */
     public Optional<AssetDTO> findOne(String id) {
         log.debug("Request to get Asset : {}", id);
-        return assetRepository.findOneWithEagerRelationships(id).map(assetMapper::toDto);
+        return assetRepository.getById(id).map(assetMapper::toDto);
     }
 
     /**

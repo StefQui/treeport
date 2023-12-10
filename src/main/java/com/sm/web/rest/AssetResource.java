@@ -29,16 +29,13 @@ import tech.jhipster.web.util.ResponseUtil;
 @RequestMapping("/api/assets")
 public class AssetResource {
 
-    private final Logger log = LoggerFactory.getLogger(AssetResource.class);
-
     private static final String ENTITY_NAME = "asset";
+    private final Logger log = LoggerFactory.getLogger(AssetResource.class);
+    private final AssetService assetService;
+    private final AssetRepository assetRepository;
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
-
-    private final AssetService assetService;
-
-    private final AssetRepository assetRepository;
 
     public AssetResource(AssetService assetService, AssetRepository assetRepository) {
         this.assetService = assetService;
@@ -68,7 +65,7 @@ public class AssetResource {
     /**
      * {@code PUT  /assets/:id} : Updates an existing asset.
      *
-     * @param id the id of the assetDTO to save.
+     * @param id       the id of the assetDTO to save.
      * @param assetDTO the assetDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated assetDTO,
      * or with status {@code 400 (Bad Request)} if the assetDTO is not valid,
@@ -102,7 +99,7 @@ public class AssetResource {
     /**
      * {@code PATCH  /assets/:id} : Partial updates given fields of an existing asset, field will ignore if it is null
      *
-     * @param id the id of the assetDTO to save.
+     * @param id       the id of the assetDTO to save.
      * @param assetDTO the assetDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated assetDTO,
      * or with status {@code 400 (Bad Request)} if the assetDTO is not valid,
@@ -139,21 +136,13 @@ public class AssetResource {
      * {@code GET  /assets} : get all the assets.
      *
      * @param pageable the pagination information.
-     * @param eagerload flag to eager load entities from relationships (This is applicable for many-to-many).
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of assets in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<AssetDTO>> getAllAssets(
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
-        @RequestParam(required = false, defaultValue = "true") boolean eagerload
-    ) {
+    public ResponseEntity<List<AssetDTO>> getAllAssets(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         log.debug("REST request to get a page of Assets");
         Page<AssetDTO> page;
-        if (eagerload) {
-            page = assetService.findAllWithEagerRelationships(pageable);
-        } else {
-            page = assetService.findAll(pageable);
-        }
+        page = assetService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

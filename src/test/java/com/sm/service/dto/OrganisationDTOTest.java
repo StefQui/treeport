@@ -10,15 +10,14 @@ class OrganisationDTOTest {
     @Test
     void dtoEqualsVerifier() throws Exception {
         TestUtil.equalsVerifier(OrganisationDTO.class);
-        OrganisationDTO organisationDTO1 = new OrganisationDTO();
-        organisationDTO1.setId("id1");
-        OrganisationDTO organisationDTO2 = new OrganisationDTO();
+        OrganisationDTO organisationDTO1 = OrganisationDTO.builder().id("id1").build();
+        OrganisationDTO organisationDTO2 = OrganisationDTO.builder().build();
         assertThat(organisationDTO1).isNotEqualTo(organisationDTO2);
-        organisationDTO2.setId(organisationDTO1.getId());
+        organisationDTO2 = organisationDTO2.toBuilder().id(organisationDTO1.getId()).build();
         assertThat(organisationDTO1).isEqualTo(organisationDTO2);
-        organisationDTO2.setId("id2");
+        organisationDTO2 = organisationDTO2.toBuilder().id("id2").build();
         assertThat(organisationDTO1).isNotEqualTo(organisationDTO2);
-        organisationDTO1.setId(null);
+        organisationDTO1 = organisationDTO1.toBuilder().id(null).build();
         assertThat(organisationDTO1).isNotEqualTo(organisationDTO2);
     }
 }

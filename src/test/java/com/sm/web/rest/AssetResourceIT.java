@@ -24,7 +24,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -66,24 +65,22 @@ class AssetResourceIT {
 
     /**
      * Create an entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
     public static Asset createEntity() {
-        Asset asset = new Asset().name(DEFAULT_NAME).type(DEFAULT_TYPE);
-        return asset;
+        return Asset.builder().name(DEFAULT_NAME).type(DEFAULT_TYPE).build();
     }
 
     /**
      * Create an updated entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
     public static Asset createUpdatedEntity() {
-        Asset asset = new Asset().name(UPDATED_NAME).type(UPDATED_TYPE);
-        return asset;
+        return Asset.builder().name(UPDATED_NAME).type(UPDATED_TYPE).build();
     }
 
     @BeforeEach
@@ -143,20 +140,12 @@ class AssetResourceIT {
     }
 
     @SuppressWarnings({ "unchecked" })
-    void getAllAssetsWithEagerRelationshipsIsEnabled() throws Exception {
-        when(assetServiceMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
+    void getAll() throws Exception {
+        when(assetServiceMock.findAll(any())).thenReturn(new PageImpl(new ArrayList<>()));
 
-        restAssetMockMvc.perform(get(ENTITY_API_URL + "?eagerload=true")).andExpect(status().isOk());
+        restAssetMockMvc.perform(get(ENTITY_API_URL)).andExpect(status().isOk());
 
-        verify(assetServiceMock, times(1)).findAllWithEagerRelationships(any());
-    }
-
-    @SuppressWarnings({ "unchecked" })
-    void getAllAssetsWithEagerRelationshipsIsNotEnabled() throws Exception {
-        when(assetServiceMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
-
-        restAssetMockMvc.perform(get(ENTITY_API_URL + "?eagerload=false")).andExpect(status().isOk());
-        verify(assetRepositoryMock, times(1)).findAll(any(Pageable.class));
+        verify(assetServiceMock, times(1)).findAll(any());
     }
 
     @Test
@@ -189,7 +178,7 @@ class AssetResourceIT {
 
         // Update the asset
         Asset updatedAsset = assetRepository.findById(asset.getId()).orElseThrow();
-        updatedAsset.name(UPDATED_NAME).type(UPDATED_TYPE);
+        updatedAsset = updatedAsset.toBuilder().name(UPDATED_NAME).type(UPDATED_TYPE).build();
         AssetDTO assetDTO = assetMapper.toDto(updatedAsset);
 
         restAssetMockMvc
@@ -281,7 +270,7 @@ class AssetResourceIT {
         Asset partialUpdatedAsset = new Asset();
         partialUpdatedAsset.setId(asset.getId());
 
-        partialUpdatedAsset.name(UPDATED_NAME);
+        partialUpdatedAsset.setName(UPDATED_NAME);
 
         restAssetMockMvc
             .perform(
@@ -310,7 +299,8 @@ class AssetResourceIT {
         Asset partialUpdatedAsset = new Asset();
         partialUpdatedAsset.setId(asset.getId());
 
-        partialUpdatedAsset.name(UPDATED_NAME).type(UPDATED_TYPE);
+        partialUpdatedAsset.setName(UPDATED_NAME);
+        partialUpdatedAsset.setType(UPDATED_TYPE);
 
         restAssetMockMvc
             .perform(

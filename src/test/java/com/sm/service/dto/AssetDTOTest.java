@@ -10,15 +10,14 @@ class AssetDTOTest {
     @Test
     void dtoEqualsVerifier() throws Exception {
         TestUtil.equalsVerifier(AssetDTO.class);
-        AssetDTO assetDTO1 = new AssetDTO();
-        assetDTO1.setId("id1");
-        AssetDTO assetDTO2 = new AssetDTO();
+        AssetDTO assetDTO1 = AssetDTO.builder().id("id1").build();
+        AssetDTO assetDTO2 = AssetDTO.builder().build();
         assertThat(assetDTO1).isNotEqualTo(assetDTO2);
-        assetDTO2.setId(assetDTO1.getId());
+        assetDTO2 = assetDTO2.toBuilder().id(assetDTO1.getId()).build();
         assertThat(assetDTO1).isEqualTo(assetDTO2);
-        assetDTO2.setId("id2");
+        assetDTO2 = assetDTO2.toBuilder().id("id2").build();
         assertThat(assetDTO1).isNotEqualTo(assetDTO2);
-        assetDTO1.setId(null);
+        assetDTO1 = assetDTO1.toBuilder().id(null).build();
         assertThat(assetDTO1).isNotEqualTo(assetDTO2);
     }
 }

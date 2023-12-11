@@ -20,8 +20,8 @@ version = "0.0.1-SNAPSHOT"
 
 description = ""
 
-sourceCompatibility=17
-targetCompatibility=17
+sourceCompatibility = 17
+targetCompatibility = 17
 assert System.properties["java.specification.version"] == "17" || "18" || "19" || "20" || "21"
 
 ext {
@@ -111,7 +111,6 @@ modernizer {
 }
 
 
-
 task consoleLauncherTest(type: JavaExec) {
     dependsOn(testClasses)
     String cucumberReportsDir = file("$buildDir/reports/tests")
@@ -159,7 +158,7 @@ gitProperties {
 }
 
 tasks.withType(com.gorylenko.GenerateGitPropertiesTask).configureEach {
-  outputs.doNotCacheIf("Task is always executed") { true }
+    outputs.doNotCacheIf("Task is always executed") { true }
 }
 
 checkstyle {
@@ -263,7 +262,7 @@ task cleanResources(type: Delete) {
 }
 
 wrapper {
-    gradleVersion = "8.4"
+    gradleVersion = "8.5"
 }
 
 task webapp_test(type: NpmTask) {
@@ -274,34 +273,34 @@ task webapp_test(type: NpmTask) {
     inputs.files("build.gradle")
         .withPropertyName('build.gradle')
         .withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.files("angular.json")
-        .withPropertyName('angular.json')
-        .withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.files("tsconfig.json", "tsconfig.app.json")
-        .withPropertyName("tsconfig")
-        .withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.dir("webpack/")
-        .withPropertyName("webpack/")
-        .withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir("src/main/webapp/")
         .withPropertyName("webapp-source-dir")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files("tsconfig.json")
+        .withPropertyName("tsconfig")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+
+    def webpackDevFiles = fileTree("webpack/")
+    webpackDevFiles.exclude("webpack.prod.js")
+    inputs.files(webpackDevFiles)
+        .withPropertyName("webpack-dir")
         .withPathSensitivity(PathSensitivity.RELATIVE)
 
     outputs.dir("build/test-results/jest/")
         .withPropertyName("jest-result-dir")
     outputs.file("build/test-results/TESTS-results-jest.xml")
         .withPropertyName("jest-result")
-        outputs.file("build/test-results/clover.xml")
+    outputs.file("build/test-results/clover.xml")
         .withPropertyName("clover-result")
 
-    dependsOn npmInstall,compileTestJava
+    dependsOn npmInstall, compileTestJava
     args = ["run", "webapp:test"]
 }
 
 if (project.hasProperty("nodeInstall")) {
     node {
         version = "18.18.2"
-        npmVersion = "10.2.2"
+        npmVersion = "10.2.4"
         download = true
     }
 

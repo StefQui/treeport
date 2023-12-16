@@ -38,6 +38,12 @@ export const AssetDetail = () => {
           </dt>
           <dd>{assetEntity.name}</dd>
           <dt>
+            <span id="content">
+              <Translate contentKey="treeportApp.asset.content">Content</Translate>
+            </span>
+          </dt>
+          <dd>{assetEntity.content}</dd>
+          <dt>
             <span id="type">
               <Translate contentKey="treeportApp.asset.type">Type</Translate>
             </span>

@@ -116,6 +116,9 @@ export const Asset = () => {
                 <th className="hand" onClick={sort('name')}>
                   <Translate contentKey="treeportApp.asset.name">Name</Translate> <FontAwesomeIcon icon={getSortIconByFieldName('name')} />
                 </th>
+                <th>
+                  <Translate contentKey="treeportApp.asset.content">Content</Translate> <FontAwesomeIcon icon="sort" />
+                </th>
                 <th className="hand" onClick={sort('type')}>
                   <Translate contentKey="treeportApp.asset.type">Type</Translate> <FontAwesomeIcon icon={getSortIconByFieldName('type')} />
                 </th>
@@ -137,6 +140,7 @@ export const Asset = () => {
                     </Button>
                   </td>
                   <td>{asset.name}</td>
+                  <td>{asset.content}</td>
                   <td>
                     <Translate contentKey={`treeportApp.AssetType.${asset.type}`} />
                   </td>

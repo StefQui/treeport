@@ -106,6 +106,13 @@ export const AssetUpdate = () => {
                 />
               ) : null}
               <ValidatedField label={translate('treeportApp.asset.name')} id="asset-name" name="name" data-cy="name" type="text" />
+              <ValidatedField
+                label={translate('treeportApp.asset.content')}
+                id="asset-content"
+                name="content"
+                data-cy="content"
+                type="text"
+              />
               <ValidatedField label={translate('treeportApp.asset.type')} id="asset-type" name="type" data-cy="type" type="select">
                 {assetTypeValues.map(assetType => (
                   <option value={assetType} key={assetType}>

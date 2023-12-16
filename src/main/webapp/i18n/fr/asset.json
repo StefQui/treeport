@@ -19,6 +19,7 @@
       },
       "id": "ID",
       "name": "Name",
+      "content": "Contenu",
       "type": "Type",
       "orga": "Orga",
       "parent": "Parent",

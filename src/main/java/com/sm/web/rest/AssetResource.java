@@ -139,10 +139,17 @@ public class AssetResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of assets in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<AssetDTO>> getAllAssets(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        log.debug("REST request to get a page of Assets");
+    public ResponseEntity<List<AssetDTO>> getAllAssets(
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
+        @RequestParam(required = false) String type
+    ) {
+        log.debug("REST request to get a page of Sites");
         Page<AssetDTO> page;
-        page = assetService.findAll(pageable);
+        if (type != null) {
+            page = assetService.findAllByType(type, pageable);
+        } else {
+            page = assetService.findAll(pageable);
+        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

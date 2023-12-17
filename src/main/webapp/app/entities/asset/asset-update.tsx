@@ -58,8 +58,8 @@ export const AssetUpdate = () => {
       ...assetEntity,
       ...values,
       childrens: mapIdList(values.childrens),
-      orga: organisations.find(it => it.id.toString() === values.orga.toString()),
-      parent: assets.find(it => it.id.toString() === values.parent.toString()),
+      orga: values.orga ? organisations.find(it => (it.id && it.id.toString()) === values.orga.toString()) : null,
+      parent: values.parent ? assets.find(it => (it.id && it.id.toString()) === values.parent.toString()) : null,
     };
 
     if (isNew) {
@@ -111,7 +111,7 @@ export const AssetUpdate = () => {
                 id="asset-content"
                 name="content"
                 data-cy="content"
-                type="text"
+                type="textarea"
               />
               <ValidatedField label={translate('treeportApp.asset.type')} id="asset-type" name="type" data-cy="type" type="select">
                 {assetTypeValues.map(assetType => (

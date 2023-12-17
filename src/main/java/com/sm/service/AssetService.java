@@ -85,6 +85,11 @@ public class AssetService {
         return assetRepository.findAll(pageable).map(assetMapper::toDto);
     }
 
+    public Page<AssetDTO> findAllByType(String type, Pageable pageable) {
+        log.debug("Request to get all Assets by type");
+        return assetRepository.findAssetsByType(type, pageable).map(assetMapper::toDto);
+    }
+
     public Optional<AssetDTO> findOne(String id) {
         log.debug("Request to get Asset : {}", id);
         return assetRepository.getById(id).map(assetMapper::toDto);

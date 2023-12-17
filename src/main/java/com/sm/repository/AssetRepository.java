@@ -16,6 +16,9 @@ import org.springframework.stereotype.Repository;
 public interface AssetRepository extends MongoRepository<Asset, String> {
     Page<Asset> findAll(Pageable pageable);
 
+    @Query("{ 'type' : ?0 }")
+    Page<Asset> findAssetsByType(String type, Pageable pageable);
+
     List<Asset> findAll();
 
     Optional<Asset> getById(String id);

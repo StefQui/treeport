@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Button, Row, Col } from 'reactstrap';
+import { Button, Row, Col, Input } from 'reactstrap';
 import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { getEntity } from './asset.reducer';
+import { MyRend } from '../rendering/rendering';
 
 export const AssetDetail = () => {
   const dispatch = useAppDispatch();
@@ -38,11 +39,20 @@ export const AssetDetail = () => {
           </dt>
           <dd>{assetEntity.name}</dd>
           <dt>
+            <span>Testing component</span>
+          </dt>
+          <dd>
+            <MyRend content={assetEntity.content}></MyRend>
+          </dd>
+
+          <dt>
             <span id="content">
               <Translate contentKey="treeportApp.asset.content">Content</Translate>
             </span>
           </dt>
-          <dd>{assetEntity.content}</dd>
+          <dd>
+            <pre>{assetEntity.content}</pre>
+          </dd>
           <dt>
             <span id="type">
               <Translate contentKey="treeportApp.asset.type">Type</Translate>

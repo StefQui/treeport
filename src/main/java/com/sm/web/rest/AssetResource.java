@@ -141,6 +141,7 @@ public class AssetResource {
     @GetMapping("")
     public ResponseEntity<List<AssetDTO>> getAllAssets(
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
+        @RequestParam(required = false) String path,
         @RequestParam(required = false) String type
     ) {
         log.debug("REST request to get a page of Sites");
@@ -151,6 +152,7 @@ public class AssetResource {
             page = assetService.findAll(pageable);
         }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        headers.set("path", path);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 

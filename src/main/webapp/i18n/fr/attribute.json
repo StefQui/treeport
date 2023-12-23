@@ -1,0 +1,30 @@
+{
+  "treeportApp": {
+    "attribute": {
+      "home": {
+        "title": "Attributes",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Attribute",
+        "createOrEditLabel": "Créer ou éditer un Attribute",
+        "notFound": "Aucun Attribute trouvé"
+      },
+      "created": "Un nouveau Attribute a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Attribute avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Attribute avec l'identifiant {{ param }} a été supprimé",
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Attribute {{ id }} ?"
+      },
+      "detail": {
+        "title": "Attribute"
+      },
+      "id": "ID",
+      "isAgg": "Is Agg",
+      "hasConfigError": "Has Config Error",
+      "configError": "Config Error",
+      "orga": "Orga",
+      "site": "Site",
+      "config": "Config",
+      "tags": "Tags"
+    }
+  }
+}

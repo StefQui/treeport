@@ -1,0 +1,100 @@
+
+//@embedded
+//entity Operation {
+//    operationType OperationType,
+//}
+
+//@embedded
+//entity AttributeValue {
+//  value String
+//}
+
+//@embedded
+//entity AggInfo {
+//    withValues Integer,
+//}
+
+entity Tag {
+     name String
+}
+
+entity AttributeConfig {
+	applyOnChildren Boolean,
+	isConsolidable Boolean,
+    relatedConfigId String,
+    attributeType AttributeType,
+    isWritable Boolean,
+    consoParameterKey String,
+    consoOperationType OperationType
+}
+
+entity Attribute {
+     isAgg Boolean,
+     hasConfigError Boolean,
+     configError String,
+}
+
+//relationship OneToOne {
+//  AttributeConfig to Operation
+//}
+
+//relationship OneToOne {
+//  Attribute to AggInfo
+//}
+
+//relationship OneToOne {
+//  Attribute to AttributeValue
+//}
+
+relationship OneToOne {
+	AttributeConfig{orga} to Organisation with builtInEntity
+}
+relationship OneToOne {
+	AttributeConfig{site} to Asset with builtInEntity
+}
+relationship OneToOne {
+	Attribute{orga} to Organisation with builtInEntity
+}
+relationship OneToOne {
+	Attribute{site} to Asset with builtInEntity
+}
+relationship OneToOne {
+	Attribute{config} to AttributeConfig
+}
+
+relationship ManyToMany {
+    AttributeConfig{tags} to Tag
+}
+
+relationship ManyToMany {
+    Attribute{tags} to Tag
+}
+
+enum AttributeType {
+    LONG, BOOLEAN, DOUBLE, COMPO
+}
+
+enum OperationType {
+    CHILDREN_SUM,
+        CONSO_SUM,
+        SUM,
+        CHILDREN_PRODUCT,
+        PRODUCT,
+        CHILDREN_COUNT,
+        REF,
+        IF_THEN,
+        CONSTANT,
+        COMPARISON,
+        DIVIDE,
+        CHILDREN_AVG,
+        AVG,
+        TAG
+}
+
+paginate Tag, AttributeConfig, Attribute with pagination
+
+// dto
+dto * with mapstruct
+// Set service options to all except few
+// Set an angular suffix
+// angularSuffix * with sma

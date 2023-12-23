@@ -3,12 +3,17 @@ import './home.scss';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Translate } from 'react-jhipster';
-import { Row, Col, Alert } from 'reactstrap';
+import { Row, Col, Alert, Button } from 'reactstrap';
 
 import { useAppSelector } from 'app/config/store';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export const Home = () => {
   const account = useAppSelector(state => state.authentication.account);
+
+  const compute = () => {
+    console.log('compute...');
+  };
 
   return (
     <Row>
@@ -22,6 +27,10 @@ export const Home = () => {
         <p className="lead">
           <Translate contentKey="home.subtitle">This is your homepage</Translate>
         </p>
+        <Button className="me-2" color="info" onClick={compute}>
+          <FontAwesomeIcon icon="sync" /> <span>Compute</span>
+        </Button>
+
         {account?.login ? (
           <div>
             <Alert color="success">

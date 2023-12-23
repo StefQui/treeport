@@ -35,7 +35,7 @@ public class AssetMapper {
         return childrenIds.stream().map(id -> toBasicDto(id)).collect(Collectors.toList());
     }
 
-    private AssetDTO toBasicDto(String parentId) {
+    public AssetDTO toBasicDto(String parentId) {
         return AssetDTO.builder().id(parentId).build();
     }
 

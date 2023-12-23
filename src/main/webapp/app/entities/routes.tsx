@@ -5,6 +5,9 @@ import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 
 import Organisation from './organisation';
 import Asset from './asset';
+import AttributeConfig from './attribute-config';
+import Attribute from './attribute';
+import Tag from './tag';
 /* jhipster-needle-add-route-import - JHipster will add routes here */
 
 export default () => {
@@ -14,6 +17,9 @@ export default () => {
         {/* prettier-ignore */}
         <Route path="organisation/*" element={<Organisation />} />
         <Route path="asset/*" element={<Asset />} />
+        <Route path="attribute-config/*" element={<AttributeConfig />} />
+        <Route path="attribute/*" element={<Attribute />} />
+        <Route path="tag/*" element={<Tag />} />
         {/* jhipster-needle-add-route-path - JHipster will add routes here */}
       </ErrorBoundaryRoutes>
     </div>

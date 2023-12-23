@@ -1,0 +1,21 @@
+{
+  "treeportApp": {
+    "OperationType": {
+      "null": "",
+      "CHILDREN_SUM": "CHILDREN_SUM",
+      "CONSO_SUM": "CONSO_SUM",
+      "SUM": "SUM",
+      "CHILDREN_PRODUCT": "CHILDREN_PRODUCT",
+      "PRODUCT": "PRODUCT",
+      "CHILDREN_COUNT": "CHILDREN_COUNT",
+      "REF": "REF",
+      "IF_THEN": "IF_THEN",
+      "CONSTANT": "CONSTANT",
+      "COMPARISON": "COMPARISON",
+      "DIVIDE": "DIVIDE",
+      "CHILDREN_AVG": "CHILDREN_AVG",
+      "AVG": "AVG",
+      "TAG": "TAG"
+    }
+  }
+}

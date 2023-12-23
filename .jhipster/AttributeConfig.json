@@ -1,0 +1,64 @@
+{
+  "applications": "*",
+  "changelogDate": "20231203171957",
+  "dto": "mapstruct",
+  "entityTableName": "attribute_config",
+  "fields": [
+    {
+      "fieldName": "applyOnChildren",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "isConsolidable",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "relatedConfigId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "attributeType",
+      "fieldType": "AttributeType",
+      "fieldValues": "LONG,BOOLEAN,DOUBLE,COMPO"
+    },
+    {
+      "fieldName": "isWritable",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "consoParameterKey",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "consoOperationType",
+      "fieldType": "OperationType",
+      "fieldValues": "CHILDREN_SUM,CONSO_SUM,SUM,CHILDREN_PRODUCT,PRODUCT,CHILDREN_COUNT,REF,IF_THEN,CONSTANT,COMPARISON,DIVIDE,CHILDREN_AVG,AVG,TAG"
+    }
+  ],
+  "name": "AttributeConfig",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "organisation",
+      "relationshipName": "orga",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one",
+      "relationshipWithBuiltInEntity": true
+    },
+    {
+      "otherEntityName": "asset",
+      "relationshipName": "site",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one",
+      "relationshipWithBuiltInEntity": true
+    },
+    {
+      "otherEntityName": "tag",
+      "relationshipName": "tags",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-many"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

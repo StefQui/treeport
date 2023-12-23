@@ -1,0 +1,17 @@
+{
+  "applications": "*",
+  "changelogDate": "20231203172157",
+  "dto": "mapstruct",
+  "entityTableName": "tag",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    }
+  ],
+  "name": "Tag",
+  "pagination": "pagination",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

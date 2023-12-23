@@ -1,0 +1,11 @@
+{
+  "treeportApp": {
+    "AttributeType": {
+      "null": "",
+      "LONG": "LONG",
+      "BOOLEAN": "BOOLEAN",
+      "DOUBLE": "DOUBLE",
+      "COMPO": "COMPO"
+    }
+  }
+}

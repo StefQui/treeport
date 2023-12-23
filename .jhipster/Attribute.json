@@ -1,0 +1,52 @@
+{
+  "applications": "*",
+  "changelogDate": "20231203172057",
+  "dto": "mapstruct",
+  "entityTableName": "attribute",
+  "fields": [
+    {
+      "fieldName": "isAgg",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "hasConfigError",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "configError",
+      "fieldType": "String"
+    }
+  ],
+  "name": "Attribute",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "organisation",
+      "relationshipName": "orga",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one",
+      "relationshipWithBuiltInEntity": true
+    },
+    {
+      "otherEntityName": "asset",
+      "relationshipName": "site",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one",
+      "relationshipWithBuiltInEntity": true
+    },
+    {
+      "otherEntityName": "attributeConfig",
+      "relationshipName": "config",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    },
+    {
+      "otherEntityName": "tag",
+      "relationshipName": "tags",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-many"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

@@ -1,0 +1,33 @@
+{
+  "treeportApp": {
+    "attributeConfig": {
+      "home": {
+        "title": "AttributeConfigs",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Attribute Config",
+        "createOrEditLabel": "Créer ou éditer un Attribute Config",
+        "notFound": "Aucun Attribute Config trouvé"
+      },
+      "created": "Un nouveau Attribute Config a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Attribute Config avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Attribute Config avec l'identifiant {{ param }} a été supprimé",
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Attribute Config {{ id }} ?"
+      },
+      "detail": {
+        "title": "Attribute Config"
+      },
+      "id": "ID",
+      "applyOnChildren": "Apply On Children",
+      "isConsolidable": "Is Consolidable",
+      "relatedConfigId": "Related Config Id",
+      "attributeType": "Attribute Type",
+      "isWritable": "Is Writable",
+      "consoParameterKey": "Conso Parameter Key",
+      "consoOperationType": "Conso Operation Type",
+      "orga": "Orga",
+      "site": "Site",
+      "tags": "Tags"
+    }
+  }
+}

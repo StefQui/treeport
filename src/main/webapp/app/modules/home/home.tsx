@@ -7,13 +7,10 @@ import { Row, Col, Alert, Button } from 'reactstrap';
 
 import { useAppSelector } from 'app/config/store';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { compute } from 'app/entities/attribute-config/attribute-config.reducer';
 
 export const Home = () => {
   const account = useAppSelector(state => state.authentication.account);
-
-  const compute = () => {
-    console.log('compute...');
-  };
 
   return (
     <Row>

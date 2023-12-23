@@ -12,7 +12,8 @@
         "asset": "Asset",
         "attributeConfig": "Attribute Config",
         "attribute": "Attribute",
-        "tag": "Tag"
+        "tag": "Tag",
+        "campaign": "Campaign"
       },
       "account": {
         "main": "Compte",

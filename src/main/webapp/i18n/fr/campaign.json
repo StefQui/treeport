@@ -1,0 +1,26 @@
+{
+  "treeportApp": {
+    "campaign": {
+      "home": {
+        "title": "Campaigns",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Campaign",
+        "createOrEditLabel": "Créer ou éditer un Campaign",
+        "notFound": "Aucun Campaign trouvé"
+      },
+      "created": "Un nouveau Campaign a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Campaign avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Campaign avec l'identifiant {{ param }} a été supprimé",
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Campaign {{ id }} ?"
+      },
+      "detail": {
+        "title": "Campaign"
+      },
+      "id": "ID",
+      "name": "Name",
+      "description": "Description",
+      "orga": "Orga"
+    }
+  }
+}

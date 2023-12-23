@@ -15,7 +15,7 @@
     "enableHibernateCache": false,
     "enableSwaggerCodegen": false,
     "enableTranslation": true,
-    "entities": ["Organisation", "AttributeConfig", "Asset", "Attribute", "Tag"],
+    "entities": ["Organisation", "AttributeConfig", "Campaign", "Asset", "Attribute", "Tag"],
     "gitCompany": "",
     "jhiPrefix": "jhi",
     "jhipsterVersion": "8.1.0",

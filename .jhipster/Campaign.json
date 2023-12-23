@@ -1,0 +1,29 @@
+{
+  "applications": "*",
+  "changelogDate": "20231203171957",
+  "dto": "mapstruct",
+  "entityTableName": "campaign",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    }
+  ],
+  "name": "Campaign",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "organisation",
+      "relationshipName": "orga",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one",
+      "relationshipWithBuiltInEntity": true
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

@@ -50,6 +50,8 @@ public class OrganisationService {
     public OrganisationDTO update(OrganisationDTO organisationDTO) {
         log.debug("Request to update Organisation : {}", organisationDTO);
         Organisation organisation = organisationMapper.toEntity(organisationDTO);
+        Optional<Organisation> existing = organisationRepository.findByOrganisationId(organisationDTO.getId());
+        organisation.setObjectId(existing.get().getObjectId());
         organisation = organisationRepository.save(organisation);
         return organisationMapper.toDto(organisation);
     }
@@ -64,7 +66,7 @@ public class OrganisationService {
         log.debug("Request to partially update Organisation : {}", organisationDTO);
 
         return organisationRepository
-            .findById(organisationDTO.getId())
+            .findByOrganisationId(organisationDTO.getId())
             .map(existingOrganisation -> {
                 organisationMapper.partialUpdate(existingOrganisation, organisationDTO);
 
@@ -91,9 +93,9 @@ public class OrganisationService {
      * @param id the id of the entity.
      * @return the entity.
      */
-    public Optional<OrganisationDTO> findOne(String id) {
+    public Optional<OrganisationDTO> findById(String id) {
         log.debug("Request to get Organisation : {}", id);
-        return organisationRepository.findById(id).map(organisationMapper::toDto);
+        return organisationRepository.findByOrganisationId(id).map(organisationMapper::toDto);
     }
 
     /**
@@ -103,6 +105,7 @@ public class OrganisationService {
      */
     public void delete(String id) {
         log.debug("Request to delete Organisation : {}", id);
-        organisationRepository.deleteById(id);
+        Optional<Organisation> existing = organisationRepository.findByOrganisationId(id);
+        organisationRepository.deleteByOrganisationId(existing.get().getId());
     }
 }

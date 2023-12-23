@@ -78,16 +78,14 @@ export const OrganisationUpdate = () => {
             <p>Loading...</p>
           ) : (
             <ValidatedForm defaultValues={defaultValues()} onSubmit={saveEntity}>
-              {!isNew ? (
-                <ValidatedField
-                  name="id"
-                  required
-                  readOnly
-                  id="organisation-id"
-                  label={translate('global.field.id')}
-                  validate={{ required: true }}
-                />
-              ) : null}
+              <ValidatedField
+                name="id"
+                required
+                id="organisation-id"
+                readOnly={!isNew}
+                label={translate('global.field.id')}
+                validate={{ required: true }}
+              />
               <ValidatedField
                 label={translate('treeportApp.organisation.name')}
                 id="organisation-name"

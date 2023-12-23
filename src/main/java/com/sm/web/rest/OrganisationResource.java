@@ -1,5 +1,6 @@
 package com.sm.web.rest;
 
+import com.sm.domain.Organisation;
 import com.sm.repository.OrganisationRepository;
 import com.sm.service.OrganisationService;
 import com.sm.service.dto.OrganisationDTO;
@@ -29,16 +30,13 @@ import tech.jhipster.web.util.ResponseUtil;
 @RequestMapping("/api/organisations")
 public class OrganisationResource {
 
-    private final Logger log = LoggerFactory.getLogger(OrganisationResource.class);
-
     private static final String ENTITY_NAME = "organisation";
+    private final Logger log = LoggerFactory.getLogger(OrganisationResource.class);
+    private final OrganisationService organisationService;
+    private final OrganisationRepository organisationRepository;
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
-
-    private final OrganisationService organisationService;
-
-    private final OrganisationRepository organisationRepository;
 
     public OrganisationResource(OrganisationService organisationService, OrganisationRepository organisationRepository) {
         this.organisationService = organisationService;
@@ -55,9 +53,9 @@ public class OrganisationResource {
     @PostMapping("")
     public ResponseEntity<OrganisationDTO> createOrganisation(@RequestBody OrganisationDTO organisationDTO) throws URISyntaxException {
         log.debug("REST request to save Organisation : {}", organisationDTO);
-        if (organisationDTO.getId() != null) {
+        /*if (organisationDTO.getId() != null) {
             throw new BadRequestAlertException("A new organisation cannot already have an ID", ENTITY_NAME, "idexists");
-        }
+        }*/
         OrganisationDTO result = organisationService.save(organisationDTO);
         return ResponseEntity
             .created(new URI("/api/organisations/" + result.getId()))
@@ -68,7 +66,7 @@ public class OrganisationResource {
     /**
      * {@code PUT  /organisations/:id} : Updates an existing organisation.
      *
-     * @param id the id of the organisationDTO to save.
+     * @param id              the id of the organisationDTO to save.
      * @param organisationDTO the organisationDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated organisationDTO,
      * or with status {@code 400 (Bad Request)} if the organisationDTO is not valid,
@@ -88,7 +86,8 @@ public class OrganisationResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!organisationRepository.existsById(id)) {
+        Optional<Organisation> existing = organisationRepository.findByOrganisationId(id);
+        if (existing.isEmpty()) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -102,7 +101,7 @@ public class OrganisationResource {
     /**
      * {@code PATCH  /organisations/:id} : Partial updates given fields of an existing organisation, field will ignore if it is null
      *
-     * @param id the id of the organisationDTO to save.
+     * @param id              the id of the organisationDTO to save.
      * @param organisationDTO the organisationDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated organisationDTO,
      * or with status {@code 400 (Bad Request)} if the organisationDTO is not valid,
@@ -123,7 +122,8 @@ public class OrganisationResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!organisationRepository.existsById(id)) {
+        Optional<Organisation> existing = organisationRepository.findByOrganisationId(id);
+        if (existing.isEmpty()) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -158,7 +158,7 @@ public class OrganisationResource {
     @GetMapping("/{id}")
     public ResponseEntity<OrganisationDTO> getOrganisation(@PathVariable String id) {
         log.debug("REST request to get Organisation : {}", id);
-        Optional<OrganisationDTO> organisationDTO = organisationService.findOne(id);
+        Optional<OrganisationDTO> organisationDTO = organisationService.findById(id);
         return ResponseUtil.wrapOrNotFound(organisationDTO);
     }
 

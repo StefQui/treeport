@@ -5,7 +5,7 @@ import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { setRenderingForPath } from '../asset/rendering.reducer';
+import { setAction, setRenderingForPath } from '../asset/rendering.reducer';
 import AssetList from '../asset/asset-list';
 
 export const renderText = (col: any, value: any) => {
@@ -37,25 +37,58 @@ export const SiteList = props => {
 
 export const TextRef = (props: { refTo: string | number; col: any }) => {
   const assetEntity = useAppSelector(state => state.asset.entity);
+  const action = useAppSelector(state => state.rendering.action);
 
   // const dispatch = useAppDispatch();
   // dispatch(setRenderingForPath({ path: props.path, value: 'mmmmm' }));
   console.log('aaaaaaaaaaaaaa', props.refTo);
 
-  const rendering = useAppSelector(state => state.rendering.renderingState[props.refTo]);
+  // const rendering = useAppSelector(state => state.rendering.renderingState[props.refTo]);
+  // console.log('in app selector', state.rendering.renderingState, ddd);
+  // return ddd;
+  // });
+  const [value, setValue] = useState('?');
+
+  // useEffect(() => {
+  //   setValue(rendering ? rendering : '----');
+  //   // if (rendering.renderingState) {
+  //   //   const renderingState = getRenderingStateForPath(rendering, props.refTo);
+  //   //   const found = rendering.renderingState.find(i => i.path === props.refTo);
+  //   //   setValue(rendering ? rendering : '----');
+  //   // }
+  // }, [rendering]);
+
+  useEffect(() => {
+    if (!action || action.source !== props.refTo) {
+      return;
+    }
+    if (action.actionType === 'textChanged') {
+      setValue(action.value);
+    } else {
+      setValue('----');
+    }
+  }, [action]);
+
+  return renderText(props.col, value);
+};
+
+export const SiteRef = (props: { refTo: string; col: any }) => {
+  const action = useAppSelector(state => state.rendering.action);
   // console.log('in app selector', state.rendering.renderingState, ddd);
   // return ddd;
   // });
   const [value, setValue] = useState('?');
 
   useEffect(() => {
-    setValue(rendering ? rendering : '----');
-    // if (rendering.renderingState) {
-    //   const renderingState = getRenderingStateForPath(rendering, props.refTo);
-    //   const found = rendering.renderingState.find(i => i.path === props.refTo);
-    //   setValue(rendering ? rendering : '----');
-    // }
-  }, [rendering]);
+    if (!action || action.source !== props.refTo) {
+      return;
+    }
+    if (action.actionType === 'selectSite') {
+      setValue(action.entity.entity.id + ' - ' + action.entity.entity.name);
+    } else {
+      setValue('----');
+    }
+  }, [action]);
 
   return renderText(props.col, value);
 };
@@ -76,6 +109,9 @@ export const MyInput = props => {
   const handleChange = event => {
     setValue(event.target.value);
     dispatch(setRenderingForPath({ path: props.path, value: event.target.value }));
+
+    dispatch(setAction({ source: props.path, actionType: 'textChanged', value: event.target.value }));
+
     // setRendering(event.target.value);
     // dispatch(setStateForPath({ path: props.path, value: event.target.value }));
   };
@@ -102,6 +138,8 @@ export const MyElem = props => {
         return <TextBasic {...params}></TextBasic>;
       case 'textRef':
         return <TextRef {...params}></TextRef>;
+      case 'siteRef':
+        return <SiteRef {...params}></SiteRef>;
       case 'input':
         return <MyInput {...params}></MyInput>;
       case 'siteList':

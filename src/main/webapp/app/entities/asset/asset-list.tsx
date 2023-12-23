@@ -9,7 +9,7 @@ import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-u
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { getEntities } from './asset.reducer';
-import { getSites, setActivePage, setRenderingForPath } from './rendering.reducer';
+import { getSites, setAction, setActivePage, setRenderingForPath } from './rendering.reducer';
 
 export const AssetList = props => {
   const dispatch = useAppDispatch();
@@ -159,6 +159,11 @@ export const AssetList = props => {
     // });
   };
 
+  const handleSelect = selected => () => {
+    console.log('handleSelect', selected);
+    dispatch(setAction({ source: props.path, actionType: 'selectSite', entity: { entityType: 'SITE', entity: selected } }));
+  };
+
   const handlePagination = currentPage => {
     console.log('handlePagination', currentPage);
     dispatch(setActivePage({ path: props.path, value: currentPage }));
@@ -254,6 +259,12 @@ export const AssetList = props => {
                       <td>{asset.parent ? <Link to={`/asset/${asset.parent.id}`}>{asset.parent.id}</Link> : ''}</td>
                       <td className="text-end">
                         <div className="btn-group flex-btn-group-container">
+                          <Button onClick={handleSelect(asset)} color="info" size="sm" data-cy="entitySelectButton">
+                            <FontAwesomeIcon icon="eye" />{' '}
+                            <span className="d-none d-md-inline">
+                              <Translate contentKey="entity.action.select">Select</Translate>
+                            </span>
+                          </Button>
                           <Button tag={Link} to={`/asset/${asset.id}`} color="info" size="sm" data-cy="entityDetailsButton">
                             <FontAwesomeIcon icon="eye" />{' '}
                             <span className="d-none d-md-inline">

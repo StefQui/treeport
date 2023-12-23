@@ -14,9 +14,6 @@ const initialState = {
 
 export type RenderingState = Readonly<typeof initialState>;
 
-// interface IRendering {
-//   toto: string;
-// }
 const apiUrl = 'api/assets';
 
 // Actions
@@ -26,23 +23,9 @@ export const getSites = createAsyncThunk(`rendering/fetch_site_list`, async ({ p
   return axios.get<IAsset[]>(requestUrl);
 });
 
-// export const doSetToto = val => dispatch => {
-//   dispatch(setStateForPath(val));
-// };
-
 export const setRendering = (path, value) => dispatch => {
   dispatch(setRenderingForPath({ path, value }));
 };
-
-// export function setStateForPath(state, action) {
-//   const renderingState1 = state.renderingState;
-//   renderingState1[action.payload.path] = action.payload.value;
-
-//   return {
-//     ...state,
-//     renderingState: renderingState1,
-//   };
-// }
 
 export const RenderingSlice = createSlice({
   name: 'rendering',
@@ -51,19 +34,12 @@ export const RenderingSlice = createSlice({
     reset() {
       return initialState;
     },
-    // tata() {
-    //   return { ...initialState, toto: 'tata', 'vp.vp2.inp2': 'mmmm', 'vp.inp1': 'iii' };
-    // },
     setRenderingForPath(state, action) {
-      console.log('setRenderingForPath', action.payload.path, action.payload.value);
       const aaa = {};
       aaa[action.payload.path] = action.payload.value;
-      // console.log('setRenderingForPath', aaa, { ...{ renderingState: aaa }, ...state }, action);
       return { ...state, renderingState: { ...state.renderingState, ...aaa } };
     },
     setActivePage(state, action) {
-      console.log('setActivePage', action.payload.path, action.payload.value);
-
       const aaa = {};
       aaa[action.payload.path] = {
         paginationState: {
@@ -76,36 +52,10 @@ export const RenderingSlice = createSlice({
       };
       return { ...state, renderingState: { ...state.renderingState, ...aaa } };
     },
-    // setStateForPath(state, action) {
-    //   console.log('setStateForPath1', action.payload.path, action.payload.value);
-    //   // const renderingState1 = { ...state.renderingState };
-    //   // renderingState1[action.payload.path] = action.payload.value;
-
-    //   // console.log('setStateForPath2', renderingState1);
-
-    //   const found = state.renderingState.find(i => i.path === action.payload.path);
-    //   const foundIndex = state.renderingState.findIndex(i => i.path === action.payload.path);
-    //   if (foundIndex !== -1) {
-    //     let renderingState = state.renderingState;
-    //     renderingState = renderingState.map(u => (u.path === action.payload.path ? { ...u, value: action.payload.value } : u));
-
-    //     // state.renderingState[foundIndex].value = action.payload.value;
-    //     console.log('setStateForPath1 -A', action.payload.path, action.payload.value);
-    //     return {
-    //       ...state,
-    //       renderingState,
-    //     };
-    //   }
-    //   console.log('setStateForPath1 -B', {
-    //     ...state,
-    //     renderingState: [...state.renderingState, { path: action.payload.path, value: action.payload.value }],
-    //   });
-
-    //   return {
-    //     ...state,
-    //     renderingState: [...state.renderingState, { path: action.payload.path, value: action.payload.value }],
-    //   };
-    // },
+    // setAction(action: { source: any; actionType: string; entity: { entityType: string; entity: any; }; }): any {
+    setAction(state, action) {
+      return { ...state, action: action.payload };
+    },
   },
   extraReducers(builder) {
     builder
@@ -113,7 +63,6 @@ export const RenderingSlice = createSlice({
         const { data, headers } = action.payload;
         const { path } = action.meta.arg;
 
-        console.log('isFulfilled', action, data);
         const aaa = {};
         aaa[path] = {
           paginationState: {
@@ -125,16 +74,11 @@ export const RenderingSlice = createSlice({
             totalItems: parseInt(headers['x-total-count'], 10),
           },
         };
-        console.log('setRenderingForPataaaa1', aaa);
 
-        console.log('setRenderingForPataaaa2', { ...state, renderingState: { ...state.renderingState, ...aaa } });
         return { ...state, renderingState: { ...state.renderingState, ...aaa } };
       })
       .addMatcher(isPending(getSites), (state, action) => {
         const { path } = action.meta.arg;
-
-        console.log('action.meta.arg', action.meta);
-
         const aaa = {};
         aaa[path] = {
           paginationState: {
@@ -146,13 +90,12 @@ export const RenderingSlice = createSlice({
             loading: true,
           },
         };
-        console.log('setRenderingForPathbbbb', { ...state, renderingState: { ...state.renderingState, ...aaa } });
         return { ...state, renderingState: { ...state.renderingState, ...aaa } };
       });
   },
 });
 
-export const { reset, setRenderingForPath, setActivePage } = RenderingSlice.actions;
+export const { reset, setRenderingForPath, setActivePage, setAction } = RenderingSlice.actions;
 
 // Reducer
 export default RenderingSlice.reducer;

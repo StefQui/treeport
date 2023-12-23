@@ -1,13 +1,14 @@
 package com.sm.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sm.domain.enumeration.AssetType;
+import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.NonFinal;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -26,7 +27,14 @@ public class Asset implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    private String id;
+    @NonFinal
+    @Setter
+    @JsonIgnore
+    ObjectId objectId;
+
+    @NotBlank
+    @Field("id")
+    String id;
 
     @Field("name")
     private String name;

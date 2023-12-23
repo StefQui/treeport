@@ -50,6 +50,8 @@ public class AssetService {
     public AssetDTO update(AssetDTO assetDTO) {
         log.debug("Request to update Asset : {}", assetDTO);
         Asset asset = assetMapper.toEntity(assetDTO);
+        Optional<Asset> existing = assetRepository.findByAssetId(assetDTO.getId());
+        asset.setObjectId(existing.get().getObjectId());
         asset = assetRepository.save(asset);
         return assetMapper.toDto(asset);
     }
@@ -64,7 +66,7 @@ public class AssetService {
         log.debug("Request to partially update Asset : {}", assetDTO);
 
         return assetRepository
-            .findById(assetDTO.getId())
+            .findByAssetId(assetDTO.getId())
             .map(existingAsset -> {
                 assetMapper.partialUpdate(existingAsset, assetDTO);
 
@@ -90,9 +92,9 @@ public class AssetService {
         return assetRepository.findAssetsByType(type, pageable).map(assetMapper::toDto);
     }
 
-    public Optional<AssetDTO> findOne(String id) {
+    public Optional<AssetDTO> findById(String id) {
         log.debug("Request to get Asset : {}", id);
-        return assetRepository.getById(id).map(assetMapper::toDto);
+        return assetRepository.findByAssetId(id).map(assetMapper::toDto);
     }
 
     /**
@@ -102,6 +104,7 @@ public class AssetService {
      */
     public void delete(String id) {
         log.debug("Request to delete Asset : {}", id);
-        assetRepository.deleteById(id);
+        Optional<Asset> existing = assetRepository.findByAssetId(id);
+        assetRepository.deleteByAssetId(existing.get().getId());
     }
 }

@@ -22,4 +22,10 @@ public interface AssetRepository extends MongoRepository<Asset, String> {
     List<Asset> findAll();
 
     Optional<Asset> getById(String id);
+
+    @Query("{'id': ?0}")
+    Optional<Asset> findByAssetId(String id);
+
+    @Query(value = "{'id': ?0}", delete = true)
+    void deleteByAssetId(String id);
 }

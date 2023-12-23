@@ -1,5 +1,6 @@
 package com.sm.web.rest;
 
+import com.sm.domain.Asset;
 import com.sm.repository.AssetRepository;
 import com.sm.service.AssetService;
 import com.sm.service.dto.AssetDTO;
@@ -52,9 +53,11 @@ public class AssetResource {
     @PostMapping("")
     public ResponseEntity<AssetDTO> createAsset(@RequestBody AssetDTO assetDTO) throws URISyntaxException {
         log.debug("REST request to save Asset : {}", assetDTO);
+        /*
         if (assetDTO.getId() != null) {
             throw new BadRequestAlertException("A new asset cannot already have an ID", ENTITY_NAME, "idexists");
         }
+*/
         AssetDTO result = assetService.save(assetDTO);
         return ResponseEntity
             .created(new URI("/api/assets/" + result.getId()))
@@ -85,7 +88,8 @@ public class AssetResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!assetRepository.existsById(id)) {
+        Optional<Asset> existing = assetRepository.findByAssetId(id);
+        if (existing.isEmpty()) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -120,7 +124,8 @@ public class AssetResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!assetRepository.existsById(id)) {
+        Optional<Asset> existing = assetRepository.findByAssetId(id);
+        if (existing.isEmpty()) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
@@ -165,7 +170,7 @@ public class AssetResource {
     @GetMapping("/{id}")
     public ResponseEntity<AssetDTO> getAsset(@PathVariable String id) {
         log.debug("REST request to get Asset : {}", id);
-        Optional<AssetDTO> assetDTO = assetService.findOne(id);
+        Optional<AssetDTO> assetDTO = assetService.findById(id);
         return ResponseUtil.wrapOrNotFound(assetDTO);
     }
 

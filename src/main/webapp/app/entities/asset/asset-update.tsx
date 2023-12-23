@@ -95,16 +95,14 @@ export const AssetUpdate = () => {
             <p>Loading...</p>
           ) : (
             <ValidatedForm defaultValues={defaultValues()} onSubmit={saveEntity}>
-              {!isNew ? (
-                <ValidatedField
-                  name="id"
-                  required
-                  readOnly
-                  id="asset-id"
-                  label={translate('global.field.id')}
-                  validate={{ required: true }}
-                />
-              ) : null}
+              <ValidatedField
+                name="id"
+                required
+                id="asset-id"
+                readOnly={!isNew}
+                label={translate('global.field.id')}
+                validate={{ required: true }}
+              />
               <ValidatedField label={translate('treeportApp.asset.name')} id="asset-name" name="name" data-cy="name" type="text" />
               <ValidatedField
                 label={translate('treeportApp.asset.content')}
@@ -120,7 +118,14 @@ export const AssetUpdate = () => {
                   </option>
                 ))}
               </ValidatedField>
-              <ValidatedField id="asset-orga" name="orga" data-cy="orga" label={translate('treeportApp.asset.orga')} type="select">
+              <ValidatedField
+                id="asset-orga"
+                name="orga"
+                required
+                data-cy="orga"
+                label={`${translate('treeportApp.asset.orga')} (required)`}
+                type="select"
+              >
                 <option value="" key="0" />
                 {organisations
                   ? organisations.map(otherEntity => (

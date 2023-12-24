@@ -35,4 +35,7 @@ public class Tag implements Serializable {
 
     @Field("name")
     private String name;
+
+    @Field("orgaId")
+    private String orgaId;
 }

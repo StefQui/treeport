@@ -10,6 +10,8 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { IAttributeConfig } from 'app/shared/model/attribute-config.model';
 import { getEntities as getAttributeConfigs } from 'app/entities/attribute-config/attribute-config.reducer';
+import { getEntities as getOrganisations } from 'app/entities/organisation/organisation.reducer';
+
 import { IAttribute } from 'app/shared/model/attribute.model';
 import { getEntities as getAttributes } from 'app/entities/attribute/attribute.reducer';
 import { ITag } from 'app/shared/model/tag.model';
@@ -23,6 +25,7 @@ export const TagUpdate = () => {
   const { id } = useParams<'id'>();
   const isNew = id === undefined;
 
+  const organisations = useAppSelector(state => state.organisation.entities);
   const attributeConfigs = useAppSelector(state => state.attributeConfig.entities);
   const attributes = useAppSelector(state => state.attribute.entities);
   const tagEntity = useAppSelector(state => state.tag.entity);
@@ -43,6 +46,7 @@ export const TagUpdate = () => {
 
     dispatch(getAttributeConfigs({}));
     dispatch(getAttributes({}));
+    dispatch(getOrganisations({}));
   }, []);
 
   useEffect(() => {
@@ -56,6 +60,7 @@ export const TagUpdate = () => {
     const entity = {
       ...tagEntity,
       ...values,
+      orga: organisations.find(it => it.id.toString() === values.orga.toString()),
     };
 
     if (isNew) {
@@ -70,6 +75,7 @@ export const TagUpdate = () => {
       ? {}
       : {
           ...tagEntity,
+          orga: tagEntity?.orga?.id,
         };
 
   return (
@@ -96,6 +102,16 @@ export const TagUpdate = () => {
                 validate={{ required: true }}
               />
               <ValidatedField label={translate('treeportApp.tag.name')} id="tag-name" name="name" data-cy="name" type="text" />
+              <ValidatedField id="tag-orga" name="orga" data-cy="orga" label={translate('treeportApp.tag.orga')} type="select">
+                <option value="" key="0" />
+                {organisations
+                  ? organisations.map(otherEntity => (
+                      <option value={otherEntity.id} key={otherEntity.id}>
+                        {otherEntity.id}
+                      </option>
+                    ))
+                  : null}
+              </ValidatedField>
               <Button tag={Link} id="cancel-save" data-cy="entityCreateCancelButton" to="/tag" replace color="info">
                 <FontAwesomeIcon icon="arrow-left" />
                 &nbsp;

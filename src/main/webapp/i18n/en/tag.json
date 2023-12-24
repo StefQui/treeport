@@ -20,7 +20,8 @@
       "id": "ID",
       "name": "Name",
       "attributeConfig": "Attribute Config",
-      "attribute": "Attribute"
+      "attribute": "Attribute",
+      "orga": "Orga"
     }
   }
 }

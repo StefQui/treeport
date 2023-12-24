@@ -17,4 +17,6 @@ public class TagDTO implements Serializable {
     private String id;
 
     private String name;
+
+    private OrganisationDTO orga;
 }

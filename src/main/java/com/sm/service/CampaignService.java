@@ -4,7 +4,9 @@ import com.sm.domain.Campaign;
 import com.sm.repository.CampaignRepository;
 import com.sm.service.dto.CampaignDTO;
 import com.sm.service.mapper.CampaignMapper;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -83,8 +85,13 @@ public class CampaignService {
      * @return the list of entities.
      */
     public Page<CampaignDTO> findAll(Pageable pageable) {
-        log.debug("Request to get all Campaigns");
+        log.debug("Request to get all Campaigns by page");
         return campaignRepository.findAll(pageable).map(campaignMapper::toDto);
+    }
+
+    public List<CampaignDTO> findAllCampaigns() {
+        log.debug("Request to get all Campaigns");
+        return campaignRepository.findAll().stream().map(campaignMapper::toDto).collect(Collectors.toList());
     }
 
     /**

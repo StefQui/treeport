@@ -1,10 +1,17 @@
 package com.sm.service;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 import com.sm.domain.Attribute;
 import com.sm.repository.AttributeRepository;
 import com.sm.service.dto.AttributeDTO;
 import com.sm.service.mapper.AttributeMapper;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -34,7 +41,7 @@ public class AttributeService {
      * @param attributeDTO the entity to save.
      * @return the persisted entity.
      */
-    public AttributeDTO save(AttributeDTO attributeDTO) {
+    public AttributeDTO saveDto(AttributeDTO attributeDTO) {
         log.debug("Request to save Attribute : {}", attributeDTO);
         Attribute attribute = attributeMapper.toEntity(attributeDTO);
         attribute = attributeRepository.save(attribute);
@@ -116,5 +123,34 @@ public class AttributeService {
         log.debug("Request to delete Attribute : {}", id);
         Optional<Attribute> existing = attributeRepository.findByAttributeId(id);
         attributeRepository.deleteByAttributeId(existing.get().getId());
+    }
+
+    public List<Attribute> findBySite(String siteId, String orgaId) {
+        List<Attribute> atts = findAllAttributes(orgaId);
+        return atts.stream().filter(a -> a.getSiteFragment().equals(siteId)).collect(Collectors.toList());
+    }
+
+    public List<Attribute> findAllAttributes(String orgaId) {
+        return attributeRepository.findByOrgaId(orgaId);
+    }
+
+    public Optional<Attribute> findByIdAndOrgaId(String id, @NonNull String orgaId) {
+        List<Attribute> r = attributeRepository.findByIdAndOrgaId(id, orgaId);
+        if (r.size() > 1) {
+            throw new RuntimeException("pb 12345");
+        }
+        if (r.size() == 0) {
+            return empty();
+        }
+        return of(r.get(0));
+    }
+
+    public void save(Attribute attribute) {
+        attributeRepository.save(attribute);
+    }
+
+    public Set<Attribute> findImpacted(String attKey, @NonNull String orgaId) {
+        List<Attribute> atts = findAllAttributes(orgaId);
+        return atts.stream().filter(a -> a.getImpacterIds().contains(attKey)).collect(Collectors.toSet());
     }
 }

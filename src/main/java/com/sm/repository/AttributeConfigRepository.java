@@ -28,4 +28,8 @@ public interface AttributeConfigRepository extends MongoRepository<AttributeConf
 
     @Query(value = "{'id': ?0}", delete = true)
     void deleteByAttributeConfigId(String id);
+
+    List<AttributeConfig> findAllByOrgaId(String orgaId);
+
+    Optional<AttributeConfig> findAllByOrgaIdAndId(String orgaId, String id);
 }

@@ -1,10 +1,15 @@
 package com.sm.service;
 
+import static com.sm.domain.enumeration.AssetType.SITE;
+
 import com.sm.domain.Asset;
+import com.sm.domain.Site;
 import com.sm.repository.AssetRepository;
 import com.sm.service.dto.AssetDTO;
 import com.sm.service.mapper.AssetMapper;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -20,8 +25,9 @@ public class AssetService {
     private final Logger log = LoggerFactory.getLogger(AssetService.class);
 
     private final AssetRepository assetRepository;
-
     private final AssetMapper assetMapper;
+    SiteRepository siteRepository;
+    ResourceRepository resourceRepository;
 
     public AssetService(AssetRepository assetRepository, AssetMapper assetMapper) {
         this.assetRepository = assetRepository;
@@ -106,5 +112,28 @@ public class AssetService {
         log.debug("Request to delete Asset : {}", id);
         Optional<Asset> existing = assetRepository.findByAssetId(id);
         assetRepository.deleteByAssetId(existing.get().getId());
+    }
+
+    public List<Site> findAllRootSites(String orgaId) {
+        return assetRepository.findByAssetTypeAndOrgaIdAndParentId(SITE.name(), orgaId, null);
+    }
+
+    public List<Site> getChildren(Site site, String orgaId) {
+        return site
+            .getChildrenIds()
+            .stream()
+            .map(id -> this.getSiteById(id, orgaId).orElseThrow(() -> new RuntimeException("Children site not found!")))
+            .collect(Collectors.toList());
+    }
+
+    private Optional<Site> getSiteById(String id, String orgaId) {
+        List<Site> r = assetRepository.findByAssetTypeAndIdAndOrgaId(SITE.name(), id, orgaId);
+        if (r.size() > 1) {
+            throw new RuntimeException("pb 12345");
+        }
+        if (r.size() == 0) {
+            return null;
+        }
+        return Optional.of(r.get(0));
     }
 }

@@ -1,172 +1,1040 @@
 package com.sm.service;
 
-import static com.sm.domain.enumeration.AssetType.RESOURCE;
-import static com.sm.domain.enumeration.AssetType.SITE;
-import static com.sm.domain.enumeration.AttributeType.DOUBLE;
-import static com.sm.domain.enumeration.OperationType.SUM;
+import static com.sm.domain.Attribute.PERIOD_FRAG;
+import static com.sm.domain.Attribute.SITE_FRAG;
+import static com.sm.poctreeport.model.attribute.Attribute.PERIOD;
+import static com.sm.poctreeport.model.operation.OperationType.*;
+import static com.sm.poctreeport.model.operation.TagOperationType.CONTAINS;
+import static com.sm.poctreeport.utils.AttributeKeyUtils.fromString;
+import static com.sm.poctreeport.utils.AttributeKeyUtils.objToString;
 
 import com.sm.domain.*;
-import com.sm.repository.*;
-import java.util.List;
-import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.sm.poctreeport.model.Impact;
+import com.sm.poctreeport.model.attribute.*;
+import com.sm.poctreeport.model.operation.*;
+import java.util.*;
+import java.util.stream.Collectors;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
-/**
- * Service Implementation for managing {@link Tag}.
- */
 @Service
+@Slf4j
 public class ComputeService {
 
-    public static final String COCA = "coca";
-    public static final String ROOT = "root";
-    public static final String S_1 = "s1";
-    public static final String S_2 = "s2";
-    public static final String R_1 = "r1";
-    public static final String R1_CONTENT =
-        """
-        {
-           "type":"verticalPanel",
-           "path":"vp",
-           "items":
-                [
-                    {
-                       "type":"textRef",
-                       "refTo":"vp.vp2.inp2",
-                       "col": 4
-                   },
-                   {
-                      "type":"siteRef",
-                      "refTo":"vp.thelist2",
-                      "col": 4
-                   },
-                   {
-                       "type":"input",
-                       "path":"inp1",
-                       "value":"tata"
-                   },
-                   {
-                        "type":"siteList",
-                        "path":"thelist2"
-                   },
-                   {
-                       "path":"vp2",
-                       "type":"verticalPanel",
-                       "items":
-                            [
-                               {
-                                   "type":"input",
-                                   "path":"inp2",
-                                   "value":"arg"
-                               },
-                               {
-                                   "type":"textBasic",
-                                   "text":"tutu",
-                                   "col": 4
-                               },
-                               {
-                                    "type":"textBasic",
-                                    "text":"tutu2",
-                                    "col": 4
-                                },
-                                {
-                                     "type":"textRef",
-                                     "refTo":"vp.inp1"
-                                 },
-                                 {
-                                      "type": "siteList",
-                                      "path": "thelist"
-                                 }
-                             ]
-                        }
-                ]
+    @Autowired
+    AssetService assetService;
+
+    @Autowired
+    CampaignService campaignService;
+
+    @Autowired
+    AttributeConfigService attributeConfigService;
+
+    @Autowired
+    AttributeService attributeService;
+
+    ConsoCalculator<Double> doubleCalculator = new ConsoCalculator();
+    ConsoCalculator<Long> longCalculator = new ConsoCalculator();
+
+    public void applyCampaigns(@NonNull String orgaId) {
+        campaignService.findAllCampaigns().stream().forEach(c -> this.applyCampaign(c, orgaId));
+    }
+
+    private void applyCampaign(Campaign campaign, @NonNull String orgaId) {
+        Map<String, List<AttributeConfig>> keyConfigsMaps = attributeConfigService
+            .findAllConfigs(orgaId)
+            .stream()
+            .collect(Collectors.groupingBy(AttributeConfig::getId));
+        assetService
+            .findAllRootSites(orgaId)
+            .stream()
+            .forEach(root -> {
+                this.applyCampaignForSiteAndKeyConfigsMap(campaign, root, keyConfigsMaps, orgaId);
+                this.validateForCampaignAndSite(campaign, root, orgaId);
+            });
+
+        treeShake(keyConfigsMaps, campaign, orgaId);
+    }
+
+    private void validateForCampaignAndSite(Campaign campaign, Site site, @NonNull String orgaId) {
+        List<Attribute> attributes = attributeService.findBySite(site.getId(), orgaId);
+        attributes.forEach(attribute -> validate(site, attribute, campaign, orgaId));
+
+        List<Site> children = assetService.getChildren(site, orgaId);
+        children.stream().forEach(s -> validateForCampaignAndSite(campaign, s, orgaId));
+    }
+
+    private void validate(Site site, Attribute attribute, Campaign campaign, @NonNull String orgaId) {
+        if (!attribute.getIsAgg()) {
+            return;
         }
-        """;
-    public static final String CAR = "CAR";
-    public static final String TRA = "TRA";
-    public static final String HQ = "HQ";
-    public static final String TO_SITE = "toSite";
-    private final Logger log = LoggerFactory.getLogger(ComputeService.class);
-    private final OrganisationRepository organisationRepository;
-    private final TagRepository tagRepository;
-    private final CampaignRepository campaignRepository;
-    private final AssetRepository assetRepository;
-    private final AttributeConfigRepository attributeConfigRepository;
+        AttributeConfig config = attributeConfigService.findByOrgaIdAndId(attribute.getConfigId(), orgaId).get();
+        String consoAttKey = generateConsolidatedAttKey(site, config.getConsoParameterKey(), PERIOD_FRAG, campaign);
+        Optional<Attribute> consoatt = attributeService.findByIdAndOrgaId(consoAttKey, orgaId);
+        if (consoatt.isPresent() && consoatt.get().getIsAgg()) {
+            attribute.setHasConfigError(true);
+            attribute.setConfigError("Consolidated attribute should not be a consolidable one");
+            attributeService.save(attribute);
+        }
+    }
 
-    public ComputeService(
-        OrganisationRepository organisationRepository,
-        TagRepository tagRepository,
-        CampaignRepository campaignRepository,
-        AssetRepository assetRepository,
-        AttributeConfigRepository attributeConfigRepository
+    private void treeShake(Map<String, List<AttributeConfig>> keyConfigsMaps, Campaign campaign, @NonNull String orgaId) {
+        assetService.findAllRootSites(orgaId).stream().forEach(root -> this.treeShakeForSite(campaign, root, orgaId));
+    }
+
+    private void treeShakeForSite(Campaign campaign, Site site, @NonNull String orgaId) {
+        List<Attribute> attributes = attributeService.findBySite(site.getId(), orgaId);
+        attributes.forEach(att -> {
+            List<String> impacters = att.getImpacterIds().stream().collect(Collectors.toList());
+            int i = impacters.size();
+            while (i > 0) {
+                if (attributeService.findByIdAndOrgaId(impacters.get(i - 1), orgaId).isEmpty()) {
+                    impacters.remove(i - 1);
+                }
+                i--;
+            }
+            att.setImpacterIds(impacters.stream().collect(Collectors.toSet()));
+            attributeService.save(att);
+        });
+        List<Site> children = assetService.getChildren(site, orgaId);
+        children.stream().forEach(s -> treeShakeForSite(campaign, s, orgaId));
+    }
+
+    private void applyCampaignForSiteAndKeyConfigsMap(
+        Campaign campaign,
+        Site root,
+        Map<String, List<AttributeConfig>> keyConfigsMap,
+        @NonNull String orgaId
     ) {
-        this.organisationRepository = organisationRepository;
-        this.tagRepository = tagRepository;
-        this.campaignRepository = campaignRepository;
-        this.assetRepository = assetRepository;
-        this.attributeConfigRepository = attributeConfigRepository;
-    }
-
-    public void reloadOrganisations() {
-        organisationRepository.deleteAll();
-        organisationRepository.save(Organisation.builder().id(COCA).name("Coca").build());
-        organisationRepository.save(Organisation.builder().id("pepsi").name("Papsi").build());
-        organisationRepository.save(Organisation.builder().id("fanta").name("Fanta").build());
-    }
-
-    public void reloadTags() {
-        tagRepository.deleteAll();
-        tagRepository.save(Tag.builder().id(CAR).name("Carrière").orgaId(COCA).build());
-        tagRepository.save(Tag.builder().id(TRA).name("Travaux").orgaId(COCA).build());
-        tagRepository.save(Tag.builder().id(HQ).name("Siège").orgaId(COCA).build());
-    }
-
-    public void reloadCampaigns() {
-        campaignRepository.deleteAll();
-        campaignRepository.save(Campaign.builder().id("2022").name("Campagne 2022").orgaId(COCA).build());
-        campaignRepository.save(Campaign.builder().id("2023").name("Campagne 2023").orgaId(COCA).build());
-    }
-
-    public void reloadAssets() {
-        assetRepository.deleteAll();
-        assetRepository.save(Asset.builder().id(ROOT).name("Root site").type(SITE).orgaId(COCA).childrenIds(List.of(S_1, S_2)).build());
-        assetRepository.save(Asset.builder().id(S_1).name("Site S1").type(SITE).orgaId(COCA).parentId(ROOT).childrenIds(List.of()).build());
-        assetRepository.save(Asset.builder().id(S_2).name("Site S2").type(SITE).orgaId(COCA).parentId(ROOT).childrenIds(List.of()).build());
-        assetRepository.save(
-            Asset.builder().id(R_1).name("Resource r1").type(RESOURCE).orgaId(COCA).content(R1_CONTENT).childrenIds(List.of()).build()
+        keyConfigsMap.forEach((configKey, configs) ->
+            this.applyCampaignForSiteAndKeyConfigs(campaign, root, configKey, configs, null, orgaId)
         );
     }
 
-    public void reloadAttributeConfigs() {
-        attributeConfigRepository.deleteAll();
-        attributeConfigRepository.save(
-            AttributeConfig
+    private void applyCampaignForSiteAndKeyConfigs(
+        Campaign campaign,
+        Site site,
+        String configKey,
+        List<AttributeConfig> configs,
+        AttributeConfig applyableConfig,
+        @NonNull String orgaId
+    ) {
+        AttributeConfig configForSite = configs
+            .stream()
+            .filter(c -> c.getId().equals(configKey) && site.getId().equals(c.getSiteId()))
+            .findAny()
+            .orElse(null);
+        if (configForSite == null) {
+            if (applyableConfig != null) {
+                this.createOrUpdateAttribute(site, configKey, campaign, applyableConfig, orgaId);
+            }
+        } else {
+            this.createOrUpdateAttribute(site, configKey, campaign, configForSite, orgaId);
+        }
+        AttributeConfig nextApplyableConfig = fetchNextApplyableConfig(configForSite, applyableConfig);
+
+        List<Site> children = assetService.getChildren(site, orgaId);
+        children.stream().forEach(s -> applyCampaignForSiteAndKeyConfigs(campaign, s, configKey, configs, nextApplyableConfig, orgaId));
+    }
+
+    private AttributeConfig fetchNextApplyableConfig(AttributeConfig configForSite, AttributeConfig applyableConfig) {
+        if (configForSite == null) {
+            if (applyableConfig != null) {
+                return applyableConfig.getApplyOnChildren() ? applyableConfig : null;
+            }
+        } else {
+            return configForSite.getApplyOnChildren() ? configForSite : applyableConfig;
+        }
+        return null;
+    }
+
+    private void createOrUpdateAttribute(Site site, String configKey, Campaign campaign, AttributeConfig config, @NonNull String orgaId) {
+        if (CollectionUtils.isEmpty(config.getTags()) || this.matchAtLeastOneTag(site.getTags(), config.getTags())) {
+            String attKey = AttributeKeyUtils.key(SITE_FRAG, site.getId(), configKey, PERIOD_FRAG, campaign.getId());
+            Attribute attribute = attributeService.findByIdAndOrgaId(attKey, orgaId).orElse(null);
+            if (attribute == null) {
+                attribute = Attribute.builder().orgaId(orgaId).siteId(site.getId()).id(attKey).build();
+            } else {
+                attribute.setHasConfigError(false);
+                attribute.setConfigError(null);
+            }
+            addImpacters(attribute, config, site, campaign, orgaId);
+            attribute.setConfigId(config.getId());
+            if (config.getIsConsolidable()) {
+                attribute.setIsAgg(true);
+                attribute.setAggInfo(AggInfo.builder().build());
+            }
+            attribute.setTags(site.getTags());
+            attributeService.save(attribute);
+        }
+    }
+
+    private void addImpacters(Attribute attribute, AttributeConfig config, Site site, Campaign campaign, @NonNull String orgaId) {
+        Set<String> impacters = new HashSet<>();
+        if (config.getIsConsolidable()) {
+            impacters.addAll(
+                site
+                    .getChildrenIds()
+                    .stream()
+                    .map(childId -> AttributeKeyUtils.siteKey(childId, config.getId(), PERIOD_FRAG, campaign.getId()))
+                    .collect(Collectors.toSet())
+            );
+            impacters.add(generateConsolidatedAttKey(site, config.getConsoParameterKey(), PERIOD_FRAG, campaign));
+        } else {
+            impacters.addAll(fetchImpactersForConfig(config, attribute.getId(), orgaId));
+        }
+        attribute.setImpacterIds(impacters);
+    }
+
+    private String generateConsolidatedAttKey(Site site, String consoParameterKey, String period, Campaign campaign) {
+        return AttributeKeyUtils.siteKey(site.getId(), consoParameterKey, period, campaign.getId());
+    }
+
+    private boolean matchAtLeastOneTag(Set<Tag> tags1, Set<Tag> tags2) {
+        return tags1 != null && tags2 != null && tags1.stream().anyMatch(t -> tags2.contains(t));
+    }
+
+    public void reCalculateAllAttributes(String orgaId) {
+        Set<String> all = new HashSet<>();
+        attributeService
+            .findAllAttributes(orgaId)
+            .stream()
+            .forEach(att -> {
+                all.add(att.getId());
+                all.addAll(att.getImpacterIds());
+            });
+        this.reCalculateSomeAttributes(all, orgaId);
+    }
+
+    public List<Attribute> reCalculateSomeAttributes(Set<String> attributeIds, String orgaId) {
+        log.info("-------------------------------------");
+        log.info("ReCalculating for : " + attributeIds);
+        log.info("-------------------------------------");
+
+        Set<Attribute> impactedAttributes = new HashSet<>();
+        attributeIds.stream().forEach(attKey -> fetchImpactedAttributes(attKey, impactedAttributes, orgaId));
+
+        if (!CollectionUtils.isEmpty(impactedAttributes)) {
+            List<Attribute> orderedImpactedAttributes = this.sortImpacteds(impactedAttributes);
+            calculateImpacts(orderedImpactedAttributes, orgaId);
+            return orderedImpactedAttributes;
+        }
+
+        return new ArrayList<>();
+    }
+
+    private List<Attribute> sortImpacteds(Set<Attribute> impactedAttributes) {
+        List<Attribute> impactedAttributesAsList = impactedAttributes.stream().collect(Collectors.toList());
+        Set<String> impactedAttributeKeys = impactedAttributesAsList.stream().map(Attribute::getId).collect(Collectors.toSet());
+        List<Attribute> orderedAttributes = new ArrayList<>();
+        Integer impactSize = -1;
+        while (!impactedAttributesAsList.isEmpty()) {
+            findAndReorderResolvableImpacted2(orderedAttributes, impactedAttributesAsList, impactedAttributeKeys);
+            if (impactSize != -1 && impactedAttributesAsList.size() == impactSize) {
+                throw new RuntimeException("pb de boucle infinie");
+            }
+            impactSize = impactedAttributesAsList.size();
+        }
+
+        return orderedAttributes;
+    }
+
+    private void findAndReorderResolvableImpacted2(
+        List<Attribute> orderedImpacts,
+        List<Attribute> impactedAttributes,
+        Set<String> impactedAttributeKeys
+    ) {
+        int i = 0;
+        int count = impactedAttributes.size();
+        while (i < count) {
+            Set<String> impacters = impactedAttributes.get(i).getImpacterIds();
+            if (!impacters.stream().anyMatch(impacterId -> impactedAttributeKeys.contains(impacterId))) {
+                impactedAttributeKeys.remove(impactedAttributes.get(i).getId());
+                Attribute removed = impactedAttributes.remove(i);
+                orderedImpacts.add(removed);
+                break;
+            }
+            i++;
+        }
+    }
+
+    private void fetchImpactedAttributes(String attKey, Set<Attribute> impactedAttributes, @NonNull String orgaId) {
+        Attribute att = attributeService.findByIdAndOrgaId(attKey, orgaId).orElse(null);
+        if (att != null) {
+            impactedAttributes.add(att);
+        }
+
+        impactedAttributes.add(attributeService.findByIdAndOrgaId(attKey, orgaId).get());
+        Set<Attribute> impacteds = attributeService.findImpacted(attKey, orgaId);
+        //        impactedAttributes.addAll(impacteds);
+        //        impacteds.forEach(att1 -> fetchImpactedAttributes(att1.getId(), impactedAttributes));
+        impacteds.forEach(att1 -> {
+            if (!impactedAttributes.contains(att1)) {
+                impactedAttributes.add(att1);
+                fetchImpactedAttributes(att1.getId(), impactedAttributes, orgaId);
+            }
+        });
+    }
+
+    private void calculateImpacts(List<Attribute> attributes, String orgaId) {
+        attributes
+            .stream()
+            .forEach(attribute -> {
+                if (attribute.getHasConfigError()) {
+                    attribute.setAttributeValue(ErrorValue.builder().value(attribute.getConfigError()).build());
+                }
+                AttributeConfig config = attributeConfigService
+                    .getById(attribute.getConfigId(), orgaId)
+                    .orElseThrow(() -> new RuntimeException("Cing should exist here " + attribute.getId()));
+                if (!config.getIsWritable()) {
+                    if (config.getOperation() == null) {
+                        log.info("jhh");
+                    }
+                    Pair<AttributeValue, AggInfo> v = calculateAttribute(
+                        orgaId,
+                        attribute.getId(),
+                        attribute.getTags(),
+                        attribute.getImpacterIds(),
+                        config
+                    );
+                    attribute.setAttributeValue(v.getLeft());
+                    attribute.setAggInfo(v.getRight());
+                    attributeService.saveDto(attribute);
+                }
+            });
+    }
+
+    private Pair<AttributeValue, AggInfo> calculateAttribute(
+        String orgaId,
+        String attId,
+        List<Tag> attTags,
+        Set<String> impacterIds,
+        AttributeConfig config
+    ) {
+        if (config.getIsWritable()) {
+            throw new RuntimeException("cannot have a writable here " + attId + " " + config);
+        }
+        if (config.getId().equals("site:a12:toConso:period:2023")) {
+            log.info("kkk site:a12:toConso:period:2023");
+        }
+        // Handle Novalue NotResolvable Errors
+
+        if (CONSTANT.equals(config.getOperationType())) {
+            ConstantOperation op = (ConstantOperation) config.getOperation();
+            if (op.getConstantType().equals(AggInfo.AttributeType.BOOLEAN)) {
+                return Pair.of(BooleanValue.builder().value(op.getBooleanValue()).build(), null);
+            } else if (op.getConstantType().equals(AggInfo.AttributeType.DOUBLE)) {
+                return Pair.of(DoubleValue.builder().value(op.getDoubleValue()).build(), null);
+            } else if (op.getConstantType().equals(AggInfo.AttributeType.LONG)) {
+                return Pair.of(LongValue.builder().value(op.getLongValue()).build(), null);
+            } else {
+                throw new RuntimeException("to be implemented here 44");
+            }
+        } else if (TAG.equals(config.getOperationType())) {
+            TagOperation op = (TagOperation) config.getOperation();
+            if (CONTAINS.equals(op.getTagOperationType())) {
+                return Pair.of(BooleanValue.builder().value(attTags.contains(op.getTag())).build(), null);
+            } else {
+                throw new RuntimeException("to implement tagOp " + op.getTagOperationType());
+            }
+        } else if (CONSO_SUM.equals(config.getConsoOperationType())) {
+            if (config.getAttributeType() == AggInfo.AttributeType.DOUBLE) {
+                if (config.getIsConsolidable()) {
+                    if (
+                        impacterIds
+                            .stream()
+                            .map(impacterId -> attributeService.getById(impacterId, orgaId).orElse(null))
+                            .anyMatch(att -> att == null)
+                    ) {
+                        throw new RuntimeException("pas possible ici");
+                    }
+
+                    List<Attribute> attributes = getAttributesFromKeys(impacterIds, orgaId);
+                    return doubleCalculator.calculateConsolidatedAttribute(
+                        attId,
+                        attributes,
+                        config,
+                        DoubleValue.builder().build(),
+                        UtilsValue::mapToDouble,
+                        0.,
+                        Double::sum
+                    );
+                    //                    return
+                    //                            calculateConsolidatedAttribute(attId, impacterIds, config, 0., Double::sum);
+                } else {
+                    throw new RuntimeException("to implement 999");
+                }
+            } else {
+                throw new RuntimeException("to implement 555");
+            }
+        } else if (SUM.equals(config.getOperationType()) || PRODUCT.equals(config.getOperationType())) {
+            HasItems op = (HasItems) config.getOperation();
+            if (config.getAttributeType() == AggInfo.AttributeType.LONG) {
+                throw new RuntimeException("to be implemented here 66");
+            } else if (config.getAttributeType() == AggInfo.AttributeType.DOUBLE) {
+                List<AttributeValue> vals = op
+                    .getItems()
+                    .stream()
+                    .map(item ->
+                        calculateAttribute(
+                            orgaId,
+                            attId,
+                            attTags,
+                            new HashSet<>(),
+                            AttributeConfig
+                                .builder()
+                                .id("fakeConfig")
+                                .orgaId(orgaId)
+                                .isConsolidable(false)
+                                .operation(item)
+                                .isWritable(false)
+                                .tags(attTags)
+                                .build()
+                        )
+                    )
+                    .map(Pair::getLeft)
+                    .collect(Collectors.toList());
+
+                if (SUM.equals(config.getOperationType())) {
+                    return Pair.of(
+                        doubleCalculator.calculateMultiVals(
+                            attId,
+                            vals,
+                            config,
+                            DoubleValue.builder().build(),
+                            UtilsValue::mapToDouble,
+                            0.,
+                            Double::sum
+                        ),
+                        null
+                    );
+                } else if (PRODUCT.equals(config.getOperationType())) {
+                    return Pair.of(
+                        doubleCalculator.calculateMultiVals(
+                            attId,
+                            vals,
+                            config,
+                            DoubleValue.builder().build(),
+                            UtilsValue::mapToDouble,
+                            1.,
+                            (a, b) -> a * b
+                        ),
+                        null
+                    );
+                } else {
+                    throw new RuntimeException("to implement 555");
+                }
+            } else {
+                throw new RuntimeException("to implement 555");
+            }
+        } else if (CHILDREN_SUM.equals(config.getOperationType()) || CHILDREN_PRODUCT.equals(config.getOperationType())) {
+            if (config.getAttributeType() == AggInfo.AttributeType.DOUBLE) {
+                List<Attribute> attributes = getAttributesFromKeys(impacterIds, orgaId);
+                if (CHILDREN_SUM.equals(config.getOperationType())) {
+                    return doubleCalculator.calculateMultiValuesAttribute(
+                        attId,
+                        attributes,
+                        config,
+                        DoubleValue.builder().build(),
+                        UtilsValue::mapToDouble,
+                        0.,
+                        Double::sum
+                    );
+                    //                    return
+                    //                            Pair.of(calculateMultiOperandsAttribute(attId, impacterIds, config, 0., Double::sum), null);
+                } else if (CHILDREN_PRODUCT.equals(config.getOperationType())) {
+                    return doubleCalculator.calculateMultiValuesAttribute(
+                        attId,
+                        attributes,
+                        config,
+                        DoubleValue.builder().build(),
+                        UtilsValue::mapToDouble,
+                        1.,
+                        (a, b) -> a * b
+                    );
+                } else {
+                    throw new RuntimeException("to implement 555");
+                }
+            } else if (config.getAttributeType() == AggInfo.AttributeType.LONG) {
+                List<Attribute> attributes = getAttributesFromKeys(impacterIds, orgaId);
+                if (CHILDREN_SUM.equals(config.getOperationType())) {
+                    return longCalculator.calculateMultiValuesAttribute(
+                        attId,
+                        attributes,
+                        config,
+                        LongValue.builder().build(),
+                        UtilsValue::mapToLong,
+                        0l,
+                        Long::sum
+                    );
+                    //                    return
+                    //                            Pair.of(calculateMultiOperandsAttribute(attId, impacterIds, config, 0., Double::sum), null);
+                } else if (CHILDREN_PRODUCT.equals(config.getOperationType())) {
+                    return longCalculator.calculateMultiValuesAttribute(
+                        attId,
+                        attributes,
+                        config,
+                        LongValue.builder().build(),
+                        UtilsValue::mapToLong,
+                        1l,
+                        (a, b) -> a * b
+                    );
+                } else {
+                    throw new RuntimeException("to implement 555");
+                }
+            } else {
+                throw new RuntimeException("to implement 555");
+            }
+        } else if (REF.equals(config.getOperationType())) {
+            RefOperation op = (RefOperation) config.getOperation();
+            String attKey = createReferencedKey(attId, op);
+            return Pair.of(getValueFromReferenced(attKey, orgaId), null);
+        } else if (COMPARISON.equals(config.getOperationType())) {
+            ComparisonOperation op = (ComparisonOperation) config.getOperation();
+            if (op.getFirst() == null) {
+                return Pair.of(NotResolvableValue.builder().value("Cannot do comparison, missing first operand").build(), null);
+            }
+            if (op.getSecond() == null) {
+                return Pair.of(NotResolvableValue.builder().value("Cannot do comparison, missing second operand").build(), null);
+            }
+            AttributeConfig firstFakeConfig = AttributeConfig
                 .builder()
-                .id(TO_SITE)
+                .id("firstFakeConfig")
+                .orgaId(orgaId)
                 .isConsolidable(false)
-                .isWritable(true)
-                .tags(Set.of(Tag.builder().id(CAR).build()))
-                .attributeType(DOUBLE)
-                .orgaId(COCA)
-                .applyOnChildren(false)
-                .siteId(ROOT)
-                .build()
-        );
-        attributeConfigRepository.save(
-            AttributeConfig
-                .builder()
-                .id("toConso")
-                .isConsolidable(true)
-                .consoParameterKey(TO_SITE)
-                .consoOperationType(SUM)
+                .operation(op.getFirst())
                 .isWritable(false)
-                .tags(Set.of(Tag.builder().id(CAR).build()))
-                .attributeType(DOUBLE)
-                .orgaId(COCA)
-                .applyOnChildren(true)
-                .siteId(ROOT)
-                .build()
-        );
+                .tags(attTags)
+                .build();
+            AttributeConfig secondFakeConfig = AttributeConfig
+                .builder()
+                .id("secondFakeConfig")
+                .orgaId(orgaId)
+                .isConsolidable(false)
+                .operation(op.getSecond())
+                .isWritable(false)
+                .tags(attTags)
+                .build();
+            Pair<AttributeValue, AggInfo> first = calculateAttribute(orgaId, attId, attTags, new HashSet<>(), firstFakeConfig);
+            Pair<AttributeValue, AggInfo> second = calculateAttribute(orgaId, attId, attTags, new HashSet<>(), secondFakeConfig);
+            if (first.getLeft().isNotResolvable() || first.getLeft().isError()) {
+                return Pair.of(
+                    NotResolvableValue.builder().value("Cannot do comparison, first operand is error or not resolvable").build(),
+                    null
+                );
+            }
+            if (second.getLeft().isNotResolvable() || second.getLeft().isError()) {
+                return Pair.of(
+                    NotResolvableValue.builder().value("Cannot do comparison, second operand is error or not resolvable").build(),
+                    null
+                );
+            }
+            Double firstDouble = Double.valueOf(first.getLeft().getValue().toString());
+            Double secondDouble = Double.valueOf(second.getLeft().getValue().toString());
+            return Pair.of(BooleanValue.builder().value(firstDouble > secondDouble).build(), null);
+        }
+        throw new RuntimeException("to implement operation " + config.getOperationType());
+    }
+
+    private List<Attribute> getAttributesFromKeys(Set<String> keys, @NonNull String orgaId) {
+        return keys
+            .stream()
+            .map(impacterId -> attributeService.getById(impacterId, orgaId))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
+    }
+
+    private AttributeValue getValueFromReferenced(String attKey, @NonNull String orgaId) {
+        Optional<Attribute> attOpt = attributeService.getById(attKey, orgaId);
+        if (attOpt.isPresent()) {
+            Attribute att = attOpt.get();
+            if (att.getAttributeValue() != null) {
+                return att.getAttributeValue();
+            } else {
+                return NotResolvableValue.builder().value("referenced attribute has no value").build();
+            }
+        }
+        return NotResolvableValue.builder().value("referenced attribute cannot be found").build();
+    }
+
+    //
+    //    private AttributeValue calculateMultiOperandsAttribute(String attId, Set<String> keys, AttributeConfig
+    //            config, Function<AttributeValue, T> attributeValueTFunction, Object startValue, BinaryOperator<Double> reducer) {
+    //        List<Attribute> atts = keys.stream()
+    //                .map(impacterId -> attributeService.getById(impacterId))
+    //                .filter(Optional::isPresent)
+    //                .map(Optional::get).collect(Collectors.toList());
+    //        ConsoCalculator<Double> calculator = new ConsoCalculator();
+    //        return calculator.calculateMultiValuesAttribute(attId,
+    //                atts,
+    //                config, startValue, reducer);
+    //    }
+
+    //    private AttributeValue calculateMultiValuesAttribute(String
+    //                                                                 attId, List<Attribute> attributes, AttributeConfig config, Object
+    //                                                                 startValue, BinaryOperator<Double> reducer) {
+    //        List<AttributeValue> attVals = attributes.stream()
+    //                .map(Attribute::getAttributeValue)
+    //                .map(attValue -> {
+    //                    if (attValue == null) {
+    //                        return NotResolvableValue.builder().value("one item value is missing").build();
+    //                        //                            atLeastOnChildValueIsNotResolvable.set(true);
+    //                    }
+    //                    return attValue;
+    //                })
+    //                .collect(Collectors.toList());
+    //
+    //        return calculateMultiVals(attId, attVals, config, startValue, reducer);
+    //    }
+
+    //    private AttributeValue zzzcalculateMultiVals(String attId, List<AttributeValue> values, AttributeConfig
+    //            config, Object startValue, BinaryOperator<Double> reducer) {
+    //        try {
+    ////            List<Attribute> atts = operands.stream()
+    ////                    .map(impacterId -> attributeService.getById(impacterId))
+    ////                    .filter(Optional::isPresent)
+    ////                    .map(Optional::get).collect(Collectors.toList());
+    ////            List<AttributeValue> attVals = attributes.stream()
+    ////                    .map(Attribute::getAttributeValue)
+    ////                    .map(attValue -> {
+    ////                        if (attValue == null) {
+    ////                            return NotResolvableValue.builder().value("one item value is missing").build();
+    ////                            //                            atLeastOnChildValueIsNotResolvable.set(true);
+    ////                        }
+    ////                        return attValue;
+    ////                    })
+    ////                    .collect(Collectors.toList());
+    //
+    //            AttributeValue errorOrNotResolvable = UtilsValue.handleErrorsAndNotResolvable(values);
+    //            if (errorOrNotResolvable != null) {
+    //                return errorOrNotResolvable;
+    //            }
+    //
+    //            if (AttributeType.DOUBLE.equals(config.getType())) {
+    //                ConsoCalculator<Double> consoCalculator = new ConsoCalculator();
+    //                return consoCalculator.calculate(DoubleValue.builder().build(),
+    //                        values, UtilsValue::mapToDouble, startValue, reducer);
+    //            } else if (AttributeType.LONG.equals(config.getType())) {
+    //                throw new RuntimeException("Should be implemented here " + config.getType());
+    ////                ConsoCalculator<Long> consoCalculator = new ConsoCalculator();
+    ////                return consoCalculator.calculate(LongValue.builder().build(),
+    ////                        values, UtilsValue::mapToLong, startValue, reducer);
+    ////                Double initialValueDouble = Double.valueOf(identity.toString());
+    ////                List<Double> doubleVals = attVals.stream().map(UtilsValue::mapToDouble).collect(Collectors.toList());
+    ////                attribute.setAttributeValue(DoubleValue.builder()
+    ////                        .value(doubleVals.stream()
+    ////                                .reduce(initialValueDouble, sum)
+    ////                        )
+    ////                        .build());
+    //            } else {
+    //                throw new RuntimeException("Should be implemented here " + config.getType());
+    //            }
+    ////            AttributeValue ifAnyDoubleNull = UtilsValue.throwNotResolvableIfAnyDoubleIsNull(doubleVals);
+    ////            if (ifAnyDoubleNull != null) {
+    ////                attribute.setAttributeValue(ifAnyDoubleNull);
+    ////                return;
+    ////            }
+    //        } catch (Exception e) {
+    //            throw new RuntimeException("should not arrive here" + attId);
+    ////            attribute.setAttributeValue(UtilsValue.generateOtherErrorValue("cannot do sum of doubles", e));
+    //        }
+    //
+    //    }
+
+    //    private Pair<AttributeValue, AggInfo> calculateConsolidatedAttribute(String
+    //                                                                                 attId, Set<String> impacterIds, AttributeConfig config, Object startValue, BinaryOperator<Double> reducer) {
+    //        try {
+    //            if (attId.equals("site:a9:toConso:period:2023")) {
+    //                log.info("fff");
+    //            }
+    //
+    //            if (impacterIds.stream()
+    //                    .map(impacterId -> attributeService.getById(impacterId).orElse(null))
+    //                    .anyMatch(att -> att == null)) {
+    //                throw new RuntimeException("pas possible ici");
+    //            }
+    //            AggInfo aggInfo = AggInfo.builder().build();
+    //            List<Attribute> atts = impacterIds.stream()
+    //                    .map(impacterId -> attributeService.getById(impacterId))
+    //                    .filter(Optional::isPresent)
+    //                    .map(Optional::get).collect(Collectors.toList());
+    //            Optional<Attribute> consolidatedOpt = atts.stream().filter(att -> !att.getIsAgg()).findAny();
+    //            Boolean consolidatedValueIsMissing = false;
+    //            Boolean consolidatedValueIsNotResolvable = false;
+    //            Attribute consolidatedAttribute = null;
+    //            AtomicBoolean atLeastOnChildValueIsNotResolvable = new AtomicBoolean(false);
+    //            if (consolidatedOpt.isPresent()) {
+    //                consolidatedAttribute = consolidatedOpt.get();
+    //                if (consolidatedAttribute.getAttributeValue() == null) {
+    //                    aggInfo.getNotResolvables().add(consolidatedAttribute.getId());
+    //                    consolidatedValueIsMissing = true;
+    //                } else if (consolidatedAttribute.getAttributeValue().isError()) {
+    //                    aggInfo.getErrors().add(consolidatedAttribute.getId());
+    //                } else if (consolidatedAttribute.getAttributeValue().isNotResolvable()) {
+    //                    aggInfo.getNotResolvables().add(consolidatedAttribute.getId());
+    //                    consolidatedValueIsNotResolvable = true;
+    //                } else {
+    //                    aggInfo.setWithValues(aggInfo.getWithValues() + 1);
+    //                }
+    //            }
+    //            List<AttributeValue> attVals = atts.stream()
+    //                    .filter(att -> att.getIsAgg())
+    //                    .peek(att -> {
+    //                        aggInfo.getErrors().addAll(att.getAggInfo().getErrors());
+    //                        aggInfo.getNotResolvables().addAll(att.getAggInfo().getNotResolvables());
+    //                        aggInfo.setWithValues(aggInfo.getWithValues() + att.getAggInfo().getWithValues());
+    //                        if (att.getAttributeValue() == null) {
+    //                            aggInfo.getNotResolvables().add(att.getId());
+    //                            //                            atLeastOnChildValueIsNotResolvable.set(true);
+    //                        }
+    //                    })
+    //                    .map(Attribute::getAttributeValue)
+    //                    .map(attValue -> {
+    //                        if (attValue == null) {
+    //                            return NotResolvableValue.builder().value("one item value is missing, check your tags on consoConfig and consolidateConfig").build();
+    //                            //                            atLeastOnChildValueIsNotResolvable.set(true);
+    //                        }
+    //                        return attValue;
+    //                    }).collect(Collectors.toList());
+    //
+    ////            attribute.setAggInfo(aggInfo);
+    ////            if (consolidatedAttributeIsMissing) {
+    ////                attribute.setAttributeValue(UtilsValue
+    ////                        .generateErrorValue("attribute to consolidate is null, check your config"));
+    ////                return;
+    ////            }
+    //            if (consolidatedValueIsMissing || consolidatedValueIsNotResolvable) {
+    ////                attribute.getAggInfo().getNotResolvables().add(consolidatedAttribute.getId());
+    //                if (config.getDefaultValueForNotResolvableItem() != null) {
+    //                    attVals.add(DoubleValue.builder()
+    //                            .value(Double.valueOf(config.getDefaultValueForNotResolvableItem().toString())).build());
+    //                } else {
+    //                    return Pair.of(UtilsValue
+    //                                    .generateNotResolvableValue("value to consolidate is null or not resolvable"),
+    //                            aggInfo);
+    //                }
+    //            }
+    //
+    //            if (consolidatedAttribute != null && consolidatedAttribute.getAttributeValue() != null) {
+    //                attVals.add(consolidatedAttribute.getAttributeValue());
+    //            }
+    //
+    ////            if (atLeastOnChildValueIsNotResolvable.get()) {
+    ////                attribute.setAttributeValue(UtilsValue
+    ////                        .generateNotResolvableValue("at least one child value is not resolvable"));
+    ////                return;
+    ////            }
+    //            AttributeValue errorOrNotResolvable = UtilsValue.handleErrorsAndNotResolvable(attVals);
+    //            if (errorOrNotResolvable != null) {
+    //                return Pair.of(errorOrNotResolvable, aggInfo);
+    //            }
+    //
+    //            if (AttributeType.DOUBLE.equals(config.getType())) {
+    //                return Pair.of(doubleCalculator.calculate(DoubleValue.builder().build(),
+    //                                attVals, UtilsValue::mapToDouble, startValue, reducer),
+    //                        aggInfo);
+    ////                Double initialValueDouble = Double.valueOf(identity.toString());
+    ////                List<Double> doubleVals = attVals.stream().map(UtilsValue::mapToDouble).collect(Collectors.toList());
+    ////                attribute.setAttributeValue(DoubleValue.builder()
+    ////                        .value(doubleVals.stream()
+    ////                                .reduce(initialValueDouble, sum)
+    ////                        )
+    ////                        .build());
+    //            } else {
+    //                throw new RuntimeException("Should be implemented here " + config.getType());
+    //            }
+    ////            AttributeValue ifAnyDoubleNull = UtilsValue.throwNotResolvableIfAnyDoubleIsNull(doubleVals);
+    ////            if (ifAnyDoubleNull != null) {
+    ////                attribute.setAttributeValue(ifAnyDoubleNull);
+    ////                return;
+    ////            }
+    //        } catch (Exception e) {
+    //            throw new RuntimeException("should not arrive here " + attId);
+    ////            attribute.setAttributeValue(UtilsValue.generateOtherErrorValue("cannot do sum of doubles", e));
+    //        }
+    //    }
+
+    //    private void doIncrement(AggInfo aggInfo, Attribute att) {
+    //        if (att.getIsAgg()) {
+    //            aggInfo.getErrors().addAll(att.getAggInfo().getErrors());
+    //            aggInfo.getNotResolvables().addAll(att.getAggInfo().getNotResolvables());
+    //            aggInfo.setWithValues(aggInfo.getWithValues() + att.getAggInfo().getWithValues());
+    //        } else {
+    //            if (att.getAttributeValue() == null) {
+    //                aggInfo.getNotResolvables().add(att.getId());
+    //            } else if (att.getAttributeValue().isError()) {
+    //                aggInfo.getErrors().add(att.getId());
+    //            } else if (att.getAttributeValue().isNotResolvable()) {
+    //                aggInfo.getNotResolvables().add(att.getId());
+    //            } else {
+    //                aggInfo.setWithValues(aggInfo.getWithValues() + 1);
+    //            }
+    //        }
+    //    }
+
+    //    private List<Impact> sortImpacts(List<Impact> impacts, Set<String> impactedAttributes) {
+    //        List<Impact> orderedImpacts = new ArrayList<>();
+    //        Integer impactSize = -1;
+    //        while (!impacts.isEmpty()) {
+    //            findAndReorderResolvableImpacted(impacts, orderedImpacts, impactedAttributes);
+    //            if (impactSize != -1 && impacts.size() == impactSize) {
+    //                throw new RuntimeException("pb de boucle infinie");
+    //            }
+    //            impactSize = impacts.size();
+    //        }
+    //
+    //        return orderedImpacts;
+    //    }
+
+    private void findAndReorderResolvableImpacted(List<Impact> impacts, List<Impact> orderedImpacts, Set<String> impactedAttributes) {
+        int i = 0;
+        int count = impacts.size();
+        while (i < count) {
+            Set<String> impacters = impacts.get(i).getImpacterIds();
+            if (!impacters.stream().anyMatch(impact -> impactedAttributes.contains(impact))) {
+                impactedAttributes.remove(impacts.get(i).getImpactedId());
+                Impact removed = impacts.remove(i);
+                orderedImpacts.add(removed);
+                break;
+            }
+            i++;
+        }
+    }
+
+    private void fetchImpactsForConfigs(String id, List<AttributeConfig> configs, List<Impact> impacts, @NonNull String orgaId) {
+        configs.stream().forEach(config -> this.fetchImpactsForConfig(id, config, impacts, configs, orgaId));
+    }
+
+    private void fetchImpactsForConfig(
+        String id,
+        AttributeConfig config,
+        List<Impact> impacts,
+        List<AttributeConfig> configs,
+        @NonNull String orgaId
+    ) {
+        List<Impact> impactsForConfig = evaluateImpacts(id, config, orgaId);
+        if (CollectionUtils.isEmpty(impactsForConfig)) {
+            return;
+        }
+        List<Impact> impactsToadd = impactsForConfig
+            .stream()
+            .filter(impact -> !impacts.stream().map(Impact::getImpactedId).collect(Collectors.toList()).contains(impact.getImpactedId()))
+            .collect(Collectors.toList());
+        impacts.addAll(impactsToadd);
+        impactsToadd.stream().forEach(impact -> fetchImpactsForConfigs(impact.getImpactedId(), configs, impacts, orgaId));
+    }
+
+    public List<Impact> evaluateImpacts(String id, AttributeConfig config, @NonNull String orgaId) {
+        AttributeKeyAsObj attObj = fromString(id);
+
+        if (config.getIsConsolidable()) {
+            if (config.getConsoParameterKey() == null) {
+                throw new RuntimeException("not noraml here 3");
+            }
+            if (config.getConsoParameterKey().equals(attObj.getAttributeId())) {
+                AttributeKeyAsObj impacted = attObj.toBuilder().attributeId(config.getKey()).build();
+                Optional<Site> current = assetService.getSiteById(impacted.getAssetId(), orgaId);
+                Set<String> impacters = current
+                    .get()
+                    .getChildrenIds()
+                    .stream()
+                    .map(child -> objToString(impacted.toBuilder().assetId(child).build()))
+                    .collect(Collectors.toSet());
+                impacters.add(id);
+                return List.of(Impact.builder().impactedId(objToString(impacted)).impacterIds(impacters).build());
+            }
+            if (config.getKey().equals(attObj.getAttributeId())) {
+                Optional<Site> current = assetService.getSiteById(attObj.getAssetId(), orgaId);
+                if (current.isEmpty()) {
+                    return null;
+                }
+                Optional<Site> parent = assetService.getSiteById(current.get().getParentId(), orgaId);
+                if (parent.isEmpty() || parent.get().getChildrenIds() == null) {
+                    return null;
+                }
+                Set<String> impacters = parent
+                    .get()
+                    .getChildrenIds()
+                    .stream()
+                    .map(childId -> objToString(attObj.toBuilder().assetId(childId).build()))
+                    .collect(Collectors.toSet());
+                impacters.add(
+                    objToString(attObj.toBuilder().assetId(parent.get().getId()).attributeId(config.getConsoParameterKey()).build())
+                );
+                return List.of(
+                    Impact
+                        .builder()
+                        .impactedId(objToString(attObj.toBuilder().assetId(parent.get().getId()).build()))
+                        .impacterIds(impacters)
+                        .build()
+                );
+            }
+        } else if (config.getIsWritable()) {
+            return null;
+        } else if (config.getOperation() != null) {
+            List<Impact> impacts = new ArrayList<>();
+            config
+                .getOperation()
+                .extractAllRefs()
+                .stream()
+                .forEach(refOp -> {
+                    if (attObj.getAttributeId().equals(refOp.getKey())) {
+                        List<String> impacteds = fetchImpacteds(attObj, config, refOp, orgaId);
+                        if (!CollectionUtils.isEmpty(impacteds)) {
+                            impacteds
+                                .stream()
+                                .forEach(impacted -> {
+                                    impacts.add(
+                                        Impact
+                                            .builder()
+                                            .impactedId(impacted)
+                                            .impacterIds(fetchImpactersForConfig(config, impacted, orgaId))
+                                            .build()
+                                    );
+                                });
+                        }
+                    }
+                });
+            return impacts;
+        }
+        return null;
+    }
+
+    private List<String> fetchImpacteds(
+        AttributeKeyAsObj attObj,
+        AttributeConfig config,
+        RefOperation refOperation,
+        @NonNull String orgaId
+    ) {
+        AttributeKeyAsObj.AttributeKeyAsObjBuilder impacted = attObj.toBuilder();
+        if (config.getOperationType().equals(CHILDREN_SUM)) {
+            Site site = assetService
+                .getSiteById(attObj.getAssetId(), orgaId)
+                .orElseThrow(() -> new RuntimeException("Should have a site here"));
+            if (site.getParentId() == null) {
+                return null;
+            }
+            return List.of(objToString(impacted.attributeId(config.getKey()).assetId(site.getParentId()).build()));
+        }
+        if (refOperation.getUseCurrentSite()) {} else {
+            return assetService
+                .findAllSites(orgaId)
+                .stream()
+                .map(site -> attObj.toBuilder().attributeId(config.getKey()).assetId(site.getId()).build())
+                .map(obj -> AttributeKeyUtils.objToString(obj))
+                .collect(Collectors.toList());
+        }
+        if (refOperation.getDateOffset() != null && refOperation.getDateOffset() != 0) {
+            if (!attObj.getCampaignType().equals(PERIOD)) {
+                return null;
+            }
+            impacted.campaign(unApplyOffSet(attObj.getCampaign(), refOperation.getDateOffset()));
+        }
+
+        impacted.attributeId(config.getKey());
+        return List.of(objToString(impacted.build()));
+    }
+
+    private Set<String> fetchImpactersForConfig(AttributeConfig config, String impacted, @NonNull String orgaId) {
+        Set<String> impacters = new HashSet<>();
+        if (config.getOperation() != null) {
+            fetchImpactersForOperation(config.getOperation(), impacted, impacters, orgaId);
+        }
+        return impacters;
+    }
+
+    private void fetchImpactersForOperation(Operation operation, String impacted, Set<String> impacters, @NonNull String orgaId) {
+        AttributeKeyAsObj attributeKeyAsObj = AttributeKeyUtils.fromString(impacted);
+
+        if (
+            CHILDREN_SUM.equals(operation.getOperationType()) ||
+            CHILDREN_PRODUCT.equals(operation.getOperationType()) ||
+            CHILDREN_AVG.equals(operation.getOperationType()) ||
+            CHILDREN_COUNT.equals(operation.getOperationType())
+        ) {
+            HasItemsKey op = (HasItemsKey) operation;
+            Site site = assetService
+                .getSiteById(attributeKeyAsObj.getAssetId(), orgaId)
+                .orElseThrow(() -> new RuntimeException("Should have a site here 2"));
+            impacters.addAll(
+                site
+                    .getChildrenIds()
+                    .stream()
+                    .map(childId -> objToString(attributeKeyAsObj.toBuilder().attributeId(op.getItemsKey()).assetId(childId).build()))
+                    .collect(Collectors.toSet())
+            );
+        } else if (
+            SUM.equals(operation.getOperationType()) ||
+            PRODUCT.equals(operation.getOperationType()) ||
+            AVG.equals(operation.getOperationType())
+        ) {
+            HasItems op = (HasItems) operation;
+            op.getItems().forEach(item -> fetchImpactersForOperation(item, impacted, impacters, orgaId));
+        } else if (COMPARISON.equals(operation.getOperationType()) || DIVIDE.equals(operation.getOperationType())) {
+            Has2Operands op = (Has2Operands) operation;
+            fetchImpactersForOperation(op.getFirst(), impacted, impacters, orgaId);
+            fetchImpactersForOperation(op.getSecond(), impacted, impacters, orgaId);
+        } else if (CONSTANT.equals(operation.getOperationType())) {} else if (TAG.equals(operation.getOperationType())) {} else if (
+            REF.equals(operation.getOperationType())
+        ) {
+            RefOperation op = (RefOperation) operation;
+            impacters.add(objToString(createReferenced(attributeKeyAsObj, op)));
+        } else {
+            throw new RuntimeException("to be implemented here : " + operation.getOperationType());
+        }
+    }
+
+    private String createReferencedKey(String attributeKey, RefOperation op) {
+        return createReferencedKey(fromString(attributeKey), op);
+    }
+
+    private String createReferencedKey(AttributeKeyAsObj attributeKeyAsObj, RefOperation op) {
+        return objToString(createReferenced(attributeKeyAsObj, op));
+    }
+
+    private AttributeKeyAsObj createReferenced(AttributeKeyAsObj attributeKeyAsObj, RefOperation op) {
+        String impacterAssetType = attributeKeyAsObj.getAssetType();
+        String impacterAssetId = null;
+        if (op.getUseCurrentSite()) {
+            impacterAssetId = attributeKeyAsObj.getAssetId();
+        } else {
+            impacterAssetId = op.getFixedSite();
+        }
+
+        String impacterCampaignType = attributeKeyAsObj.getCampaignType();
+        String impacterCampaign = null;
+        if (op.getDateOffset() != null) {
+            impacterCampaign = applyOffSet(attributeKeyAsObj.getCampaign(), op.getDateOffset());
+        } else {
+            impacterCampaign = attributeKeyAsObj.getCampaign();
+        }
+
+        return AttributeKeyAsObj
+            .builder()
+            .assetType(impacterAssetType)
+            .assetId(impacterAssetId)
+            .attributeId(op.getKey())
+            .campaignType(impacterCampaignType)
+            .campaign(impacterCampaign)
+            .build();
+    }
+
+    private String applyOffSet(String campaign, Integer dateOffset) {
+        if (dateOffset == 0) {
+            return campaign;
+        }
+        return String.valueOf(Integer.valueOf(campaign) + dateOffset);
+    }
+
+    private String unApplyOffSet(String campaign, Integer dateOffset) {
+        if (dateOffset == 0) {
+            return campaign;
+        }
+        return String.valueOf(Integer.valueOf(campaign) - dateOffset);
     }
 }

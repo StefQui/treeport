@@ -1,6 +1,7 @@
 package com.sm.repository;
 
 import com.sm.domain.Asset;
+import com.sm.domain.Site;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -28,4 +29,8 @@ public interface AssetRepository extends MongoRepository<Asset, String> {
 
     @Query(value = "{'id': ?0}", delete = true)
     void deleteByAssetId(String id);
+
+    List<Site> findByAssetTypeAndOrgaIdAndParentId(String assetType, String orgaId, String parentId);
+
+    List<Site> findByAssetTypeAndIdAndOrgaId(String assetType, String id, String orgaId);
 }

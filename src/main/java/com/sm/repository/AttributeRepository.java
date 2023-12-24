@@ -28,4 +28,8 @@ public interface AttributeRepository extends MongoRepository<Attribute, String> 
 
     @Query(value = "{'id': ?0}", delete = true)
     void deleteByAttributeId(String id);
+
+    List<Attribute> findByOrgaId(String orgaId);
+
+    List<Attribute> findByIdAndOrgaId(String id, String orgaId);
 }

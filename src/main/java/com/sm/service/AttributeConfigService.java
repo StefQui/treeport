@@ -4,6 +4,7 @@ import com.sm.domain.AttributeConfig;
 import com.sm.repository.AttributeConfigRepository;
 import com.sm.service.dto.AttributeConfigDTO;
 import com.sm.service.mapper.AttributeConfigMapper;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,5 +117,13 @@ public class AttributeConfigService {
         log.debug("Request to delete AttributeConfig : {}", id);
         Optional<AttributeConfig> existing = attributeConfigRepository.findByAttributeConfigId(id);
         attributeConfigRepository.deleteByAttributeConfigId(existing.get().getId());
+    }
+
+    public List<AttributeConfig> findAllConfigs(String orgaId) {
+        return attributeConfigRepository.findAllByOrgaId(orgaId);
+    }
+
+    public Optional<AttributeConfig> findByOrgaIdAndId(String configId, String orgaId) {
+        return attributeConfigRepository.findAllByOrgaIdAndId(orgaId, configId);
     }
 }

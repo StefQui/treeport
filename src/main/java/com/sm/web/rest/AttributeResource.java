@@ -58,7 +58,7 @@ public class AttributeResource {
             throw new BadRequestAlertException("A new attribute cannot already have an ID", ENTITY_NAME, "idexists");
         }
 */
-        AttributeDTO result = attributeService.save(attributeDTO);
+        AttributeDTO result = attributeService.saveDto(attributeDTO);
         return ResponseEntity
             .created(new URI("/api/attributes/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId()))

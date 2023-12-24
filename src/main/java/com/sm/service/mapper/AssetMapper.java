@@ -17,6 +17,7 @@ import org.springframework.util.CollectionUtils;
 public class AssetMapper {
 
     private OrganisationMapper organisationMapper;
+    private TagMapper tagMapper;
 
     public AssetDTO toDto(Asset a) {
         return AssetDTO
@@ -28,6 +29,7 @@ public class AssetMapper {
             .parent(toBasicDto(a.getParentId()))
             .type(a.getType())
             .childrens(toDtos(a.getChildrenIds()))
+            .tags(tagMapper.toDto(a.getTags()))
             .build();
     }
 
@@ -49,6 +51,7 @@ public class AssetMapper {
             .type(assetDTO.getType())
             .childrenIds(assetDTO.getChildrens() != null ? toBasicEntitys(assetDTO.getChildrens()) : new ArrayList<>())
             .parentId(assetDTO.getParent() != null ? toBasicEntity(assetDTO.getParent()) : null)
+            .tags(tagMapper.toEntity(assetDTO.getTags()))
             .build();
     }
 

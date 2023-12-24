@@ -5,24 +5,24 @@ import com.sm.domain.enumeration.AssetType;
 import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import lombok.*;
+import java.util.Set;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Setter;
 import lombok.experimental.NonFinal;
+import lombok.experimental.SuperBuilder;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * A Asset.
  */
-@Document(collection = "asset")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder(toBuilder = true)
-@SuppressWarnings("common-java:DuplicatedBlocks")
-public class Asset implements Serializable {
+@SuperBuilder(toBuilder = true)
+public abstract class Asset implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -54,4 +54,16 @@ public class Asset implements Serializable {
     @Builder.Default
     @Field("childrenIds")
     private List<String> childrenIds = new ArrayList<>();
+
+    @Field("tags")
+    @Builder.Default
+    private Set<Tag> tags = new HashSet<>();
+
+    public Asset(AssetType type) {
+        this.type = type;
+    }
+
+    public Boolean isRoot() {
+        return parentId == null;
+    }
 }

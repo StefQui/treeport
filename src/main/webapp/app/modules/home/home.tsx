@@ -5,12 +5,51 @@ import { Link } from 'react-router-dom';
 import { Translate } from 'react-jhipster';
 import { Row, Col, Alert, Button } from 'reactstrap';
 
-import { useAppSelector } from 'app/config/store';
+import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { compute } from 'app/entities/attribute-config/attribute-config.reducer';
+import {
+  compute,
+  reloadOrganisations,
+  reloadTags,
+  reloadCampaigns,
+  reloadAssets,
+  reloadAttributeConfigs,
+} from 'app/entities/compute/compute.reducer';
 
 export const Home = () => {
+  const dispatch = useAppDispatch();
+
   const account = useAppSelector(state => state.authentication.account);
+  const isComputing = useAppSelector(state => (state.compute ? state.compute.isComputing : false));
+  const loadingOrganisations = useAppSelector(state => (state.compute ? state.compute.loadingOrganisations : false));
+  const loadingTags = useAppSelector(state => (state.compute ? state.compute.loadingTags : false));
+  const loadingCampaigns = useAppSelector(state => (state.compute ? state.compute.loadingCampaigns : false));
+  const loadingAssets = useAppSelector(state => (state.compute ? state.compute.loadingAssets : false));
+  const loadingAttributeConfigs = useAppSelector(state => (state.compute ? state.compute.loadingAttributeConfigs : false));
+
+  const handleCompute = () => {
+    dispatch(compute());
+  };
+
+  const handleReloadOrganisations = () => {
+    dispatch(reloadOrganisations());
+  };
+
+  const handleReloadTags = () => {
+    dispatch(reloadTags());
+  };
+
+  const handleReloadCampaigns = () => {
+    dispatch(reloadCampaigns());
+  };
+
+  const handleReloadAssets = () => {
+    dispatch(reloadAssets());
+  };
+
+  const handleReloadAttributeConfigs = () => {
+    dispatch(reloadAttributeConfigs());
+  };
 
   return (
     <Row>
@@ -24,9 +63,41 @@ export const Home = () => {
         <p className="lead">
           <Translate contentKey="home.subtitle">This is your homepage</Translate>
         </p>
-        <Button className="me-2" color="info" onClick={compute}>
-          <FontAwesomeIcon icon="sync" /> <span>Compute</span>
-        </Button>
+        <p className="lead">
+          <Button className="me-2" color="info" onClick={handleCompute}>
+            <FontAwesomeIcon icon="sync" spin={isComputing} /> <span>Compute</span>
+          </Button>
+        </p>
+        <p className="lead">
+          <Button className="me-2" color="info" onClick={handleReloadOrganisations}>
+            <FontAwesomeIcon icon="sync" spin={loadingOrganisations} /> <span>Reload organisations</span>
+          </Button>
+        </p>
+        <p className="lead">
+          <Button className="me-2" color="info" onClick={handleReloadTags}>
+            <FontAwesomeIcon icon="sync" spin={loadingTags} /> <span>Reload tags</span>
+          </Button>
+        </p>
+        <p className="lead">
+          <Button className="me-2" color="info" onClick={handleReloadCampaigns}>
+            <FontAwesomeIcon icon="sync" spin={loadingCampaigns} /> <span>Reload campaigns</span>
+          </Button>
+        </p>
+        <p className="lead">
+          <Button className="me-2" color="info" onClick={handleReloadAssets}>
+            <FontAwesomeIcon icon="sync" spin={loadingAssets} /> <span>Reload assets</span>
+          </Button>
+        </p>
+        <p className="lead">
+          <Button className="me-2" color="info" onClick={handleReloadAttributeConfigs}>
+            <FontAwesomeIcon icon="sync" spin={loadingAttributeConfigs} /> <span>Reload attributeConfigs</span>
+          </Button>
+        </p>
+        <p>
+          <Button tag={Link} to={`/coca/render/r1`} color="link" size="sm">
+            /coca/render/r1
+          </Button>
+        </p>
 
         {account?.login ? (
           <div>

@@ -23,11 +23,6 @@ export const getEntities = createAsyncThunk('attributeConfig/fetch_entity_list',
   return axios.get<IAttributeConfig[]>(requestUrl);
 });
 
-export const compute = createAsyncThunk('attributeConfig/compute', async () => {
-  const requestUrl = `${apiUrl}/compute`;
-  return axios.post<IAttributeConfig[]>(requestUrl);
-});
-
 export const getEntity = createAsyncThunk(
   'attributeConfig/fetch_entity',
   async (id: string | number) => {

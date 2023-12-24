@@ -64,13 +64,6 @@ public class AttributeConfigResource {
             .body(result);
     }
 
-    @PostMapping("/compute")
-    public ResponseEntity<List<String>> compute() throws URISyntaxException {
-        log.debug("REST request to compute");
-        //        AttributeConfigDTO result = attributeConfigService.save(attributeConfigDTO);
-        return ResponseEntity.ok(List.of());
-    }
-
     /**
      * {@code PUT  /attribute-configs/:id} : Updates an existing attributeConfig.
      *

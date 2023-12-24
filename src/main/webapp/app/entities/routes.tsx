@@ -2,6 +2,7 @@ import React from 'react';
 import { Route } from 'react-router-dom';
 
 import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
+import RenderingRoutes from 'app/rendering/routes';
 
 import Organisation from './organisation';
 import Asset from './asset';
@@ -23,6 +24,7 @@ export default () => {
         <Route path="tag/*" element={<Tag />} />
         <Route path="campaign/*" element={<Campaign />} />
         {/* jhipster-needle-add-route-path - JHipster will add routes here */}
+        <Route path=":orgaId/*" element={<RenderingRoutes />} />
       </ErrorBoundaryRoutes>
     </div>
   );

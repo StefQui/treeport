@@ -39,7 +39,7 @@ public abstract class Asset implements Serializable {
     @Field("name")
     private String name;
 
-    @Field("type")
+    @Field("theType")
     private AssetType type;
 
     @Field("orgaId")

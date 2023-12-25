@@ -89,9 +89,9 @@ public class CampaignService {
         return campaignRepository.findAll(pageable).map(campaignMapper::toDto);
     }
 
-    public List<CampaignDTO> findAllCampaigns() {
+    public List<Campaign> findAllCampaigns() {
         log.debug("Request to get all Campaigns");
-        return campaignRepository.findAll().stream().map(campaignMapper::toDto).collect(Collectors.toList());
+        return campaignRepository.findAll().stream().collect(Collectors.toList());
     }
 
     /**

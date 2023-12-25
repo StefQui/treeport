@@ -149,7 +149,7 @@ export const Attribute = () => {
                   <td>{attribute.hasConfigError ? 'true' : 'false'}</td>
                   <td>{attribute.configError}</td>
                   <td>{attribute.orga ? <Link to={`/organisation/${attribute.orga.id}`}>{attribute.orga.id}</Link> : ''}</td>
-                  <td>{attribute.site ? <Link to={`/asset/${attribute.site.id}`}>{attribute.site.id}</Link> : ''}</td>
+                  <td>{attribute.site ? <Link to={`/site/${attribute.site.id}`}>{attribute.site.id}</Link> : ''}</td>
                   <td>{attribute.config ? <Link to={`/attribute-config/${attribute.config.id}`}>{attribute.config.id}</Link> : ''}</td>
                   <td className="text-end">
                     <div className="btn-group flex-btn-group-container">

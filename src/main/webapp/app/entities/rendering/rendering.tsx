@@ -5,8 +5,8 @@ import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { setAction, setRenderingForPath } from '../asset/rendering.reducer';
-import AssetList from '../asset/asset-list';
+import { setAction, setRenderingForPath } from './rendering.reducer';
+import SiteList from '../site/site-list';
 
 export const renderText = (col: any, value: any) => {
   if (col) {
@@ -20,15 +20,15 @@ export const renderText = (col: any, value: any) => {
 };
 
 export const TextBasic = props => {
-  const assetEntity = useAppSelector(state => state.asset.entity);
+  const siteEntity = useAppSelector(state => state.site.entity);
   // const rendering = useAppSelector(state => state.rendering);
   const [value] = useState(props.text);
 
   return renderText(props.col, value);
 };
 
-export const SiteList = props => {
-  return <AssetList {...props}></AssetList>;
+export const TheSiteList = props => {
+  return <SiteList {...props}></SiteList>;
 };
 
 // export const getRenderingStateForPath = (rendering: any, refTo: any) => {
@@ -36,7 +36,7 @@ export const SiteList = props => {
 // };
 
 export const TextRef = (props: { refTo: string | number; col: any }) => {
-  const assetEntity = useAppSelector(state => state.asset.entity);
+  const siteEntity = useAppSelector(state => state.site.entity);
   const action = useAppSelector(state => state.rendering.action);
 
   // const dispatch = useAppDispatch();
@@ -143,7 +143,7 @@ export const MyElem = props => {
       case 'input':
         return <MyInput {...params}></MyInput>;
       case 'siteList':
-        return <SiteList {...params}></SiteList>;
+        return <TheSiteList {...params}></TheSiteList>;
       case 'verticalPanel':
         return <MyVerticalPanel {...params}></MyVerticalPanel>;
       default:

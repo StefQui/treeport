@@ -10,8 +10,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { IOrganisation } from 'app/shared/model/organisation.model';
 import { getEntities as getOrganisations } from 'app/entities/organisation/organisation.reducer';
-import { IAsset } from 'app/shared/model/asset.model';
-import { getEntities as getAssets } from 'app/entities/asset/asset.reducer';
+import { getEntities as getSites } from 'app/entities/site/site.reducer';
 import { ITag } from 'app/shared/model/tag.model';
 import { getEntities as getTags } from 'app/entities/tag/tag.reducer';
 import { IAttributeConfig } from 'app/shared/model/attribute-config.model';
@@ -28,7 +27,7 @@ export const AttributeConfigUpdate = () => {
   const isNew = id === undefined;
 
   const organisations = useAppSelector(state => state.organisation.entities);
-  const assets = useAppSelector(state => state.asset.entities);
+  const sites = useAppSelector(state => state.site.entities);
   const tags = useAppSelector(state => state.tag.entities);
   const attributeConfigEntity = useAppSelector(state => state.attributeConfig.entity);
   const loading = useAppSelector(state => state.attributeConfig.loading);
@@ -49,7 +48,7 @@ export const AttributeConfigUpdate = () => {
     }
 
     dispatch(getOrganisations({}));
-    dispatch(getAssets({}));
+    dispatch(getSites({}));
     dispatch(getTags({}));
   }, []);
 
@@ -66,7 +65,7 @@ export const AttributeConfigUpdate = () => {
       ...values,
       tags: mapIdList(values.tags),
       orga: organisations.find(it => it.id.toString() === values.orga.toString()),
-      site: assets.find(it => it.id.toString() === values.site.toString()),
+      site: sites.find(it => it.id.toString() === values.site.toString()),
     };
 
     if (isNew) {
@@ -199,8 +198,8 @@ export const AttributeConfigUpdate = () => {
                 type="select"
               >
                 <option value="" key="0" />
-                {assets
-                  ? assets.map(otherEntity => (
+                {sites
+                  ? sites.map(otherEntity => (
                       <option value={otherEntity.id} key={otherEntity.id}>
                         {otherEntity.id}
                       </option>

@@ -1,6 +1,6 @@
 package com.sm.web.rest;
 
-import com.sm.domain.Attribute;
+import com.sm.domain.attribute.Attribute;
 import com.sm.repository.AttributeRepository;
 import com.sm.service.AttributeService;
 import com.sm.service.dto.AttributeDTO;
@@ -24,7 +24,7 @@ import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 /**
- * REST controller for managing {@link com.sm.domain.Attribute}.
+ * REST controller for managing {@link Attribute}.
  */
 @RestController
 @RequestMapping("/api/attributes")

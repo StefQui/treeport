@@ -1,9 +1,9 @@
 package com.sm.service;
 
+import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.enumeration.AssetType.RESOURCE;
 import static com.sm.domain.enumeration.AssetType.SITE;
-import static com.sm.domain.enumeration.AttributeType.DOUBLE;
-import static com.sm.domain.enumeration.OperationType.SUM;
+import static com.sm.domain.operation.OperationType.SUM;
 
 import com.sm.domain.*;
 import com.sm.repository.*;
@@ -91,20 +91,23 @@ public class InitialLoadService {
     private final OrganisationRepository organisationRepository;
     private final TagRepository tagRepository;
     private final CampaignRepository campaignRepository;
-    private final AssetRepository assetRepository;
+    private final SiteRepository siteRepository;
+    private final ResourceRepository resourceRepository;
     private final AttributeConfigRepository attributeConfigRepository;
 
     public InitialLoadService(
         OrganisationRepository organisationRepository,
         TagRepository tagRepository,
         CampaignRepository campaignRepository,
-        AssetRepository assetRepository,
+        SiteRepository siteRepository,
+        ResourceRepository resourceRepository,
         AttributeConfigRepository attributeConfigRepository
     ) {
         this.organisationRepository = organisationRepository;
         this.tagRepository = tagRepository;
         this.campaignRepository = campaignRepository;
-        this.assetRepository = assetRepository;
+        this.siteRepository = siteRepository;
+        this.resourceRepository = resourceRepository;
         this.attributeConfigRepository = attributeConfigRepository;
     }
 
@@ -129,11 +132,44 @@ public class InitialLoadService {
     }
 
     public void reloadAssets() {
-        assetRepository.deleteAll();
-        assetRepository.save(Site.builder().id(ROOT).name("Root site").type(SITE).orgaId(COCA).childrenIds(List.of(S_1, S_2)).build());
-        assetRepository.save(Site.builder().id(S_1).name("Site S1").type(SITE).orgaId(COCA).parentId(ROOT).childrenIds(List.of()).build());
-        assetRepository.save(Site.builder().id(S_2).name("Site S2").type(SITE).orgaId(COCA).parentId(ROOT).childrenIds(List.of()).build());
-        assetRepository.save(
+        siteRepository.deleteAll();
+        siteRepository.save(
+            Site
+                .builder()
+                .id(ROOT)
+                .name("Root site")
+                .type(SITE)
+                .orgaId(COCA)
+                .childrenIds(List.of(S_1, S_2))
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build()
+        );
+        siteRepository.save(
+            Site
+                .builder()
+                .id(S_1)
+                .name("Site S1")
+                .type(SITE)
+                .orgaId(COCA)
+                .parentId(ROOT)
+                .childrenIds(List.of())
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build()
+        );
+        siteRepository.save(
+            Site
+                .builder()
+                .id(S_2)
+                .name("Site S2")
+                .type(SITE)
+                .orgaId(COCA)
+                .parentId(ROOT)
+                .childrenIds(List.of())
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build()
+        );
+        resourceRepository.deleteAll();
+        resourceRepository.save(
             Resource.builder().id(R_1).name("Resource r1").type(RESOURCE).orgaId(COCA).content(R1_CONTENT).childrenIds(List.of()).build()
         );
     }

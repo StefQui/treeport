@@ -1,10 +1,11 @@
 package com.sm.domain;
 
-import static com.sm.domain.AttributeConfigTestSamples.*;
-import static com.sm.domain.AttributeTestSamples.*;
+import static com.sm.domain.AttributeConfigTestSamples.getAttributeConfigRandomSampleGenerator;
+import static com.sm.domain.AttributeTestSamples.getAttributeRandomSampleGenerator;
 import static com.sm.domain.TagTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.sm.domain.attribute.Attribute;
 import com.sm.web.rest.TestUtil;
 import java.util.HashSet;
 import java.util.Set;

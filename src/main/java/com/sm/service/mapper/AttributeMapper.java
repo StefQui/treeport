@@ -1,6 +1,6 @@
 package com.sm.service.mapper;
 
-import com.sm.domain.Attribute;
+import com.sm.domain.attribute.Attribute;
 import com.sm.service.dto.AttributeDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ public class AttributeMapper {
 
     private TagMapper tagMapper;
     private OrganisationMapper organisationMapper;
-    private AssetMapper assetMapper;
+    private SiteMapper siteMapper;
     private AttributeConfigMapper attributeConfigMapper;
 
     public Attribute toEntity(AttributeDTO aDTO) {
@@ -39,7 +39,7 @@ public class AttributeMapper {
             .configError(a.getConfigError())
             .hasConfigError(a.getHasConfigError())
             .orga(organisationMapper.toBasicDto(a.getOrgaId()))
-            .site(assetMapper.toBasicDto(a.getSiteId()))
+            .site(siteMapper.toBasicDto(a.getSiteId()))
             .isAgg(a.getIsAgg())
             .build();
     }

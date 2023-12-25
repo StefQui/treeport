@@ -1,6 +1,9 @@
 package com.sm.web.rest;
 
+import static com.sm.service.InitialLoadService.COCA;
+
 import com.sm.domain.AttributeConfig;
+import com.sm.service.ComputeService;
 import com.sm.service.InitialLoadService;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -20,20 +23,24 @@ import org.springframework.web.bind.annotation.RestController;
 public class ComputeResource {
 
     private final InitialLoadService initialLoadService;
+    private final ComputeService computeService;
 
     private final Logger log = LoggerFactory.getLogger(ComputeResource.class);
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    public ComputeResource(InitialLoadService initialLoadService) {
+    public ComputeResource(InitialLoadService initialLoadService, ComputeService computeService) {
         this.initialLoadService = initialLoadService;
+        this.computeService = computeService;
     }
 
     @PostMapping("/doCompute")
     public ResponseEntity<List<String>> doCompute() throws URISyntaxException {
         log.debug("REST request to compute");
         //        AttributeConfigDTO result = attributeConfigService.save(attributeConfigDTO);
+        computeService.applyCampaigns(COCA);
+
         return ResponseEntity.ok(List.of());
     }
 

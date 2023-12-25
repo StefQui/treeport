@@ -1,8 +1,8 @@
 import { IOrganisation } from 'app/shared/model/organisation.model';
-import { IAsset } from 'app/shared/model/asset.model';
 import { ITag } from 'app/shared/model/tag.model';
 import { AttributeType } from 'app/shared/model/enumerations/attribute-type.model';
 import { OperationType } from 'app/shared/model/enumerations/operation-type.model';
+import { ISite } from './site.model';
 
 export interface IAttributeConfig {
   id?: string;
@@ -14,7 +14,7 @@ export interface IAttributeConfig {
   consoParameterKey?: string | null;
   consoOperationType?: keyof typeof OperationType | null;
   orga?: IOrganisation | null;
-  site?: IAsset | null;
+  site?: ISite | null;
   tags?: ITag[] | null;
 }
 

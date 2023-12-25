@@ -1,17 +1,15 @@
 package com.sm.service;
 
-import static com.sm.domain.Attribute.PERIOD_FRAG;
-import static com.sm.domain.Attribute.SITE_FRAG;
-import static com.sm.poctreeport.model.attribute.Attribute.PERIOD;
-import static com.sm.poctreeport.model.operation.OperationType.*;
-import static com.sm.poctreeport.model.operation.TagOperationType.CONTAINS;
-import static com.sm.poctreeport.utils.AttributeKeyUtils.fromString;
-import static com.sm.poctreeport.utils.AttributeKeyUtils.objToString;
+import static com.sm.domain.attribute.Attribute.PERIOD_FRAG;
+import static com.sm.domain.attribute.Attribute.SITE_FRAG;
+import static com.sm.domain.operation.OperationType.*;
+import static com.sm.domain.operation.TagOperationType.CONTAINS;
+import static com.sm.service.AttributeKeyUtils.fromString;
+import static com.sm.service.AttributeKeyUtils.objToString;
 
 import com.sm.domain.*;
-import com.sm.poctreeport.model.Impact;
-import com.sm.poctreeport.model.attribute.*;
-import com.sm.poctreeport.model.operation.*;
+import com.sm.domain.attribute.*;
+import com.sm.domain.operation.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -26,7 +24,7 @@ import org.springframework.util.CollectionUtils;
 public class ComputeService {
 
     @Autowired
-    AssetService assetService;
+    SiteService siteService;
 
     @Autowired
     CampaignService campaignService;
@@ -49,7 +47,7 @@ public class ComputeService {
             .findAllConfigs(orgaId)
             .stream()
             .collect(Collectors.groupingBy(AttributeConfig::getId));
-        assetService
+        siteService
             .findAllRootSites(orgaId)
             .stream()
             .forEach(root -> {
@@ -64,7 +62,7 @@ public class ComputeService {
         List<Attribute> attributes = attributeService.findBySite(site.getId(), orgaId);
         attributes.forEach(attribute -> validate(site, attribute, campaign, orgaId));
 
-        List<Site> children = assetService.getChildren(site, orgaId);
+        List<Site> children = siteService.getChildren(site, orgaId);
         children.stream().forEach(s -> validateForCampaignAndSite(campaign, s, orgaId));
     }
 
@@ -83,7 +81,7 @@ public class ComputeService {
     }
 
     private void treeShake(Map<String, List<AttributeConfig>> keyConfigsMaps, Campaign campaign, @NonNull String orgaId) {
-        assetService.findAllRootSites(orgaId).stream().forEach(root -> this.treeShakeForSite(campaign, root, orgaId));
+        siteService.findAllRootSites(orgaId).stream().forEach(root -> this.treeShakeForSite(campaign, root, orgaId));
     }
 
     private void treeShakeForSite(Campaign campaign, Site site, @NonNull String orgaId) {
@@ -100,7 +98,7 @@ public class ComputeService {
             att.setImpacterIds(impacters.stream().collect(Collectors.toSet()));
             attributeService.save(att);
         });
-        List<Site> children = assetService.getChildren(site, orgaId);
+        List<Site> children = siteService.getChildren(site, orgaId);
         children.stream().forEach(s -> treeShakeForSite(campaign, s, orgaId));
     }
 
@@ -137,7 +135,7 @@ public class ComputeService {
         }
         AttributeConfig nextApplyableConfig = fetchNextApplyableConfig(configForSite, applyableConfig);
 
-        List<Site> children = assetService.getChildren(site, orgaId);
+        List<Site> children = siteService.getChildren(site, orgaId);
         children.stream().forEach(s -> applyCampaignForSiteAndKeyConfigs(campaign, s, configKey, configs, nextApplyableConfig, orgaId));
     }
 
@@ -195,7 +193,8 @@ public class ComputeService {
     }
 
     private boolean matchAtLeastOneTag(Set<Tag> tags1, Set<Tag> tags2) {
-        return tags1 != null && tags2 != null && tags1.stream().anyMatch(t -> tags2.contains(t));
+        Set<String> tags2String = tags2.stream().map(Tag::getId).collect(Collectors.toSet());
+        return tags1 != null && tags2 != null && tags1.stream().anyMatch(t -> tags2String.contains(t.getId()));
     }
 
     public void reCalculateAllAttributes(String orgaId) {
@@ -288,7 +287,7 @@ public class ComputeService {
                     attribute.setAttributeValue(ErrorValue.builder().value(attribute.getConfigError()).build());
                 }
                 AttributeConfig config = attributeConfigService
-                    .getById(attribute.getConfigId(), orgaId)
+                    .findByOrgaIdAndId(attribute.getConfigId(), orgaId)
                     .orElseThrow(() -> new RuntimeException("Cing should exist here " + attribute.getId()));
                 if (!config.getIsWritable()) {
                     if (config.getOperation() == null) {
@@ -303,7 +302,7 @@ public class ComputeService {
                     );
                     attribute.setAttributeValue(v.getLeft());
                     attribute.setAggInfo(v.getRight());
-                    attributeService.saveDto(attribute);
+                    attributeService.save(attribute);
                 }
             });
     }
@@ -311,7 +310,7 @@ public class ComputeService {
     private Pair<AttributeValue, AggInfo> calculateAttribute(
         String orgaId,
         String attId,
-        List<Tag> attTags,
+        Set<Tag> attTags,
         Set<String> impacterIds,
         AttributeConfig config
     ) {
@@ -347,7 +346,7 @@ public class ComputeService {
                     if (
                         impacterIds
                             .stream()
-                            .map(impacterId -> attributeService.getById(impacterId, orgaId).orElse(null))
+                            .map(impacterId -> attributeService.findByIdAndOrgaId(impacterId, orgaId).orElse(null))
                             .anyMatch(att -> att == null)
                     ) {
                         throw new RuntimeException("pas possible ici");
@@ -459,7 +458,7 @@ public class ComputeService {
                 } else {
                     throw new RuntimeException("to implement 555");
                 }
-            } else if (config.getAttributeType() == AggInfo.AttributeType.LONG) {
+            } else if (AggInfo.AttributeType.LONG.equals(config.getAttributeType())) {
                 List<Attribute> attributes = getAttributesFromKeys(impacterIds, orgaId);
                 if (CHILDREN_SUM.equals(config.getOperationType())) {
                     return longCalculator.calculateMultiValuesAttribute(
@@ -543,14 +542,14 @@ public class ComputeService {
     private List<Attribute> getAttributesFromKeys(Set<String> keys, @NonNull String orgaId) {
         return keys
             .stream()
-            .map(impacterId -> attributeService.getById(impacterId, orgaId))
+            .map(impacterId -> attributeService.findByIdAndOrgaId(impacterId, orgaId))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(Collectors.toList());
     }
 
     private AttributeValue getValueFromReferenced(String attKey, @NonNull String orgaId) {
-        Optional<Attribute> attOpt = attributeService.getById(attKey, orgaId);
+        Optional<Attribute> attOpt = attributeService.findByIdAndOrgaId(attKey, orgaId);
         if (attOpt.isPresent()) {
             Attribute att = attOpt.get();
             if (att.getAttributeValue() != null) {
@@ -837,8 +836,8 @@ public class ComputeService {
                 throw new RuntimeException("not noraml here 3");
             }
             if (config.getConsoParameterKey().equals(attObj.getAttributeId())) {
-                AttributeKeyAsObj impacted = attObj.toBuilder().attributeId(config.getKey()).build();
-                Optional<Site> current = assetService.getSiteById(impacted.getAssetId(), orgaId);
+                AttributeKeyAsObj impacted = attObj.toBuilder().attributeId(config.getId()).build();
+                Optional<Site> current = siteService.getSiteById(impacted.getAssetId(), orgaId);
                 Set<String> impacters = current
                     .get()
                     .getChildrenIds()
@@ -848,12 +847,12 @@ public class ComputeService {
                 impacters.add(id);
                 return List.of(Impact.builder().impactedId(objToString(impacted)).impacterIds(impacters).build());
             }
-            if (config.getKey().equals(attObj.getAttributeId())) {
-                Optional<Site> current = assetService.getSiteById(attObj.getAssetId(), orgaId);
+            if (config.getId().equals(attObj.getAttributeId())) {
+                Optional<Site> current = siteService.getSiteById(attObj.getAssetId(), orgaId);
                 if (current.isEmpty()) {
                     return null;
                 }
-                Optional<Site> parent = assetService.getSiteById(current.get().getParentId(), orgaId);
+                Optional<Site> parent = siteService.getSiteById(current.get().getParentId(), orgaId);
                 if (parent.isEmpty() || parent.get().getChildrenIds() == null) {
                     return null;
                 }
@@ -913,30 +912,30 @@ public class ComputeService {
     ) {
         AttributeKeyAsObj.AttributeKeyAsObjBuilder impacted = attObj.toBuilder();
         if (config.getOperationType().equals(CHILDREN_SUM)) {
-            Site site = assetService
+            Site site = siteService
                 .getSiteById(attObj.getAssetId(), orgaId)
                 .orElseThrow(() -> new RuntimeException("Should have a site here"));
             if (site.getParentId() == null) {
                 return null;
             }
-            return List.of(objToString(impacted.attributeId(config.getKey()).assetId(site.getParentId()).build()));
+            return List.of(objToString(impacted.attributeId(config.getId()).assetId(site.getParentId()).build()));
         }
         if (refOperation.getUseCurrentSite()) {} else {
-            return assetService
+            return siteService
                 .findAllSites(orgaId)
                 .stream()
-                .map(site -> attObj.toBuilder().attributeId(config.getKey()).assetId(site.getId()).build())
-                .map(obj -> AttributeKeyUtils.objToString(obj))
+                .map(site -> attObj.toBuilder().attributeId(config.getId()).assetId(site.getId()).build())
+                .map(obj -> objToString(obj))
                 .collect(Collectors.toList());
         }
         if (refOperation.getDateOffset() != null && refOperation.getDateOffset() != 0) {
-            if (!attObj.getCampaignType().equals(PERIOD)) {
+            if (!attObj.getCampaignType().equals(PERIOD_FRAG)) {
                 return null;
             }
             impacted.campaign(unApplyOffSet(attObj.getCampaign(), refOperation.getDateOffset()));
         }
 
-        impacted.attributeId(config.getKey());
+        impacted.attributeId(config.getId());
         return List.of(objToString(impacted.build()));
     }
 
@@ -949,7 +948,7 @@ public class ComputeService {
     }
 
     private void fetchImpactersForOperation(Operation operation, String impacted, Set<String> impacters, @NonNull String orgaId) {
-        AttributeKeyAsObj attributeKeyAsObj = AttributeKeyUtils.fromString(impacted);
+        AttributeKeyAsObj attributeKeyAsObj = fromString(impacted);
 
         if (
             CHILDREN_SUM.equals(operation.getOperationType()) ||
@@ -958,7 +957,7 @@ public class ComputeService {
             CHILDREN_COUNT.equals(operation.getOperationType())
         ) {
             HasItemsKey op = (HasItemsKey) operation;
-            Site site = assetService
+            Site site = siteService
                 .getSiteById(attributeKeyAsObj.getAssetId(), orgaId)
                 .orElseThrow(() -> new RuntimeException("Should have a site here 2"));
             impacters.addAll(

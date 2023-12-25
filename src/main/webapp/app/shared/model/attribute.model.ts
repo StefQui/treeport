@@ -1,7 +1,7 @@
 import { IOrganisation } from 'app/shared/model/organisation.model';
-import { IAsset } from 'app/shared/model/asset.model';
 import { IAttributeConfig } from 'app/shared/model/attribute-config.model';
 import { ITag } from 'app/shared/model/tag.model';
+import { ISite } from './site.model';
 
 export interface IAttribute {
   id?: string;
@@ -9,7 +9,7 @@ export interface IAttribute {
   hasConfigError?: boolean | null;
   configError?: string | null;
   orga?: IOrganisation | null;
-  site?: IAsset | null;
+  site?: ISite | null;
   config?: IAttributeConfig | null;
   tags?: ITag[] | null;
 }

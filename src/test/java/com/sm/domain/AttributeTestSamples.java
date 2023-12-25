@@ -1,5 +1,6 @@
 package com.sm.domain;
 
+import com.sm.domain.attribute.Attribute;
 import java.util.UUID;
 
 public class AttributeTestSamples {

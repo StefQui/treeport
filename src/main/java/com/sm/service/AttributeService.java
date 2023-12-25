@@ -3,7 +3,7 @@ package com.sm.service;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
-import com.sm.domain.Attribute;
+import com.sm.domain.attribute.Attribute;
 import com.sm.repository.AttributeRepository;
 import com.sm.service.dto.AttributeDTO;
 import com.sm.service.mapper.AttributeMapper;
@@ -19,7 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
- * Service Implementation for managing {@link com.sm.domain.Attribute}.
+ * Service Implementation for managing {@link Attribute}.
  */
 @Service
 public class AttributeService {

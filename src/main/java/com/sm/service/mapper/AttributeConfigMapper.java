@@ -14,7 +14,7 @@ public class AttributeConfigMapper {
 
     private TagMapper tagMapper;
     private OrganisationMapper organisationMapper;
-    private AssetMapper assetMapper;
+    private SiteMapper siteMapper;
 
     public AttributeConfig toEntity(AttributeConfigDTO attributeConfigDTO) {
         return AttributeConfig
@@ -37,7 +37,7 @@ public class AttributeConfigMapper {
             .builder()
             .id(a.getId())
             .attributeType(a.getAttributeType())
-            .site(assetMapper.toBasicDto(a.getSiteId()))
+            .site(siteMapper.toBasicDto(a.getSiteId()))
             .applyOnChildren(a.getApplyOnChildren())
             .consoOperationType(a.getConsoOperationType())
             .consoParameterKey(a.getConsoParameterKey())

@@ -1,6 +1,6 @@
 package com.sm.repository;
 
-import com.sm.domain.Attribute;
+import com.sm.domain.attribute.Attribute;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;

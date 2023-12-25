@@ -1,5 +1,6 @@
 package com.sm.service.dto;
 
+import com.sm.domain.attribute.Attribute;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,7 +9,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * A DTO for the {@link com.sm.domain.Attribute} entity.
+ * A DTO for the {@link Attribute} entity.
  */
 @Value
 @Builder(toBuilder = true)
@@ -26,7 +27,7 @@ public class AttributeDTO implements Serializable {
 
     private OrganisationDTO orga;
 
-    private AssetDTO site;
+    private SiteDTO site;
 
     private AttributeConfigDTO config;
 

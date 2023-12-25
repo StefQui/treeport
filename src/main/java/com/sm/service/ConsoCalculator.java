@@ -1,7 +1,7 @@
 package com.sm.service;
 
-import com.sm.poctreeport.model.attribute.*;
-import com.sm.poctreeport.model.attributeConfig.AttributeConfig;
+import com.sm.domain.AttributeConfig;
+import com.sm.domain.attribute.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -1,12 +1,13 @@
 package com.sm.domain;
 
-import static com.sm.domain.AssetTestSamples.*;
-import static com.sm.domain.AttributeConfigTestSamples.*;
+import static com.sm.domain.AssetTestSamples.getAssetRandomSampleGenerator;
+import static com.sm.domain.AttributeConfigTestSamples.getAttributeConfigRandomSampleGenerator;
 import static com.sm.domain.AttributeTestSamples.*;
-import static com.sm.domain.OrganisationTestSamples.*;
-import static com.sm.domain.TagTestSamples.*;
+import static com.sm.domain.OrganisationTestSamples.getOrganisationRandomSampleGenerator;
+import static com.sm.domain.TagTestSamples.getTagRandomSampleGenerator;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.sm.domain.attribute.Attribute;
 import com.sm.web.rest.TestUtil;
 import java.util.HashSet;
 import java.util.Set;

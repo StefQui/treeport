@@ -1,6 +1,6 @@
 package com.sm.service;
 
-import static com.sm.domain.Attribute.*;
+import static com.sm.domain.attribute.Attribute.*;
 import static java.lang.String.format;
 
 public class AttributeKeyUtils {

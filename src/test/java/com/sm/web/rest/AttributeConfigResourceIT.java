@@ -8,8 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.sm.IntegrationTest;
 import com.sm.domain.AttributeConfig;
-import com.sm.domain.enumeration.AttributeType;
-import com.sm.domain.enumeration.OperationType;
+import com.sm.domain.attribute.AggInfo;
+import com.sm.domain.operation.OperationType;
 import com.sm.repository.AttributeConfigRepository;
 import com.sm.service.AttributeConfigService;
 import com.sm.service.dto.AttributeConfigDTO;
@@ -48,8 +48,8 @@ class AttributeConfigResourceIT {
     private static final String DEFAULT_RELATED_CONFIG_ID = "AAAAAAAAAA";
     private static final String UPDATED_RELATED_CONFIG_ID = "BBBBBBBBBB";
 
-    private static final AttributeType DEFAULT_ATTRIBUTE_TYPE = AttributeType.LONG;
-    private static final AttributeType UPDATED_ATTRIBUTE_TYPE = AttributeType.BOOLEAN;
+    private static final AggInfo.AttributeType DEFAULT_ATTRIBUTE_TYPE = AggInfo.AttributeType.LONG;
+    private static final AggInfo.AttributeType UPDATED_ATTRIBUTE_TYPE = AggInfo.AttributeType.BOOLEAN;
 
     private static final Boolean DEFAULT_IS_WRITABLE = false;
     private static final Boolean UPDATED_IS_WRITABLE = true;
@@ -82,37 +82,41 @@ class AttributeConfigResourceIT {
 
     /**
      * Create an entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
     public static AttributeConfig createEntity() {
-        AttributeConfig attributeConfig = new AttributeConfig()
+        AttributeConfig attributeConfig = AttributeConfig
+            .builder()
             .applyOnChildren(DEFAULT_APPLY_ON_CHILDREN)
             .isConsolidable(DEFAULT_IS_CONSOLIDABLE)
             .relatedConfigId(DEFAULT_RELATED_CONFIG_ID)
             .attributeType(DEFAULT_ATTRIBUTE_TYPE)
             .isWritable(DEFAULT_IS_WRITABLE)
             .consoParameterKey(DEFAULT_CONSO_PARAMETER_KEY)
-            .consoOperationType(DEFAULT_CONSO_OPERATION_TYPE);
+            .consoOperationType(DEFAULT_CONSO_OPERATION_TYPE)
+            .build();
         return attributeConfig;
     }
 
     /**
      * Create an updated entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
     public static AttributeConfig createUpdatedEntity() {
-        AttributeConfig attributeConfig = new AttributeConfig()
+        AttributeConfig attributeConfig = AttributeConfig
+            .builder()
             .applyOnChildren(UPDATED_APPLY_ON_CHILDREN)
             .isConsolidable(UPDATED_IS_CONSOLIDABLE)
             .relatedConfigId(UPDATED_RELATED_CONFIG_ID)
             .attributeType(UPDATED_ATTRIBUTE_TYPE)
             .isWritable(UPDATED_IS_WRITABLE)
             .consoParameterKey(UPDATED_CONSO_PARAMETER_KEY)
-            .consoOperationType(UPDATED_CONSO_OPERATION_TYPE);
+            .consoOperationType(UPDATED_CONSO_OPERATION_TYPE)
+            .build();
         return attributeConfig;
     }
 
@@ -239,6 +243,7 @@ class AttributeConfigResourceIT {
         // Update the attributeConfig
         AttributeConfig updatedAttributeConfig = attributeConfigRepository.findById(attributeConfig.getId()).orElseThrow();
         updatedAttributeConfig
+            .toBuilder()
             .applyOnChildren(UPDATED_APPLY_ON_CHILDREN)
             .isConsolidable(UPDATED_IS_CONSOLIDABLE)
             .relatedConfigId(UPDATED_RELATED_CONFIG_ID)

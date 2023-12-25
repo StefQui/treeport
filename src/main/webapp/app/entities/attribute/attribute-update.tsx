@@ -10,8 +10,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { IOrganisation } from 'app/shared/model/organisation.model';
 import { getEntities as getOrganisations } from 'app/entities/organisation/organisation.reducer';
-import { IAsset } from 'app/shared/model/asset.model';
-import { getEntities as getAssets } from 'app/entities/asset/asset.reducer';
+import { getEntities as getSites } from 'app/entities/site/site.reducer';
 import { IAttributeConfig } from 'app/shared/model/attribute-config.model';
 import { getEntities as getAttributeConfigs } from 'app/entities/attribute-config/attribute-config.reducer';
 import { ITag } from 'app/shared/model/tag.model';
@@ -28,7 +27,7 @@ export const AttributeUpdate = () => {
   const isNew = id === undefined;
 
   const organisations = useAppSelector(state => state.organisation.entities);
-  const assets = useAppSelector(state => state.asset.entities);
+  const sites = useAppSelector(state => state.site.entities);
   const attributeConfigs = useAppSelector(state => state.attributeConfig.entities);
   const tags = useAppSelector(state => state.tag.entities);
   const attributeEntity = useAppSelector(state => state.attribute.entity);
@@ -48,7 +47,7 @@ export const AttributeUpdate = () => {
     }
 
     dispatch(getOrganisations({}));
-    dispatch(getAssets({}));
+    dispatch(getSites({}));
     dispatch(getAttributeConfigs({}));
     dispatch(getTags({}));
   }, []);
@@ -66,7 +65,7 @@ export const AttributeUpdate = () => {
       ...values,
       tags: mapIdList(values.tags),
       orga: organisations.find(it => it.id.toString() === values.orga.toString()),
-      site: assets.find(it => it.id.toString() === values.site.toString()),
+      site: sites.find(it => it.id.toString() === values.site.toString()),
       config: attributeConfigs.find(it => it.id.toString() === values.config.toString()),
     };
 
@@ -146,8 +145,8 @@ export const AttributeUpdate = () => {
               </ValidatedField>
               <ValidatedField id="attribute-site" name="site" data-cy="site" label={translate('treeportApp.attribute.site')} type="select">
                 <option value="" key="0" />
-                {assets
-                  ? assets.map(otherEntity => (
+                {sites
+                  ? sites.map(otherEntity => (
                       <option value={otherEntity.id} key={otherEntity.id}>
                         {otherEntity.id}
                       </option>

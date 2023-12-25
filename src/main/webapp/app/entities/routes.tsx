@@ -2,14 +2,15 @@ import React from 'react';
 import { Route } from 'react-router-dom';
 
 import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
-import RenderingRoutes from 'app/rendering/routes';
+import RenderingRoutes from 'app/entities/rendering/routes';
 
 import Organisation from './organisation';
-import Asset from './asset';
 import AttributeConfig from './attribute-config';
 import Attribute from './attribute';
 import Tag from './tag';
 import Campaign from './campaign';
+import Site from './site';
+import Resource from './resource';
 /* jhipster-needle-add-route-import - JHipster will add routes here */
 
 export default () => {
@@ -18,7 +19,8 @@ export default () => {
       <ErrorBoundaryRoutes>
         {/* prettier-ignore */}
         <Route path="organisation/*" element={<Organisation />} />
-        <Route path="asset/*" element={<Asset />} />
+        <Route path="site/*" element={<Site />} />
+        <Route path="resource/*" element={<Resource />} />
         <Route path="attribute-config/*" element={<AttributeConfig />} />
         <Route path="attribute/*" element={<Attribute />} />
         <Route path="tag/*" element={<Tag />} />

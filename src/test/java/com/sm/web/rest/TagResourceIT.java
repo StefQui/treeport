@@ -47,23 +47,23 @@ class TagResourceIT {
 
     /**
      * Create an entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
     public static Tag createEntity() {
-        Tag tag = new Tag().name(DEFAULT_NAME);
+        Tag tag = Tag.builder().name(DEFAULT_NAME).build();
         return tag;
     }
 
     /**
      * Create an updated entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
     public static Tag createUpdatedEntity() {
-        Tag tag = new Tag().name(UPDATED_NAME);
+        Tag tag = Tag.builder().name(UPDATED_NAME).build();
         return tag;
     }
 

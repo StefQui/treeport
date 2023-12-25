@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.sm.IntegrationTest;
-import com.sm.domain.Attribute;
+import com.sm.domain.attribute.Attribute;
 import com.sm.repository.AttributeRepository;
 import com.sm.service.AttributeService;
 import com.sm.service.dto.AttributeDTO;
@@ -68,7 +68,7 @@ class AttributeResourceIT {
 
     /**
      * Create an entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
@@ -82,7 +82,7 @@ class AttributeResourceIT {
 
     /**
      * Create an updated entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */

@@ -1,7 +1,7 @@
 package com.sm.service.dto;
 
-import com.sm.domain.enumeration.AttributeType;
-import com.sm.domain.enumeration.OperationType;
+import com.sm.domain.attribute.AggInfo;
+import com.sm.domain.operation.OperationType;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +26,7 @@ public class AttributeConfigDTO implements Serializable {
 
     private String relatedConfigId;
 
-    private AttributeType attributeType;
+    private AggInfo.AttributeType attributeType;
 
     private Boolean isWritable;
 
@@ -36,7 +36,7 @@ public class AttributeConfigDTO implements Serializable {
 
     private OrganisationDTO orga;
 
-    private AssetDTO site;
+    private SiteDTO site;
 
     @Builder.Default
     private Set<TagDTO> tags = new HashSet<>();

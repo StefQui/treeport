@@ -1,8 +1,9 @@
 package com.sm.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.sm.domain.enumeration.AttributeType;
-import com.sm.domain.enumeration.OperationType;
+import com.sm.domain.attribute.AggInfo;
+import com.sm.domain.operation.Operation;
+import com.sm.domain.operation.OperationType;
 import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -47,7 +48,7 @@ public class AttributeConfig implements Serializable {
     private String relatedConfigId;
 
     @Field("attribute_type")
-    private AttributeType attributeType;
+    private AggInfo.AttributeType attributeType;
 
     @Field("is_writable")
     private Boolean isWritable;
@@ -61,10 +62,20 @@ public class AttributeConfig implements Serializable {
     @Field("orgaId")
     private String orgaId;
 
+    @Field("operation")
+    private Operation operation;
+
     @Field("siteId")
     private String siteId;
 
     @Field("tags")
     @Builder.Default
     private Set<Tag> tags = new HashSet<>();
+
+    private Object defaultValue;
+    private Object defaultValueForNotResolvableItem;
+
+    public OperationType getOperationType() {
+        return getOperation() == null ? null : getOperation().getOperationType();
+    }
 }

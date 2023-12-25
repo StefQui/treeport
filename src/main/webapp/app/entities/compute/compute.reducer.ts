@@ -4,6 +4,7 @@ import { Storage } from 'react-jhipster';
 import { getSession } from 'app/shared/reducers/authentication';
 import { AppThunk } from 'app/config/store';
 import { serializeAxiosError } from 'app/shared/reducers/reducer.utils';
+import { faLessThanEqual } from '@fortawesome/free-solid-svg-icons';
 
 const initialState = {
   loadingOrganisations: false,
@@ -11,6 +12,7 @@ const initialState = {
   loadingCampaigns: false,
   loadingAssets: false,
   loadingAttributeConfigs: false,
+  loadingSetSomeValues: false,
   isComputing: false,
 };
 
@@ -46,6 +48,11 @@ export const reloadAssets = createAsyncThunk('compute/reloadAssets', async () =>
 
 export const reloadAttributeConfigs = createAsyncThunk('compute/reloadAttributeConfigs', async () => {
   const requestUrl = `${apiUrl}/reloadAttributeConfigs`;
+  return axios.post<void>(requestUrl);
+});
+
+export const setSomeValues = createAsyncThunk('compute/setSomeValues', async () => {
+  const requestUrl = `${apiUrl}/setSomeValues`;
   return axios.post<void>(requestUrl);
 });
 
@@ -112,6 +119,15 @@ export const ComputeSlice = createSlice({
       })
       .addCase(reloadAttributeConfigs.fulfilled, state => {
         state.loadingAttributeConfigs = false;
+      })
+      .addCase(setSomeValues.pending, state => {
+        state.loadingSetSomeValues = true;
+      })
+      .addCase(setSomeValues.rejected, state => {
+        state.loadingSetSomeValues = false;
+      })
+      .addCase(setSomeValues.fulfilled, state => {
+        state.loadingSetSomeValues = false;
       });
   },
 });

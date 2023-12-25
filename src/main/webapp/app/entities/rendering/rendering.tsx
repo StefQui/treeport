@@ -5,7 +5,7 @@ import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { setAction, setRenderingForPath } from './rendering.reducer';
+import { getAttribute, setAction, setRenderingForPath } from './rendering.reducer';
 import SiteList from '../site/site-list';
 
 export const renderText = (col: any, value: any) => {
@@ -93,6 +93,73 @@ export const SiteRef = (props: { refTo: string; col: any }) => {
   return renderText(props.col, value);
 };
 
+export const AttRef = (props: { refTo: string; attributeKey: string; campaignId: string; path: string; col: any }) => {
+  const action = useAppSelector(state => state.rendering.action);
+  const dispatch = useAppDispatch();
+  // console.log('in app selector', state.rendering.renderingState, ddd);
+  // return ddd;
+  // });
+  const initialState = {
+    attribute: null,
+  };
+
+  const [value, setValue] = useState('?');
+  const [attValue, setAttValue] = useState('??');
+
+  const attribute = useAppSelector(state => {
+    const aaa = state.rendering.renderingState[props.path];
+    return aaa ? (aaa.attribute ? aaa.attribute : null) : null;
+  });
+
+  useEffect(() => {
+    dispatch(setRenderingForPath({ path: props.path, value: initialState }));
+  }, []);
+
+  useEffect(() => {
+    if (!action || action.source !== props.refTo) {
+      return;
+    }
+    if (action.actionType === 'selectSite') {
+      dispatch(
+        getAttribute({
+          exploded: {
+            siteId: action.entity.entity.id,
+            campaignId: props.campaignId,
+            key: props.attributeKey,
+          },
+          path: props.path,
+        }),
+      );
+      setValue(action.entity.entity.id + ' - ' + action.entity.entity.name);
+    } else {
+      setValue('----');
+    }
+  }, [action]);
+
+  useEffect(() => {
+    if (attribute) {
+      setAttValue(attribute.id);
+    } else {
+      setAttValue('-------');
+    }
+  }, [attribute]);
+
+  if (props.col) {
+    return (
+      <Col md={props.col}>
+        <p>{value}</p>
+        <p>{attValue}</p>
+      </Col>
+    );
+  }
+  return (
+    <div>
+      <p>{value}</p>
+      <p>{attValue}</p>
+    </div>
+  );
+};
+
 export const MyVerticalPanel = props => {
   const renderItems = items =>
     items.map((item, index) => <MyElem key={index} input={{ ...item, path: props.path + '.' + item.path }}></MyElem>);
@@ -140,6 +207,8 @@ export const MyElem = props => {
         return <TextRef {...params}></TextRef>;
       case 'siteRef':
         return <SiteRef {...params}></SiteRef>;
+      case 'attRef':
+        return <AttRef {...params}></AttRef>;
       case 'input':
         return <MyInput {...params}></MyInput>;
       case 'siteList':

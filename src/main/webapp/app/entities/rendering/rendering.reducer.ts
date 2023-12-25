@@ -5,6 +5,8 @@ import { IQueryParams, serializeAxiosError } from 'app/shared/reducers/reducer.u
 import { AppThunk } from 'app/config/store';
 import { faCircleDollarToSlot } from '@fortawesome/free-solid-svg-icons';
 import { ISite } from 'app/shared/model/site.model';
+import { IAttribute } from 'app/shared/model/attribute.model';
+import { IAttributeIdExploded } from 'app/shared/model/attribute-id-exploded';
 
 const initialState = {
   loading: false,
@@ -14,14 +16,24 @@ const initialState = {
 
 export type RenderingState = Readonly<typeof initialState>;
 
-const apiUrl = 'api/sites';
+const siteApiUrl = 'api/sites';
+const attributeApiUrl = 'api/attributes';
 
 // Actions
 
 export const getSites = createAsyncThunk(`rendering/fetch_site_list`, async ({ page, size, sort }: IQueryParams) => {
-  const requestUrl = `${apiUrl}?type=SITE&${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
+  const requestUrl = `${siteApiUrl}?type=SITE&${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
   return axios.get<ISite[]>(requestUrl);
 });
+
+export const getAttribute = createAsyncThunk(
+  'rendering/fetch_attribute',
+  async ({ exploded }: { exploded: IAttributeIdExploded; path: string }, thunkAPI) => {
+    const requestUrl = `${attributeApiUrl}/exploded`;
+    return axios.post<IAttribute>(requestUrl, exploded);
+  },
+  { serializeError: serializeAxiosError },
+);
 
 export const setRendering = (path, value) => dispatch => {
   dispatch(setRenderingForPath({ path, value }));
@@ -90,6 +102,17 @@ export const RenderingSlice = createSlice({
             loading: true,
           },
         };
+        return { ...state, renderingState: { ...state.renderingState, ...aaa } };
+      })
+      .addMatcher(isFulfilled(getAttribute), (state, action) => {
+        const { data } = action.payload;
+        const { path } = action.meta.arg;
+
+        const aaa = {};
+        aaa[path] = {
+          attribute: data,
+        };
+
         return { ...state, renderingState: { ...state.renderingState, ...aaa } };
       });
   },

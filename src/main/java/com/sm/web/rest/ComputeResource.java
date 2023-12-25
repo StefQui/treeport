@@ -78,4 +78,11 @@ public class ComputeResource {
         initialLoadService.reloadAttributeConfigs();
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/setSomeValues")
+    public ResponseEntity setSomeValues() throws URISyntaxException {
+        log.debug("REST request to setSomeValues");
+        initialLoadService.setSomeValues();
+        return ResponseEntity.ok().build();
+    }
 }

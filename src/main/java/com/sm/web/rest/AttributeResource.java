@@ -1,9 +1,14 @@
 package com.sm.web.rest;
 
+import static com.sm.domain.attribute.Attribute.PERIOD_FRAG;
+import static com.sm.domain.attribute.Attribute.SITE_FRAG;
+
 import com.sm.domain.attribute.Attribute;
 import com.sm.repository.AttributeRepository;
+import com.sm.service.AttributeKeyUtils;
 import com.sm.service.AttributeService;
 import com.sm.service.dto.AttributeDTO;
+import com.sm.service.dto.ExplodedIdDTO;
 import com.sm.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -63,6 +68,14 @@ public class AttributeResource {
             .created(new URI("/api/attributes/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId()))
             .body(result);
+    }
+
+    @PostMapping("/exploded")
+    public ResponseEntity<AttributeDTO> findByExplodedId(@RequestBody ExplodedIdDTO explodedId) throws URISyntaxException {
+        log.debug("REST request to get Attribute : {}", explodedId);
+        String id = AttributeKeyUtils.key(SITE_FRAG, explodedId.getSiteId(), explodedId.getKey(), PERIOD_FRAG, explodedId.getCampaignId());
+        Optional<AttributeDTO> attributeDTO = attributeService.findById(id);
+        return ResponseUtil.wrapOrNotFound(attributeDTO);
     }
 
     /**

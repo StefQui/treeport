@@ -14,6 +14,7 @@ import {
   reloadCampaigns,
   reloadAssets,
   reloadAttributeConfigs,
+  setSomeValues,
 } from 'app/entities/compute/compute.reducer';
 
 export const Home = () => {
@@ -26,6 +27,7 @@ export const Home = () => {
   const loadingCampaigns = useAppSelector(state => (state.compute ? state.compute.loadingCampaigns : false));
   const loadingAssets = useAppSelector(state => (state.compute ? state.compute.loadingAssets : false));
   const loadingAttributeConfigs = useAppSelector(state => (state.compute ? state.compute.loadingAttributeConfigs : false));
+  const loadingSetSomeValues = useAppSelector(state => (state.compute ? state.compute.loadingSetSomeValues : false));
 
   const handleCompute = () => {
     dispatch(compute());
@@ -49,6 +51,10 @@ export const Home = () => {
 
   const handleReloadAttributeConfigs = () => {
     dispatch(reloadAttributeConfigs());
+  };
+
+  const handleSetSomeValues = () => {
+    dispatch(setSomeValues());
   };
 
   return (
@@ -91,6 +97,11 @@ export const Home = () => {
         <p className="lead">
           <Button className="me-2" color="info" onClick={handleReloadAttributeConfigs}>
             <FontAwesomeIcon icon="sync" spin={loadingAttributeConfigs} /> <span>Reload attributeConfigs</span>
+          </Button>
+        </p>
+        <p className="lead">
+          <Button className="me-2" color="info" onClick={handleSetSomeValues}>
+            <FontAwesomeIcon icon="sync" spin={loadingSetSomeValues} /> <span>Set some values</span>
           </Button>
         </p>
         <p>

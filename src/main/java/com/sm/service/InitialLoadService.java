@@ -3,11 +3,14 @@ package com.sm.service;
 import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.enumeration.AssetType.RESOURCE;
 import static com.sm.domain.enumeration.AssetType.SITE;
-import static com.sm.domain.operation.OperationType.SUM;
+import static com.sm.domain.operation.OperationType.CONSO_SUM;
 
 import com.sm.domain.*;
+import com.sm.domain.attribute.Attribute;
+import com.sm.domain.attribute.DoubleValue;
 import com.sm.repository.*;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +43,14 @@ public class InitialLoadService {
                       "type":"siteRef",
                       "refTo":"vp.thelist2",
                       "col": 4
+                   },
+                   {
+                      "type":"attRef",
+                      "refTo":"vp.thelist2",
+                      "attributeKey":"toSite",
+                      "campaignId": "2023",
+                      "col": 4,
+                      "path":"path-to-attref"
                    },
                    {
                        "type":"input",
@@ -94,6 +105,9 @@ public class InitialLoadService {
     private final SiteRepository siteRepository;
     private final ResourceRepository resourceRepository;
     private final AttributeConfigRepository attributeConfigRepository;
+    private final AttributeRepository attributeRepository;
+    private final ComputeService computeService;
+    private final AttributeService attributeService;
 
     public InitialLoadService(
         OrganisationRepository organisationRepository,
@@ -101,7 +115,10 @@ public class InitialLoadService {
         CampaignRepository campaignRepository,
         SiteRepository siteRepository,
         ResourceRepository resourceRepository,
-        AttributeConfigRepository attributeConfigRepository
+        AttributeConfigRepository attributeConfigRepository,
+        AttributeRepository attributeRepository,
+        AttributeService attributeService,
+        ComputeService computeService
     ) {
         this.organisationRepository = organisationRepository;
         this.tagRepository = tagRepository;
@@ -109,6 +126,9 @@ public class InitialLoadService {
         this.siteRepository = siteRepository;
         this.resourceRepository = resourceRepository;
         this.attributeConfigRepository = attributeConfigRepository;
+        this.attributeRepository = attributeRepository;
+        this.computeService = computeService;
+        this.attributeService = attributeService;
     }
 
     public void reloadOrganisations() {
@@ -185,7 +205,7 @@ public class InitialLoadService {
                 .tags(Set.of(Tag.builder().id(CAR).build()))
                 .attributeType(DOUBLE)
                 .orgaId(COCA)
-                .applyOnChildren(false)
+                .applyOnChildren(true)
                 .siteId(ROOT)
                 .build()
         );
@@ -195,7 +215,7 @@ public class InitialLoadService {
                 .id("toConso")
                 .isConsolidable(true)
                 .consoParameterKey(TO_SITE)
-                .consoOperationType(SUM)
+                .consoOperationType(CONSO_SUM)
                 .isWritable(false)
                 .tags(Set.of(Tag.builder().id(CAR).build()))
                 .attributeType(DOUBLE)
@@ -204,5 +224,13 @@ public class InitialLoadService {
                 .siteId(ROOT)
                 .build()
         );
+    }
+
+    public void setSomeValues() {
+        String attId = "site:s1:toSite:period:2023";
+        Optional<Attribute> att = attributeService.findByIdAndOrgaId(attId, COCA);
+        Attribute att1 = att.get().toBuilder().attributeValue(DoubleValue.builder().value(120.).build()).build();
+        attributeService.save(att1);
+        computeService.reCalculateSomeAttributes(Set.of(attId), COCA);
     }
 }

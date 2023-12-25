@@ -2,8 +2,6 @@ package com.sm.service.dto;
 
 import com.sm.domain.attribute.Attribute;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -15,21 +13,11 @@ import lombok.extern.jackson.Jacksonized;
 @Builder(toBuilder = true)
 @Jacksonized
 @SuppressWarnings("common-java:DuplicatedBlocks")
-public class AttributeDTO implements Serializable {
+public class ExplodedIdDTO implements Serializable {
 
-    private String id;
+    private String siteId;
 
-    private Boolean isAgg;
+    private String campaignId;
 
-    private Boolean hasConfigError;
-
-    private String configError;
-
-    private OrganisationDTO orga;
-
-    private SiteDTO site;
-
-    private AttributeConfigDTO config;
-
-    private Set<TagDTO> tags = new HashSet<>();
+    private String key;
 }

@@ -1,0 +1,53 @@
+{
+  "componentType": "verticalPanel",
+  "path": "vp2",
+  "items": [
+    {
+      "componentType": "SmText",
+      "path": "vsm5",
+      "col": 4,
+      "params": {
+        "input": {
+          "const": "765675756"
+        }
+      }
+    },
+    {
+      "componentType": "SmText",
+      "path": "vsm6",
+      "col": 3,
+      "params": {
+        "input": {
+          "refToPath": "/vp/vsm3"
+        }
+      }
+    },
+    {
+      "componentType": "SmText",
+      "path": "vsm66",
+      "params": {
+        "input": {
+          "refToPath": "/vp/vsm4/vp2/vsm7"
+        }
+      }
+    },
+    {
+      "componentType": "SmText",
+      "path": "vsm9",
+      "params": {
+        "input": {
+          "refToPath": "../vsm7"
+        }
+      }
+    },
+    {
+      "componentType": "SmInput",
+      "path": "vsm7",
+      "params": {
+        "defaultValue": {
+          "const": "DEFEDF"
+        }
+      }
+    }
+  ]
+}

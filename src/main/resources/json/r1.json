@@ -1,0 +1,94 @@
+{
+  "type": "verticalPanel",
+  "path": "vp",
+  "items": [
+    {
+      "type": "textRef",
+      "refTo": "vp.vp2.inp2",
+      "col": 4
+    },
+    {
+      "path": "resContent",
+      "type": "resourceContent",
+      "refTo": "r2",
+      "params": [
+        {
+          "t1": "tototo"
+        },
+        {
+          "t2": "tatata"
+        }
+      ],
+      "col": 4
+    },
+    {
+      "type": "siteRef",
+      "refTo": "vp.thelist2",
+      "col": 8
+    },
+    {
+      "type": "textBasic",
+      "text": "toSite",
+      "col": 8
+    },
+    {
+      "type": "attRef",
+      "refTo": "vp.thelist2",
+      "attributeKey": "toSite",
+      "campaignId": "2023",
+      "col": 4,
+      "path": "path-to-attref"
+    },
+    {
+      "type": "textBasic",
+      "text": "toConso",
+      "col": 8
+    },
+    {
+      "type": "attRef",
+      "refTo": "vp.thelist2",
+      "attributeKey": "toConso",
+      "campaignId": "2023",
+      "col": 4,
+      "path": "path-to-attref2"
+    },
+    {
+      "type": "input",
+      "path": "inp1",
+      "value": "tata"
+    },
+    {
+      "type": "siteList",
+      "path": "thelist2"
+    },
+    {
+      "path": "vp2",
+      "type": "verticalPanel",
+      "items": [
+        {
+          "type": "input",
+          "path": "inp2",
+          "value": "arg"
+        },
+        {
+          "type": "textBasic",
+          "text": "tutu",
+          "col": 4
+        },
+        {
+          "type": "textBasic",
+          "text": "tutu2",
+          "col": 4
+        },
+        {
+          "type": "textRef",
+          "refTo": "vp.inp1"
+        },
+        {
+          "type": "siteList",
+          "path": "thelist"
+        }
+      ]
+    }
+  ]
+}

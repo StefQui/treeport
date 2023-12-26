@@ -8,57 +8,129 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getAttribute, getResource, setAction, setRenderingForPath } from './rendering.reducer';
 import SiteList from '../site/site-list';
 import { AttValue } from '../attribute-value/attribute-value';
-import { ResourceContent } from './resource-content';
-
-export const renderText = (col: any, value: any) => {
-  if (col) {
-    return (
-      <Col md={col}>
-        <span>{value}</span>
-      </Col>
-    );
-  }
-  return <span>{value}</span>;
-};
+import { ResourceContent, SmRefToResource } from './resource-content';
 
 export const TextBasic = props => {
   const siteEntity = useAppSelector(state => state.site.entity);
   // const rendering = useAppSelector(state => state.rendering);
   const [value] = useState(props.text);
 
-  return renderText(props.col, value);
+  return <span>{value}</span>;
+};
+
+export const SmTextConst = props => {
+  if (props.params.input.const) {
+    return (
+      <span>
+        {props.params.input.const} - ({buildPath(props)})
+      </span>
+    );
+  }
+  return <span>const is required in SmText</span>;
+};
+
+export function buildPath(props) {
+  return props.currentPath + PATH_SEPARATOR + props.path;
+}
+
+const applyPath = (path, pathToApply) => {
+  if (pathToApply.startsWith(ROOT_PATH_SEPARATOR)) {
+    return pathToApply;
+  } else if (pathToApply.startsWith('..')) {
+    const originaPath: string[] = path.substring('/'.length).split(PATH_SEPARATOR);
+    const splited: string[] = pathToApply.split(PATH_SEPARATOR);
+
+    const result = originaPath;
+    splited.forEach(fragment => {
+      if (fragment === '..') {
+        result.pop();
+      } else {
+        result.push(fragment);
+      }
+    });
+    return ROOT_PATH_SEPARATOR + result.join(PATH_SEPARATOR);
+  } else {
+    return path + PATH_SEPARATOR + pathToApply;
+  }
+};
+
+export const SmTextRefToPath = props => {
+  const builtPath = buildPath(props);
+  const calculatedPath = applyPath(builtPath, props.params.input.refToPath);
+  const referencedValue = useRenderingState(calculatedPath);
+  if (referencedValue) {
+    return <span>{referencedValue.output}</span>;
+  }
+  return <span>No value for {calculatedPath}</span>;
+};
+
+export const SmText = props => {
+  if (!props.params || !props.params.input) {
+    return <span>input param is mandatory</span>;
+  }
+  const input = props.params.input;
+  if (input.refToPath) {
+    return <SmTextRefToPath {...props}></SmTextRefToPath>;
+  }
+  return <SmTextConst {...props}></SmTextConst>;
+};
+
+export function useRenderingState(renderingPath, path1?) {
+  if (path1) {
+    return useAppSelector(state => {
+      const a = state.rendering.renderingState[renderingPath];
+      return a ? a[path1] : null;
+    });
+  }
+  return useAppSelector(state => state.rendering.renderingState[renderingPath]);
+}
+
+function updateRenderingState(dispatch, path: string, value) {
+  dispatch(
+    setRenderingForPath({
+      path,
+      value,
+    }),
+  );
+}
+
+export const SmInput = props => {
+  const [value, setValue] = useState(props.params.defaultValue.const);
+  const dispatch = useAppDispatch();
+  const builtPath = buildPath(props);
+
+  useEffect(() => {
+    if (props.params.defaultValue.const) {
+      updateRenderingState(dispatch, builtPath, {
+        output: props.params.defaultValue.const,
+      });
+    }
+  }, []);
+
+  const handleChange = event => {
+    setValue(event.target.value);
+    updateRenderingState(dispatch, builtPath, {
+      output: event.target.value,
+    });
+    dispatch(setAction({ source: builtPath, actionType: 'textChanged', value: event.target.value }));
+  };
+
+  return (
+    <div>
+      <input value={value} onChange={handleChange}></input>
+    </div>
+  );
 };
 
 export const TheSiteList = props => {
   return <SiteList {...props}></SiteList>;
 };
 
-// export const getRenderingStateForPath = (rendering: any, refTo: any) => {
-//   return rendering.renderingState.find(i => i.path === refTo);
-// };
-
 export const TextRef = (props: { refTo: string | number; col: any }) => {
   const siteEntity = useAppSelector(state => state.site.entity);
   const action = useAppSelector(state => state.rendering.action);
 
-  // const dispatch = useAppDispatch();
-  // dispatch(setRenderingForPath({ path: props.path, value: 'mmmmm' }));
-  console.log('aaaaaaaaaaaaaa', props.refTo);
-
-  // const rendering = useAppSelector(state => state.rendering.renderingState[props.refTo]);
-  // console.log('in app selector', state.rendering.renderingState, ddd);
-  // return ddd;
-  // });
   const [value, setValue] = useState('?');
-
-  // useEffect(() => {
-  //   setValue(rendering ? rendering : '----');
-  //   // if (rendering.renderingState) {
-  //   //   const renderingState = getRenderingStateForPath(rendering, props.refTo);
-  //   //   const found = rendering.renderingState.find(i => i.path === props.refTo);
-  //   //   setValue(rendering ? rendering : '----');
-  //   // }
-  // }, [rendering]);
 
   useEffect(() => {
     if (!action || action.source !== props.refTo) {
@@ -71,7 +143,7 @@ export const TextRef = (props: { refTo: string | number; col: any }) => {
     }
   }, [action]);
 
-  return renderText(props.col, value);
+  return <span>{value}</span>;
 };
 
 export const SiteRef = (props: { refTo: string; col: any }) => {
@@ -92,7 +164,7 @@ export const SiteRef = (props: { refTo: string; col: any }) => {
     }
   }, [action]);
 
-  return renderText(props.col, value);
+  return <span>{value}</span>;
 };
 
 export const AttRef = (props: { refTo: string; attributeKey: string; campaignId: string; path: string; col: any }) => {
@@ -142,23 +214,18 @@ export const AttRef = (props: { refTo: string; attributeKey: string; campaignId:
     }
   }, [attribute]);
 
-  if (props.col) {
-    return (
-      <Col md={props.col}>
-        <AttValue attValue={attValue}></AttValue>
-      </Col>
-    );
-  }
-  return (
-    <div>
-      <AttValue attValue={attValue}></AttValue>
-    </div>
-  );
+  return <AttValue attValue={attValue}></AttValue>;
 };
+
+export const PATH_SEPARATOR = '/';
+export const ROOT_PATH_SEPARATOR = '/';
 
 export const MyVerticalPanel = props => {
   const renderItems = items =>
-    items.map((item, index) => <MyElem key={index} input={{ ...item, path: props.path + '.' + item.path }}></MyElem>);
+    items.map((item, index) => {
+      console.log('renderItems:', props.currentPath, props.path, item.path);
+      return <MyElem key={index} input={{ ...item }} currentPath={props.currentPath + PATH_SEPARATOR + props.path}></MyElem>;
+    });
 
   return <Row>{renderItems(props.items)}</Row>;
 };
@@ -196,9 +263,15 @@ export const MyInput = props => {
 
 export const MyElem = props => {
   const renderSwitch = params => {
-    switch (params.type) {
+    switch (params.componentType) {
       case 'textBasic':
         return <TextBasic {...params}></TextBasic>;
+      case 'SmText':
+        return <SmText {...params}></SmText>;
+      case 'SmInput':
+        return <SmInput {...params}></SmInput>;
+      case 'SmRefToResource':
+        return <SmRefToResource {...params}></SmRefToResource>;
       case 'textRef':
         return <TextRef {...params}></TextRef>;
       case 'siteRef':
@@ -214,11 +287,18 @@ export const MyElem = props => {
       case 'verticalPanel':
         return <MyVerticalPanel {...params}></MyVerticalPanel>;
       default:
-        return <p>Not implemented...{params.type}</p>;
+        return <p>Not implemented...{params.componentType}</p>;
     }
   };
 
-  return renderSwitch(props.input);
+  return <MyWrapper {...props.input}>{renderSwitch({ ...props.input, currentPath: props.currentPath })}</MyWrapper>;
+};
+
+export const MyWrapper = ({ children, ...props }) => {
+  if (props.col) {
+    return <Col md={props.col}>{children}</Col>;
+  }
+  return children;
 };
 
 export const MyRend = props => {
@@ -236,5 +316,7 @@ export const MyRend = props => {
   if (error) {
     return <Row md="8">{error}</Row>;
   }
-  return <Row md="8">{props.content ? <MyElem input={input}></MyElem> : <p>Loading...</p>}</Row>;
+
+  console.log('......', props.currentPath);
+  return <Row md="8">{props.content ? <MyElem input={input} currentPath={props.currentPath}></MyElem> : <p>Loading...</p>}</Row>;
 };

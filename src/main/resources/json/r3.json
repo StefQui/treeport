@@ -1,0 +1,40 @@
+{
+  "componentType": "verticalPanel",
+  "path": "vp",
+  "items": [
+    {
+      "componentType": "SmText",
+      "path": "vsm1",
+      "params": {
+        "input": {
+          "const": "ABC"
+        }
+      }
+    },
+    {
+      "componentType": "SmText",
+      "path": "vsm2",
+      "params": {
+        "input": {
+          "refToPath": "/vp/vsm3"
+        }
+      }
+    },
+    {
+      "componentType": "SmInput",
+      "path": "vsm3",
+      "params": {
+        "defaultValue": {
+          "const": "DEFEDF"
+        }
+      }
+    },
+    {
+      "componentType": "SmRefToResource",
+      "path": "vsm4",
+      "params": {
+        "resourceId": "r4"
+      }
+    }
+  ]
+}

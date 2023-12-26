@@ -109,6 +109,21 @@ export const Home = () => {
             /coca/render/r1
           </Button>
         </p>
+        <p>
+          <Button tag={Link} to={`/coca/render/r2`} color="link" size="sm">
+            /coca/render/r2
+          </Button>
+        </p>
+        <p>
+          <Button tag={Link} to={`/coca/render/r3`} color="link" size="sm">
+            /coca/render/r3
+          </Button>
+        </p>
+        <p>
+          <Button tag={Link} to={`/coca/render/r4`} color="link" size="sm">
+            /coca/render/r4
+          </Button>
+        </p>
 
         {account?.login ? (
           <div>

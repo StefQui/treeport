@@ -1,0 +1,11 @@
+{
+  "type": "verticalPanel",
+  "path": "vp",
+  "items": [
+    {
+      "type": "textBasic",
+      "text": "ratata",
+      "col": 8
+    }
+  ]
+}

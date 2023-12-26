@@ -10,7 +10,7 @@ import com.sm.IntegrationTest;
 import com.sm.domain.attribute.Attribute;
 import com.sm.repository.AttributeRepository;
 import com.sm.service.AttributeService;
-import com.sm.service.dto.AttributeDTO;
+import com.sm.service.dto.attribute.AttributeDTO;
 import com.sm.service.mapper.AttributeMapper;
 import java.util.ArrayList;
 import java.util.List;

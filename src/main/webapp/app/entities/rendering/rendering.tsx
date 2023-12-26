@@ -5,8 +5,10 @@ import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { getAttribute, setAction, setRenderingForPath } from './rendering.reducer';
+import { getAttribute, getResource, setAction, setRenderingForPath } from './rendering.reducer';
 import SiteList from '../site/site-list';
+import { AttValue } from '../attribute-value/attribute-value';
+import { ResourceContent } from './resource-content';
 
 export const renderText = (col: any, value: any) => {
   if (col) {
@@ -103,7 +105,6 @@ export const AttRef = (props: { refTo: string; attributeKey: string; campaignId:
     attribute: null,
   };
 
-  const [value, setValue] = useState('?');
   const [attValue, setAttValue] = useState('??');
 
   const attribute = useAppSelector(state => {
@@ -130,32 +131,27 @@ export const AttRef = (props: { refTo: string; attributeKey: string; campaignId:
           path: props.path,
         }),
       );
-      setValue(action.entity.entity.id + ' - ' + action.entity.entity.name);
-    } else {
-      setValue('----');
     }
   }, [action]);
 
   useEffect(() => {
     if (attribute) {
-      setAttValue(attribute.id);
+      setAttValue(attribute);
     } else {
-      setAttValue('-------');
+      setAttValue(null);
     }
   }, [attribute]);
 
   if (props.col) {
     return (
       <Col md={props.col}>
-        <p>{value}</p>
-        <p>{attValue}</p>
+        <AttValue attValue={attValue}></AttValue>
       </Col>
     );
   }
   return (
     <div>
-      <p>{value}</p>
-      <p>{attValue}</p>
+      <AttValue attValue={attValue}></AttValue>
     </div>
   );
 };
@@ -213,6 +209,8 @@ export const MyElem = props => {
         return <MyInput {...params}></MyInput>;
       case 'siteList':
         return <TheSiteList {...params}></TheSiteList>;
+      case 'resourceContent':
+        return <ResourceContent {...params}></ResourceContent>;
       case 'verticalPanel':
         return <MyVerticalPanel {...params}></MyVerticalPanel>;
       default:

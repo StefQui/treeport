@@ -27,6 +27,67 @@ public class InitialLoadService {
     public static final String S_1 = "s1";
     public static final String S_2 = "s2";
     public static final String R_1 = "r1";
+    public static final String R_2 = "r2";
+    public static final String R_3 = "r3";
+    public static final String R3_CONTENT =
+        """
+        {
+           "componentType":"verticalPanel",
+           "path":"vp",
+           "items":
+                [
+                    {
+                       "componentType":"SmText",
+                       "path":"vsm1",
+                       "params":
+                       {
+                           "input":
+                              {
+                                  "const": "ABC"
+                              }
+                       }
+                    },
+                    {
+                       "componentType":"SmText",
+                       "path":"vsm2",
+                       "params":
+                       {
+                           "input":
+                              {
+                                  "refToPath": "vp.inp"
+                              }
+                       }
+                    },
+                    {
+                       "componentType":"SmInput",
+                       "path":"vsm3",
+                       "params":
+                       {
+                           "defaultValue":
+                              {
+                                  "const": "DEFEDF"
+                              }
+                       }
+                    }
+                ]
+        }
+        """;
+    public static final String R2_CONTENT =
+        """
+        {
+           "type":"verticalPanel",
+           "path":"vp",
+           "items":
+                [
+                   {
+                        "type":"textBasic",
+                        "text":"ratata",
+                        "col": 8
+                   }
+                ]
+        }
+        """;
+
     public static final String R1_CONTENT =
         """
         {
@@ -34,15 +95,35 @@ public class InitialLoadService {
            "path":"vp",
            "items":
                 [
-                    {
+                   {
                        "type":"textRef",
                        "refTo":"vp.vp2.inp2",
                        "col": 4
                    },
                    {
+                       "path": "resContent",
+                       "type":"resourceContent",
+                       "refTo":"r2",
+                       "params":
+                          [
+                            {
+                              "t1": "tototo"
+                            },
+                            {
+                              "t2": "tatata"
+                            }
+                          ],
+                       "col": 4
+                   },
+                   {
                       "type":"siteRef",
                       "refTo":"vp.thelist2",
-                      "col": 4
+                      "col": 8
+                   },
+                   {
+                        "type":"textBasic",
+                        "text":"toSite",
+                        "col": 8
                    },
                    {
                       "type":"attRef",
@@ -51,6 +132,19 @@ public class InitialLoadService {
                       "campaignId": "2023",
                       "col": 4,
                       "path":"path-to-attref"
+                   },
+                   {
+                        "type":"textBasic",
+                        "text":"toConso",
+                        "col": 8
+                   },
+                   {
+                      "type":"attRef",
+                      "refTo":"vp.thelist2",
+                      "attributeKey":"toConso",
+                      "campaignId": "2023",
+                      "col": 4,
+                      "path":"path-to-attref2"
                    },
                    {
                        "type":"input",
@@ -154,15 +248,7 @@ public class InitialLoadService {
     public void reloadAssets() {
         siteRepository.deleteAll();
         siteRepository.save(
-            Site
-                .builder()
-                .id(ROOT)
-                .name("Root site")
-                .type(SITE)
-                .orgaId(COCA)
-                .childrenIds(List.of(S_1, S_2))
-                .tags(Set.of(Tag.builder().id(CAR).build()))
-                .build()
+            Site.builder().id(ROOT).name("Root site").type(SITE).orgaId(COCA).childrenIds(List.of(S_1, S_2)).tags(Set.of()).build()
         );
         siteRepository.save(
             Site
@@ -192,6 +278,12 @@ public class InitialLoadService {
         resourceRepository.save(
             Resource.builder().id(R_1).name("Resource r1").type(RESOURCE).orgaId(COCA).content(R1_CONTENT).childrenIds(List.of()).build()
         );
+        resourceRepository.save(
+            Resource.builder().id(R_2).name("Resource r2").type(RESOURCE).orgaId(COCA).content(R2_CONTENT).childrenIds(List.of()).build()
+        );
+        resourceRepository.save(
+            Resource.builder().id(R_3).name("Resource r3").type(RESOURCE).orgaId(COCA).content(R3_CONTENT).childrenIds(List.of()).build()
+        );
     }
 
     public void reloadAttributeConfigs() {
@@ -216,6 +308,7 @@ public class InitialLoadService {
                 .isConsolidable(true)
                 .consoParameterKey(TO_SITE)
                 .consoOperationType(CONSO_SUM)
+                .defaultValueForNotResolvableItem(0.)
                 .isWritable(false)
                 .tags(Set.of(Tag.builder().id(CAR).build()))
                 .attributeType(DOUBLE)

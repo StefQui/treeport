@@ -7,6 +7,7 @@ import { faCircleDollarToSlot } from '@fortawesome/free-solid-svg-icons';
 import { ISite } from 'app/shared/model/site.model';
 import { IAttribute } from 'app/shared/model/attribute.model';
 import { IAttributeIdExploded } from 'app/shared/model/attribute-id-exploded';
+import { IResource } from 'app/shared/model/resource.model';
 
 const initialState = {
   loading: false,
@@ -18,12 +19,18 @@ export type RenderingState = Readonly<typeof initialState>;
 
 const siteApiUrl = 'api/sites';
 const attributeApiUrl = 'api/attributes';
+const resourceApiUrl = 'api/resources';
 
 // Actions
 
 export const getSites = createAsyncThunk(`rendering/fetch_site_list`, async ({ page, size, sort }: IQueryParams) => {
   const requestUrl = `${siteApiUrl}?type=SITE&${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
   return axios.get<ISite[]>(requestUrl);
+});
+
+export const getResource = createAsyncThunk(`rendering/fetch_resource`, async ({ resourceId }: { resourceId: string; path: string }) => {
+  const requestUrl = `${resourceApiUrl}/${resourceId}`;
+  return axios.get<IResource[]>(requestUrl);
 });
 
 export const getAttribute = createAsyncThunk(
@@ -111,6 +118,17 @@ export const RenderingSlice = createSlice({
         const aaa = {};
         aaa[path] = {
           attribute: data,
+        };
+
+        return { ...state, renderingState: { ...state.renderingState, ...aaa } };
+      })
+      .addMatcher(isFulfilled(getResource), (state, action) => {
+        const { data } = action.payload;
+        const { path } = action.meta.arg;
+
+        const aaa = {};
+        aaa[path] = {
+          resource: data,
         };
 
         return { ...state, renderingState: { ...state.renderingState, ...aaa } };

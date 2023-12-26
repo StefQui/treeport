@@ -2,6 +2,7 @@ package com.sm.service.dto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.sm.service.dto.attribute.AttributeDTO;
 import com.sm.web.rest.TestUtil;
 import org.junit.jupiter.api.Test;
 

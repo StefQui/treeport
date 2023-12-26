@@ -5,7 +5,7 @@ import static java.util.Optional.of;
 
 import com.sm.domain.attribute.Attribute;
 import com.sm.repository.AttributeRepository;
-import com.sm.service.dto.AttributeDTO;
+import com.sm.service.dto.attribute.AttributeDTO;
 import com.sm.service.mapper.AttributeMapper;
 import java.util.List;
 import java.util.Optional;

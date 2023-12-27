@@ -1,6 +1,7 @@
 {
   "componentType": "verticalPanel",
   "path": "vp",
+  "border": true,
   "items": [
     {
       "componentType": "SmText",
@@ -34,6 +35,18 @@
       "path": "vsm4",
       "params": {
         "resourceId": "r4"
+      }
+    },
+    {
+      "componentType": "SmRefToResource",
+      "path": "vsm44",
+      "params": {
+        "resourceId": "r5",
+        "arguments": {
+          "toto": {
+            "refToPath": "/vp/vsm3"
+          }
+        }
       }
     }
   ]

@@ -1,0 +1,17 @@
+{
+  "componentType": "verticalPanel",
+  "path": "vp5",
+  "border": true,
+  "items": [
+    {
+      "componentType": "SmText",
+      "path": "vsm55",
+      "params": {
+        "input": {
+          "refToPath": "..",
+          "property": "toto"
+        }
+      }
+    }
+  ]
+}

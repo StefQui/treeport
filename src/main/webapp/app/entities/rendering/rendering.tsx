@@ -30,7 +30,7 @@ export const SmTextConst = props => {
 };
 
 export function buildPath(props) {
-  return props.currentPath + PATH_SEPARATOR + props.path;
+  return props.path ? props.currentPath + PATH_SEPARATOR + props.path : props.currentPath;
 }
 
 const applyPath = (path, pathToApply) => {
@@ -49,6 +49,8 @@ const applyPath = (path, pathToApply) => {
       }
     });
     return ROOT_PATH_SEPARATOR + result.join(PATH_SEPARATOR);
+  } else if (pathToApply.startsWith('.' + PATH_SEPARATOR)) {
+    return path + PATH_SEPARATOR + pathToApply.substring('.'.length);
   } else {
     return path + PATH_SEPARATOR + pathToApply;
   }
@@ -222,12 +224,11 @@ export const ROOT_PATH_SEPARATOR = '/';
 
 export const MyVerticalPanel = props => {
   const renderItems = items =>
-    items.map((item, index) => {
-      console.log('renderItems:', props.currentPath, props.path, item.path);
-      return <MyElem key={index} input={{ ...item }} currentPath={props.currentPath + PATH_SEPARATOR + props.path}></MyElem>;
-    });
+    items.map((item, index) => (
+      <MyElem key={index} input={{ ...item }} currentPath={props.currentPath + PATH_SEPARATOR + props.path}></MyElem>
+    ));
 
-  return <Row>{renderItems(props.items)}</Row>;
+  return <Row className="border-blue padding-4">{renderItems(props.items)}</Row>;
 };
 
 export const MyInput = props => {
@@ -295,10 +296,15 @@ export const MyElem = props => {
 };
 
 export const MyWrapper = ({ children, ...props }) => {
-  if (props.col) {
-    return <Col md={props.col}>{children}</Col>;
+  let cn = '';
+  if (props.border) {
+    cn += ' border-2';
   }
-  return children;
+  return (
+    <Col md={props.col ?? 12} className={cn}>
+      {children}
+    </Col>
+  );
 };
 
 export const MyRend = props => {
@@ -317,6 +323,14 @@ export const MyRend = props => {
     return <Row md="8">{error}</Row>;
   }
 
-  console.log('......', props.currentPath);
-  return <Row md="8">{props.content ? <MyElem input={input} currentPath={props.currentPath}></MyElem> : <p>Loading...</p>}</Row>;
+  console.log('......', props.currentPath, props.params);
+  return (
+    <Row md="8">
+      {props.content ? (
+        <MyElem input={input} params={props.params ? props.params.params : null} currentPath={props.currentPath}></MyElem>
+      ) : (
+        <p>Loading...</p>
+      )}
+    </Row>
+  );
 };

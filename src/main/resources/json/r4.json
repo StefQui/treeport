@@ -1,6 +1,7 @@
 {
   "componentType": "verticalPanel",
   "path": "vp2",
+  "border": true,
   "items": [
     {
       "componentType": "SmText",

@@ -31,165 +31,8 @@ public class InitialLoadService {
     public static final String R_2 = "r2";
     public static final String R_3 = "r3";
     public static final String R_4 = "r4";
-    /*    public static final String R3_CONTENT =
-            """
-                {
-                   "componentType":"verticalPanel",
-                   "path":"vp",
-                   "items":
-                        [
-                            {
-                               "componentType":"SmText",
-                               "path":"vsm1",
-                               "params":
-                               {
-                                   "input":
-                                      {
-                                          "const": "ABC"
-                                      }
-                               }
-                            },
-                            {
-                               "componentType":"SmText",
-                               "path":"vsm2",
-                               "params":
-                               {
-                                   "input":
-                                      {
-                                          "refToPath": "vp.vsm3"
-                                      }
-                               }
-                            },
-                            {
-                               "componentType":"SmInput",
-                               "path":"vsm3",
-                               "params":
-                               {
-                                   "defaultValue":
-                                      {
-                                          "const": "DEFEDF"
-                                      }
-                               }
-                            }
-                        ]
-                }
-                """;
-        public static final String R2_CONTENT =
-            """
-                {
-                   "type":"verticalPanel",
-                   "path":"vp",
-                   "items":
-                        [
-                           {
-                                "type":"textBasic",
-                                "text":"ratata",
-                                "col": 8
-                           }
-                        ]
-                }
-                """;
+    public static final String R_5 = "r5";
 
-        public static final String R1_CONTENT =
-            """
-                {
-                   "type":"verticalPanel",
-                   "path":"vp",
-                   "items":
-                        [
-                           {
-                               "type":"textRef",
-                               "refTo":"vp.vp2.inp2",
-                               "col": 4
-                           },
-                           {
-                               "path": "resContent",
-                               "type":"resourceContent",
-                               "refTo":"r2",
-                               "params":
-                                  [
-                                    {
-                                      "t1": "tototo"
-                                    },
-                                    {
-                                      "t2": "tatata"
-                                    }
-                                  ],
-                               "col": 4
-                           },
-                           {
-                              "type":"siteRef",
-                              "refTo":"vp.thelist2",
-                              "col": 8
-                           },
-                           {
-                                "type":"textBasic",
-                                "text":"toSite",
-                                "col": 8
-                           },
-                           {
-                              "type":"attRef",
-                              "refTo":"vp.thelist2",
-                              "attributeKey":"toSite",
-                              "campaignId": "2023",
-                              "col": 4,
-                              "path":"path-to-attref"
-                           },
-                           {
-                                "type":"textBasic",
-                                "text":"toConso",
-                                "col": 8
-                           },
-                           {
-                              "type":"attRef",
-                              "refTo":"vp.thelist2",
-                              "attributeKey":"toConso",
-                              "campaignId": "2023",
-                              "col": 4,
-                              "path":"path-to-attref2"
-                           },
-                           {
-                               "type":"input",
-                               "path":"inp1",
-                               "value":"tata"
-                           },
-                           {
-                                "type":"siteList",
-                                "path":"thelist2"
-                           },
-                           {
-                               "path":"vp2",
-                               "type":"verticalPanel",
-                               "items":
-                                    [
-                                       {
-                                           "type":"input",
-                                           "path":"inp2",
-                                           "value":"arg"
-                                       },
-                                       {
-                                           "type":"textBasic",
-                                           "text":"tutu",
-                                           "col": 4
-                                       },
-                                       {
-                                            "type":"textBasic",
-                                            "text":"tutu2",
-                                            "col": 4
-                                        },
-                                        {
-                                             "type":"textRef",
-                                             "refTo":"vp.inp1"
-                                         },
-                                         {
-                                              "type": "siteList",
-                                              "path": "thelist"
-                                         }
-                                     ]
-                                }
-                        ]
-                }
-                """;*/
     public static final String CAR = "CAR";
     public static final String TRA = "TRA";
     public static final String HQ = "HQ";
@@ -216,6 +59,9 @@ public class InitialLoadService {
 
     @Value("classpath:json/r4.json")
     org.springframework.core.io.Resource r4SourceFile;
+
+    @Value("classpath:json/r5.json")
+    org.springframework.core.io.Resource r5SourceFile;
 
     public InitialLoadService(
         OrganisationRepository organisationRepository,
@@ -330,6 +176,17 @@ public class InitialLoadService {
                 .type(RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r4SourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_5)
+                .name("Resource r5")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(r5SourceFile))
                 .childrenIds(List.of())
                 .build()
         );

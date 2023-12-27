@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntity } from 'app/entities/resource/resource.reducer';
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { MyRend, PATH_SEPARATOR, ROOT_PATH_SEPARATOR, useRenderingState } from './rendering';
+import { buildPath, MyRend, PATH_SEPARATOR, ROOT_PATH_SEPARATOR, useRenderingState } from './rendering';
 import { getResource } from './rendering.reducer';
 
 export const ResourceContent = props => {
@@ -86,7 +86,7 @@ export const SmRefToResource = props => {
   console.log('SmRefToResource', props.currentPath, props.path);
 
   if (resourceContent) {
-    return <MyRend content={resourceContent} params={props.params} currentPath={props.currentPath + PATH_SEPARATOR + props.path}></MyRend>;
+    return <MyRend content={resourceContent} params={props.params} currentPath={buildPath(props)}></MyRend>;
   }
   return (
     <div>

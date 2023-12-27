@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { getEntity } from './resource.reducer';
-import { MyRend } from 'app/entities/rendering/rendering';
+import { MyRend } from '../rendering/resource-content';
 
 export const ResourceDetail = () => {
   const dispatch = useAppDispatch();

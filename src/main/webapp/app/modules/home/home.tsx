@@ -124,6 +124,31 @@ export const Home = () => {
             /coca/render/r4
           </Button>
         </p>
+        <p>
+          <Button tag={Link} to={`/coca/render/r5?toto=abc123`} color="link" size="sm">
+            /coca/render/r5?toto=abc123
+          </Button>
+        </p>
+        <p>
+          <Button tag={Link} to={`/coca/render/r5?toto=def456&tata=zzz`} color="link" size="sm">
+            /coca/render/r5?toto=def456 tata=zzz
+          </Button>
+        </p>
+        <p>
+          <Button
+            tag={Link}
+            to={encodeURI(
+              `/coca/render/r5?context=${JSON.stringify({
+                tata: 'tata123',
+                selectedResource: {},
+              })}`,
+            )}
+            color="link"
+            size="sm"
+          >
+            /coca/render/r5?context=tatatata
+          </Button>
+        </p>
 
         {account?.login ? (
           <div>

@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getAttribute, getResource, setAction, setRenderingForPath } from './rendering.reducer';
 import SiteList from '../site/site-list';
 import { AttValue } from '../attribute-value/attribute-value';
-import { ResourceContent, SmRefToResource } from './resource-content';
+import { SmRefToResource, ZZZResourceContent } from './resource-content';
 
 export const TextBasic = props => {
   const siteEntity = useAppSelector(state => state.site.entity);
@@ -33,7 +33,7 @@ export function buildPath(props) {
   return props.path ? props.currentPath + PATH_SEPARATOR + props.path : props.currentPath;
 }
 
-const applyPath = (path, pathToApply) => {
+export const applyPath = (path, pathToApply) => {
   if (pathToApply.startsWith(ROOT_PATH_SEPARATOR)) {
     return pathToApply;
   } else if (pathToApply.startsWith('..')) {
@@ -56,25 +56,65 @@ const applyPath = (path, pathToApply) => {
   }
 };
 
+export const OUTPUT_KEY = 'output';
+export const TEXT_VALUE_KEY = 'textValue';
+export const REF_TO_PATH_KEY = 'refToPath';
+export const REF_TO_CONTEXT_KEY = 'refToContext';
+export const CONST_KEY = 'const';
+export const SITE_VALUE_KEY = 'siteValue';
+export const ENTITY_KEY = 'entity';
+export const RESOURCE_NAME_KEY = 'name';
+
 export const SmTextRefToPath = props => {
   const builtPath = buildPath(props);
-  const calculatedPath = applyPath(builtPath, props.params.input.refToPath);
+  const refToPath = props.params[TEXT_VALUE_KEY][REF_TO_PATH_KEY];
+  const calculatedPath = applyPath(builtPath, refToPath.path);
   const referencedValue = useRenderingState(calculatedPath);
+  // console.log('aaaa', referencedValue, props.params.input.property);
   if (referencedValue) {
-    return <span>{referencedValue.output}</span>;
+    return <span>{getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY)}</span>;
+    // return <span>{referencedValue[props.params.input.property ?? OUTPUT_KEY]}</span>;
   }
-  return <span>No value for {calculatedPath}</span>;
+  return <span>No value found for {calculatedPath} for SmTextRefToPath</span>;
+};
+
+export const SmTextRefToContext = props => {
+  const refToContext = props.params[TEXT_VALUE_KEY][REF_TO_CONTEXT_KEY];
+  const value = useRenderingContextState(refToContext.property);
+  if (value) {
+    return <span>{value}</span>;
+  }
+  return <span>No value found in context for SmTextRefToPath</span>;
+};
+
+export const getValueForPathInObject = (obj, path) => {
+  console.log('getValueForPathInObject', obj, path);
+  try {
+    const splited = path.split('.');
+    return splited.reduce((acc, current) => acc[current], obj);
+  } catch (ex) {
+    return null;
+  }
 };
 
 export const SmText = props => {
-  if (!props.params || !props.params.input) {
+  if (!props.params) {
     return <span>input param is mandatory</span>;
   }
-  const input = props.params.input;
-  if (input.refToPath) {
-    return <SmTextRefToPath {...props}></SmTextRefToPath>;
+
+  const textValue = props.params[TEXT_VALUE_KEY];
+  if (!textValue) {
+    return <span>{TEXT_VALUE_KEY} param is mandatory</span>;
   }
-  return <SmTextConst {...props}></SmTextConst>;
+
+  if (textValue[REF_TO_PATH_KEY]) {
+    return <SmTextRefToPath {...props}></SmTextRefToPath>;
+  } else if (textValue[REF_TO_CONTEXT_KEY]) {
+    return <SmTextRefToContext {...props}></SmTextRefToContext>;
+  } else if (textValue[CONST_KEY]) {
+    return <SmTextConst {...props}></SmTextConst>;
+  }
+  return <span>You should have at least refToPath or refToContext or const in SmText</span>;
 };
 
 export function useRenderingState(renderingPath, path1?) {
@@ -87,7 +127,11 @@ export function useRenderingState(renderingPath, path1?) {
   return useAppSelector(state => state.rendering.renderingState[renderingPath]);
 }
 
-function updateRenderingState(dispatch, path: string, value) {
+export function useRenderingContextState(property) {
+  return useAppSelector(state => getValueForPathInObject(state.rendering.context, property));
+}
+
+export function updateRenderingState(dispatch, path: string, value) {
   dispatch(
     setRenderingForPath({
       path,
@@ -104,7 +148,7 @@ export const SmInput = props => {
   useEffect(() => {
     if (props.params.defaultValue.const) {
       updateRenderingState(dispatch, builtPath, {
-        output: props.params.defaultValue.const,
+        [OUTPUT_KEY]: props.params.defaultValue.const,
       });
     }
   }, []);
@@ -112,7 +156,7 @@ export const SmInput = props => {
   const handleChange = event => {
     setValue(event.target.value);
     updateRenderingState(dispatch, builtPath, {
-      output: event.target.value,
+      [OUTPUT_KEY]: event.target.value,
     });
     dispatch(setAction({ source: builtPath, actionType: 'textChanged', value: event.target.value }));
   };
@@ -160,13 +204,37 @@ export const SiteRef = (props: { refTo: string; col: any }) => {
       return;
     }
     if (action.actionType === 'selectSite') {
-      setValue(action.entity.entity.id + ' - ' + action.entity.entity.name);
+      setValue(action.entity[ENTITY_KEY].id + ' - ' + action.entity[ENTITY_KEY].name);
     } else {
       setValue('----');
     }
   }, [action]);
 
   return <span>{value}</span>;
+};
+
+export const SmSiteRef = props => {
+  const builtPath = buildPath(props);
+  const siteValue = props.params[SITE_VALUE_KEY];
+  if (!siteValue) {
+    return <span>Missing param {SITE_VALUE_KEY} in SmSiteRef</span>;
+  }
+  if (!siteValue.refToPath) {
+    return <span>Missing param {SITE_VALUE_KEY}.refToPath in SmSiteRef</span>;
+  }
+  const calculatedPath = applyPath(builtPath, siteValue.refToPath.path);
+  const referencedValue = useRenderingState(calculatedPath);
+  if (referencedValue) {
+    const foundValue = getValueForPathInObject(referencedValue, siteValue.refToPath.property ?? OUTPUT_KEY);
+    if (foundValue) {
+      return (
+        <span>
+          <u>Site:</u> {foundValue[ENTITY_KEY][RESOURCE_NAME_KEY]}
+        </span>
+      );
+    }
+  }
+  return <span>No Site for {calculatedPath}</span>;
 };
 
 export const AttRef = (props: { refTo: string; attributeKey: string; campaignId: string; path: string; col: any }) => {
@@ -198,7 +266,7 @@ export const AttRef = (props: { refTo: string; attributeKey: string; campaignId:
       dispatch(
         getAttribute({
           exploded: {
-            siteId: action.entity.entity.id,
+            siteId: action.entity[ENTITY_KEY].id,
             campaignId: props.campaignId,
             key: props.attributeKey,
           },
@@ -236,12 +304,14 @@ export const MyInput = props => {
   const dispatch = useAppDispatch();
   // console.log('bbbb', props.path);
   // dispatch(tata());
-  const rendering = useAppSelector(state => state.rendering.renderingState[props.path]);
+  const builtPath = buildPath(props);
+  const rendering = useAppSelector(state => state.rendering.renderingState[builtPath]);
+
   const handleChange = event => {
     setValue(event.target.value);
-    dispatch(setRenderingForPath({ path: props.path, value: event.target.value }));
+    dispatch(setRenderingForPath({ path: builtPath, value: event.target.value }));
 
-    dispatch(setAction({ source: props.path, actionType: 'textChanged', value: event.target.value }));
+    dispatch(setAction({ source: builtPath, actionType: 'textChanged', value: event.target.value }));
 
     // setRendering(event.target.value);
     // dispatch(setStateForPath({ path: props.path, value: event.target.value }));
@@ -277,6 +347,8 @@ export const MyElem = props => {
         return <TextRef {...params}></TextRef>;
       case 'siteRef':
         return <SiteRef {...params}></SiteRef>;
+      case 'SmSiteRef':
+        return <SmSiteRef {...params}></SmSiteRef>;
       case 'attRef':
         return <AttRef {...params}></AttRef>;
       case 'input':
@@ -284,7 +356,7 @@ export const MyElem = props => {
       case 'siteList':
         return <TheSiteList {...params}></TheSiteList>;
       case 'resourceContent':
-        return <ResourceContent {...params}></ResourceContent>;
+        return <ZZZResourceContent {...params}></ZZZResourceContent>;
       case 'verticalPanel':
         return <MyVerticalPanel {...params}></MyVerticalPanel>;
       default:
@@ -304,33 +376,5 @@ export const MyWrapper = ({ children, ...props }) => {
     <Col md={props.col ?? 12} className={cn}>
       {children}
     </Col>
-  );
-};
-
-export const MyRend = props => {
-  const [input, setInput] = useState({ type: 'notype', text: 'kkk' });
-  const [error, setError] = useState('');
-  useEffect(() => {
-    try {
-      setError('');
-      setInput(props.content ? JSON.parse(props.content) : {});
-    } catch (ex) {
-      setError('pb while parsing json');
-    }
-  }, [props.content]);
-
-  if (error) {
-    return <Row md="8">{error}</Row>;
-  }
-
-  console.log('......', props.currentPath, props.params);
-  return (
-    <Row md="8">
-      {props.content ? (
-        <MyElem input={input} params={props.params ? props.params.params : null} currentPath={props.currentPath}></MyElem>
-      ) : (
-        <p>Loading...</p>
-      )}
-    </Row>
   );
 };

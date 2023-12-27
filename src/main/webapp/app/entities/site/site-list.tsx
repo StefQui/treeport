@@ -10,6 +10,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { getEntities } from './site.reducer';
 import { getSites, setAction, setActivePage, setRenderingForPath } from 'app/entities/rendering/rendering.reducer';
+import { buildPath, ENTITY_KEY } from '../rendering/rendering';
 
 export const SiteList = props => {
   const dispatch = useAppDispatch();
@@ -30,6 +31,7 @@ export const SiteList = props => {
       totalItems: 0,
       updateSuccess: false,
     },
+    selected: null,
   };
 
   // const pageLocation = useLocation();
@@ -39,31 +41,30 @@ export const SiteList = props => {
   //   console.log('start-listState', state.rendering.renderingState[props.path]);
   //   return state.rendering.renderingState[props.path] ? state.rendering.renderingState[props.path].listState : null;
   // });
+  const builtPath = buildPath(props);
   const paginationState = useAppSelector(state => {
-    console.log('start-paginationState', state.rendering.renderingState[props.path]);
-
-    return state.rendering.renderingState[props.path] ? state.rendering.renderingState[props.path].paginationState : null;
+    return state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath].paginationState : null;
   });
 
   const siteList = useAppSelector(state =>
-    state.rendering.renderingState[props.path] ? state.rendering.renderingState[props.path].listState.entities : null,
+    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath].listState.entities : null,
   );
 
   const loading = useAppSelector(state =>
-    state.rendering.renderingState[props.path] ? state.rendering.renderingState[props.path].listState.loading : null,
+    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath].listState.loading : null,
   );
 
   const totalItems = useAppSelector(state =>
-    state.rendering.renderingState[props.path] ? state.rendering.renderingState[props.path].listState.totalItems : null,
+    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath].listState.totalItems : null,
   );
 
   const activePage = useAppSelector(state =>
-    state.rendering.renderingState[props.path] ? state.rendering.renderingState[props.path].paginationState.activePage : null,
+    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath].paginationState.activePage : null,
   );
 
   useEffect(() => {
     console.log('useEffect1');
-    dispatch(setRenderingForPath({ path: props.path, value: initialState }));
+    dispatch(setRenderingForPath({ path: builtPath, value: initialState }));
     sortEntities();
   }, []);
 
@@ -91,7 +92,7 @@ export const SiteList = props => {
   // const totalItems = useAppSelector(state => state.site.totalItems);
 
   const getAllSites = () => {
-    console.log('getAllSites', props.path);
+    console.log('getAllSites', builtPath);
     // const rendering = useAppSelector(state => state.rendering.renderingState[props.refTo]);
 
     // const listState = getRenderingStateForPath(rendering, props.path);
@@ -102,14 +103,14 @@ export const SiteList = props => {
         page: ps.activePage - 1,
         size: ps.itemsPerPage,
         sort: `${ps.sort},${ps.order}`,
-        path: props.path,
+        path: builtPath,
       }),
     );
     // setRs(listState);
   };
 
   const sortEntities = () => {
-    console.log('sortEntities', props.path);
+    console.log('sortEntities', builtPath);
     getAllSites();
     // const endURL = `?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`;
     // if (pageLocation.search !== endURL) {
@@ -140,7 +141,7 @@ export const SiteList = props => {
   // }, [pageLocation.search]);
 
   const sort = p => () => {
-    console.log('sort', props.path);
+    console.log('sort', builtPath);
     // const listState = getRenderingStateForPath(rendering, props.path);
     // setStateForPath({
     //   path: props.path,
@@ -161,12 +162,13 @@ export const SiteList = props => {
 
   const handleSelect = selected => () => {
     console.log('handleSelect', selected);
-    dispatch(setAction({ source: props.path, actionType: 'selectSite', entity: { entityType: 'SITE', entity: selected } }));
+    dispatch(setRenderingForPath({ path: builtPath, value: { selected: { entityType: 'SITE', [ENTITY_KEY]: selected } } }));
+    dispatch(setAction({ source: builtPath, actionType: 'selectSite', entity: { entityType: 'SITE', [ENTITY_KEY]: selected } }));
   };
 
   const handlePagination = currentPage => {
     console.log('handlePagination', currentPage);
-    dispatch(setActivePage({ path: props.path, value: currentPage }));
+    dispatch(setActivePage({ path: builtPath, value: currentPage }));
 
     // const listState = getRenderingStateForPath(rendering, props.path);
     // setStateForPath({

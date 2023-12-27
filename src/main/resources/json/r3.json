@@ -31,6 +31,19 @@
       }
     },
     {
+      "componentType": "SmInput",
+      "path": "vsm3bis",
+      "params": {
+        "defaultValue": {
+          "const": "OTHER"
+        }
+      }
+    },
+    {
+      "componentType": "siteList",
+      "path": "vsmsiteList"
+    },
+    {
       "componentType": "SmRefToResource",
       "path": "vsm4",
       "params": {
@@ -45,6 +58,13 @@
         "arguments": {
           "toto": {
             "refToPath": "/vp/vsm3"
+          },
+          "tata": {
+            "refToPath": "/vp/vsm3bis"
+          },
+          "selectedResource": {
+            "refToPath": "/vp/vsmsiteList",
+            "property": "selected"
           }
         }
       }

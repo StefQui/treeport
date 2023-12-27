@@ -11,7 +11,8 @@ import { IResource } from 'app/shared/model/resource.model';
 
 const initialState = {
   loading: false,
-  toto: 'starval',
+  tototot: 'starval',
+  context: {},
   renderingState: {},
 };
 
@@ -53,10 +54,25 @@ export const RenderingSlice = createSlice({
     reset() {
       return initialState;
     },
+    setRenderingContext(state, action) {
+      return {
+        ...state,
+        context: action.payload,
+      };
+    },
     setRenderingForPath(state, action) {
-      const aaa = {};
-      aaa[action.payload.path] = action.payload.value;
-      return { ...state, renderingState: { ...state.renderingState, ...aaa } };
+      return {
+        ...state,
+        renderingState: {
+          ...state.renderingState,
+          ...{
+            [action.payload.path]: {
+              ...state.renderingState[action.payload.path],
+              ...action.payload.value,
+            },
+          },
+        },
+      };
     },
     setActivePage(state, action) {
       const aaa = {};
@@ -136,7 +152,7 @@ export const RenderingSlice = createSlice({
   },
 });
 
-export const { reset, setRenderingForPath, setActivePage, setAction } = RenderingSlice.actions;
+export const { reset, setRenderingForPath, setRenderingContext, setActivePage, setAction } = RenderingSlice.actions;
 
 // Reducer
 export default RenderingSlice.reducer;

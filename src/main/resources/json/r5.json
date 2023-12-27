@@ -7,9 +7,67 @@
       "componentType": "SmText",
       "path": "vsm55",
       "params": {
-        "input": {
-          "refToPath": "..",
-          "property": "toto"
+        "textValue": {
+          "or": [
+            {
+              "refToPath": {
+                "path": "../..",
+                "property": "toto"
+              }
+            },
+            {
+              "refToContext": {
+                "property": "tata"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "componentType": "SmText",
+      "path": "vsm99",
+      "params": {
+        "textValue": {
+          "refToPath": {
+            "path": "../..",
+            "property": "tata"
+          }
+        }
+      }
+    },
+    {
+      "componentType": "SmText",
+      "path": "vsm1000",
+      "params": {
+        "textValue": {
+          "refToContext": {
+            "property": "tata"
+          }
+        }
+      }
+    },
+    {
+      "componentType": "SmText",
+      "path": "vsm9900",
+      "params": {
+        "textValue": {
+          "refToPath": {
+            "path": "../..",
+            "property": "selectedResource.entity.name"
+          }
+        }
+      }
+    },
+    {
+      "componentType": "SmSiteRef",
+      "path": "vsm9900",
+      "params": {
+        "siteValue": {
+          "refToPath": {
+            "path": "../..",
+            "property": "selectedResource"
+          }
         }
       }
     }

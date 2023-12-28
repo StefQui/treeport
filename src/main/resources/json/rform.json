@@ -1,0 +1,35 @@
+{
+  "componentType": "verticalPanel",
+  "path": "vp12",
+  "border": true,
+  "items": [
+    {
+      "componentType": "Form",
+      "path": "vsmform",
+      "items": [
+        {
+          "componentType": "AttributeForm",
+          "path": "vsmatt",
+          "params": {
+            "resourceId": {
+              "refToPath": {
+                "path": "../..",
+                "property": "selectedResource.entity.id"
+              }
+            },
+            "campaignId": {
+              "refToPath": {
+                "path": "/vp/vpc/campaignId"
+              }
+            },
+            "attConfig": {
+              "const": {
+                "constValue": "toSite"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

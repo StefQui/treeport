@@ -49,7 +49,7 @@
     },
     {
       "componentType": "SmText",
-      "path": "vsm9900",
+      "path": "resName",
       "params": {
         "textValue": {
           "refToPath": {
@@ -61,12 +61,82 @@
     },
     {
       "componentType": "SmSiteRef",
-      "path": "vsm9900",
+      "path": "vsm8800",
       "params": {
         "siteValue": {
           "refToPath": {
             "path": "../..",
             "property": "selectedResource"
+          }
+        }
+      }
+    },
+    {
+      "componentType": "SmText",
+      "path": "aaaa",
+      "col": 6,
+      "params": {
+        "textValue": {
+          "const": {
+            "constValue": "To site"
+          }
+        }
+      }
+    },
+    {
+      "componentType": "SmAttRef",
+      "path": "attRefToSite",
+      "col": 6,
+      "params": {
+        "resourceId": {
+          "refToPath": {
+            "path": "../..",
+            "property": "selectedResource.entity.id"
+          }
+        },
+        "campaignId": {
+          "refToPath": {
+            "path": "/vp/vpc/campaignId"
+          }
+        },
+        "attConfig": {
+          "const": {
+            "constValue": "toSite"
+          }
+        }
+      }
+    },
+    {
+      "componentType": "SmText",
+      "path": "aaaa",
+      "col": 6,
+      "params": {
+        "textValue": {
+          "const": {
+            "constValue": "To Consolidé"
+          }
+        }
+      }
+    },
+    {
+      "componentType": "SmAttRef",
+      "path": "attRefToConso",
+      "col": 6,
+      "params": {
+        "resourceId": {
+          "refToPath": {
+            "path": "../..",
+            "property": "selectedResource.entity.id"
+          }
+        },
+        "campaignId": {
+          "const": {
+            "constValue": "2023"
+          }
+        },
+        "attConfig": {
+          "const": {
+            "constValue": "toConso"
           }
         }
       }

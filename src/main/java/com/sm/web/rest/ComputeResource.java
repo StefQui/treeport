@@ -40,6 +40,7 @@ public class ComputeResource {
         log.debug("REST request to compute");
         //        AttributeConfigDTO result = attributeConfigService.save(attributeConfigDTO);
         computeService.applyCampaigns(COCA);
+        computeService.reCalculateAllAttributes(COCA);
 
         return ResponseEntity.ok(List.of());
     }

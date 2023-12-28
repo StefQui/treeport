@@ -29,5 +29,9 @@ export const AttValue = props => {
   if (props.attValue && props.attValue.attributeValue) {
     return renderAttValue(props.attValue.attributeValue);
   }
-  return <div>No value yet</div>;
+  return (
+    <span>
+      <i>No value yet for AttValue</i>
+    </span>
+  );
 };

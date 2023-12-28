@@ -18,16 +18,16 @@ export const TextBasic = props => {
   return <span>{value}</span>;
 };
 
-export const SmTextConst = props => {
-  if (props.params.input.const) {
-    return (
-      <span>
-        {props.params.input.const} - ({buildPath(props)})
-      </span>
-    );
-  }
-  return <span>const is required in SmText</span>;
-};
+// export const SmTextConst = props => {
+//   if (props.params.input.const) {
+//     return (
+//       <span>
+//         {props.params.input.const} - ({buildPath(props)})
+//       </span>
+//     );
+//   }
+//   return <span>const is required in SmText</span>;
+// };
 
 export function buildPath(props) {
   return props.path ? props.currentPath + PATH_SEPARATOR + props.path : props.currentPath;
@@ -58,34 +58,38 @@ export const applyPath = (path, pathToApply) => {
 
 export const OUTPUT_KEY = 'output';
 export const TEXT_VALUE_KEY = 'textValue';
+export const RESOURCE_ID_KEY = 'resourceId';
+export const ATT_CONFIG_KEY = 'attConfig';
+export const CAMPAIGN_ID_KEY = 'campaignId';
 export const REF_TO_PATH_KEY = 'refToPath';
 export const REF_TO_CONTEXT_KEY = 'refToContext';
 export const CONST_KEY = 'const';
+export const CONST_VALUE_KEY = 'constValue';
 export const SITE_VALUE_KEY = 'siteValue';
 export const ENTITY_KEY = 'entity';
 export const RESOURCE_NAME_KEY = 'name';
 
-export const SmTextRefToPath = props => {
-  const builtPath = buildPath(props);
-  const refToPath = props.params[TEXT_VALUE_KEY][REF_TO_PATH_KEY];
-  const calculatedPath = applyPath(builtPath, refToPath.path);
-  const referencedValue = useRenderingState(calculatedPath);
-  // console.log('aaaa', referencedValue, props.params.input.property);
-  if (referencedValue) {
-    return <span>{getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY)}</span>;
-    // return <span>{referencedValue[props.params.input.property ?? OUTPUT_KEY]}</span>;
-  }
-  return <span>No value found for {calculatedPath} for SmTextRefToPath</span>;
-};
+// export const SmTextRefToPath = props => {
+//   const builtPath = buildPath(props);
+//   const refToPath = props.params[TEXT_VALUE_KEY][REF_TO_PATH_KEY];
+//   const calculatedPath = applyPath(builtPath, refToPath.path);
+//   const referencedValue = useRenderingState(calculatedPath);
+//   // console.log('aaaa', referencedValue, props.params.input.property);
+//   if (referencedValue) {
+//     return <span>{getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY)}</span>;
+//     // return <span>{referencedValue[props.params.input.property ?? OUTPUT_KEY]}</span>;
+//   }
+//   return <span>No value found for {calculatedPath} for SmTextRefToPath</span>;
+// };
 
-export const SmTextRefToContext = props => {
-  const refToContext = props.params[TEXT_VALUE_KEY][REF_TO_CONTEXT_KEY];
-  const value = useRenderingContextState(refToContext.property);
-  if (value) {
-    return <span>{value}</span>;
-  }
-  return <span>No value found in context for SmTextRefToPath</span>;
-};
+// export const SmTextRefToContext = props => {
+//   const refToContext = props.params[TEXT_VALUE_KEY][REF_TO_CONTEXT_KEY];
+//   const value = useRenderingContextState(refToContext.property);
+//   if (value) {
+//     return <span>{value}</span>;
+//   }
+//   return <span>No value found in context for SmTextRefToPath</span>;
+// };
 
 export const getValueForPathInObject = (obj, path) => {
   console.log('getValueForPathInObject', obj, path);
@@ -99,22 +103,60 @@ export const getValueForPathInObject = (obj, path) => {
 
 export const SmText = props => {
   if (!props.params) {
-    return <span>input param is mandatory</span>;
+    return (
+      <span>
+        <i>params is mandatory in SmText</i>
+      </span>
+    );
   }
 
   const textValue = props.params[TEXT_VALUE_KEY];
   if (!textValue) {
-    return <span>{TEXT_VALUE_KEY} param is mandatory</span>;
+    return (
+      <span>
+        <i>{TEXT_VALUE_KEY} param is mandatory in SmText</i>
+      </span>
+    );
   }
 
-  if (textValue[REF_TO_PATH_KEY]) {
-    return <SmTextRefToPath {...props}></SmTextRefToPath>;
-  } else if (textValue[REF_TO_CONTEXT_KEY]) {
-    return <SmTextRefToContext {...props}></SmTextRefToContext>;
-  } else if (textValue[CONST_KEY]) {
-    return <SmTextConst {...props}></SmTextConst>;
+  const calculatedValue = useCalculatedValue(props, textValue);
+
+  if (calculatedValue) {
+    return <span>{calculatedValue}</span>;
   }
-  return <span>You should have at least refToPath or refToContext or const in SmText</span>;
+  return (
+    <span>
+      <i>No value for SmText</i>
+    </span>
+  );
+
+  // if (textValue[REF_TO_PATH_KEY]) {
+  //   return <SmTextRefToPath {...props}></SmTextRefToPath>;
+  // } else if (textValue[REF_TO_CONTEXT_KEY]) {
+  //   return <SmTextRefToContext {...props}></SmTextRefToContext>;
+  // } else if (textValue[CONST_KEY]) {
+  //   return <SmTextConst {...props}></SmTextConst>;
+  // }
+  // return <span>You should have at least refToPath or refToContext or const in SmText</span>;
+};
+
+export const useCalculatedValue = (props, elem) => {
+  if (elem[REF_TO_PATH_KEY]) {
+    const builtPath = buildPath(props);
+    const refToPath = elem[REF_TO_PATH_KEY];
+    const calculatedPath = applyPath(builtPath, refToPath.path);
+    const referencedValue = useRenderingState(calculatedPath);
+    if (referencedValue) {
+      return getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY);
+    }
+    return null;
+  } else if (elem[REF_TO_CONTEXT_KEY]) {
+    const refToContext = elem[REF_TO_CONTEXT_KEY];
+    return useRenderingContextState(refToContext.property);
+  } else if (elem[CONST_KEY]) {
+    return elem[CONST_KEY][CONST_VALUE_KEY];
+  }
+  return null;
 };
 
 export function useRenderingState(renderingPath, path1?) {
@@ -219,22 +261,21 @@ export const SmSiteRef = props => {
   if (!siteValue) {
     return <span>Missing param {SITE_VALUE_KEY} in SmSiteRef</span>;
   }
-  if (!siteValue.refToPath) {
-    return <span>Missing param {SITE_VALUE_KEY}.refToPath in SmSiteRef</span>;
+
+  const calculatedValue = useCalculatedValue(props, siteValue);
+  if (calculatedValue) {
+    return (
+      <span>
+        <u>Site:</u> {calculatedValue[ENTITY_KEY][RESOURCE_NAME_KEY]}
+      </span>
+    );
   }
-  const calculatedPath = applyPath(builtPath, siteValue.refToPath.path);
-  const referencedValue = useRenderingState(calculatedPath);
-  if (referencedValue) {
-    const foundValue = getValueForPathInObject(referencedValue, siteValue.refToPath.property ?? OUTPUT_KEY);
-    if (foundValue) {
-      return (
-        <span>
-          <u>Site:</u> {foundValue[ENTITY_KEY][RESOURCE_NAME_KEY]}
-        </span>
-      );
-    }
-  }
-  return <span>No Site for {calculatedPath}</span>;
+
+  return (
+    <span>
+      <i>No site for SmSiteRef</i>
+    </span>
+  );
 };
 
 export const AttRef = (props: { refTo: string; attributeKey: string; campaignId: string; path: string; col: any }) => {
@@ -277,6 +318,80 @@ export const AttRef = (props: { refTo: string; attributeKey: string; campaignId:
   }, [action]);
 
   useEffect(() => {
+    if (attribute) {
+      setAttValue(attribute);
+    } else {
+      setAttValue(null);
+    }
+  }, [attribute]);
+
+  return <AttValue attValue={attValue}></AttValue>;
+};
+
+export const SmAttRef = props => {
+  const dispatch = useAppDispatch();
+
+  if (!props.params) {
+    return (
+      <span>
+        <i>params is mandatory in SmAttRef</i>
+      </span>
+    );
+  }
+
+  const resourceId = props.params[RESOURCE_ID_KEY];
+  const campaignId = props.params[CAMPAIGN_ID_KEY];
+  const attConfig = props.params[ATT_CONFIG_KEY];
+
+  if (!resourceId) {
+    return (
+      <span>
+        <i>{RESOURCE_ID_KEY} is mandatory in SmAttRef</i>
+      </span>
+    );
+  } else if (!campaignId && !attConfig) {
+    return (
+      <span>
+        <i>{CAMPAIGN_ID_KEY} is mandatory in SmAttRef</i>
+      </span>
+    );
+  } else if (!attConfig) {
+    return (
+      <span>
+        <i>{ATT_CONFIG_KEY} is mandatory in SmAttRef</i>
+      </span>
+    );
+  }
+  const builtPath = buildPath(props);
+  const attribute = useAppSelector(state => {
+    const aaa = state.rendering.renderingState[builtPath];
+    return aaa ? (aaa.attribute ? aaa.attribute : null) : null;
+  });
+
+  const resourceIdVal = useCalculatedValue(props, resourceId);
+  const campaignIdVal = useCalculatedValue(props, campaignId);
+  const attConfigVal = useCalculatedValue(props, attConfig);
+
+  const [attValue, setAttValue] = useState('??');
+
+  useEffect(() => {
+    console.log('useEffect111', resourceIdVal, campaignIdVal, attConfigVal);
+    if (resourceIdVal && campaignIdVal && attConfigVal) {
+      dispatch(
+        getAttribute({
+          exploded: {
+            siteId: resourceIdVal,
+            campaignId: campaignIdVal,
+            key: attConfigVal,
+          },
+          path: builtPath,
+        }),
+      );
+    }
+  }, [resourceIdVal, campaignIdVal, attConfigVal]);
+
+  useEffect(() => {
+    console.log('useEffect222', resourceIdVal, campaignIdVal, attConfigVal);
     if (attribute) {
       setAttValue(attribute);
     } else {
@@ -351,6 +466,8 @@ export const MyElem = props => {
         return <SmSiteRef {...params}></SmSiteRef>;
       case 'attRef':
         return <AttRef {...params}></AttRef>;
+      case 'SmAttRef':
+        return <SmAttRef {...params}></SmAttRef>;
       case 'input':
         return <MyInput {...params}></MyInput>;
       case 'siteList':
@@ -364,13 +481,25 @@ export const MyElem = props => {
     }
   };
 
-  return <MyWrapper {...props.input}>{renderSwitch({ ...props.input, currentPath: props.currentPath })}</MyWrapper>;
+  return (
+    <MyWrapper {...{ ...props.input, currentPath: props.currentPath }}>
+      {renderSwitch({ ...props.input, currentPath: props.currentPath })}
+    </MyWrapper>
+  );
 };
 
 export const MyWrapper = ({ children, ...props }) => {
   let cn = '';
   if (props.border) {
     cn += ' border-2';
+  }
+  const displayPath = false;
+  if (displayPath) {
+    return (
+      <Col md={props.col ?? 12} className={cn}>
+        {children} - <i className="wrapper-text">({buildPath(props)})</i>
+      </Col>
+    );
   }
   return (
     <Col md={props.col ?? 12} className={cn}>

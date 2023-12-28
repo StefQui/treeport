@@ -32,6 +32,7 @@ public class InitialLoadService {
     public static final String R_3 = "r3";
     public static final String R_4 = "r4";
     public static final String R_5 = "r5";
+    public static final String R_FORM = "rform";
 
     public static final String CAR = "CAR";
     public static final String TRA = "TRA";
@@ -62,6 +63,9 @@ public class InitialLoadService {
 
     @Value("classpath:json/r5.json")
     org.springframework.core.io.Resource r5SourceFile;
+
+    @Value("classpath:json/rform.json")
+    org.springframework.core.io.Resource rFormSourceFile;
 
     public InitialLoadService(
         OrganisationRepository organisationRepository,
@@ -187,6 +191,17 @@ public class InitialLoadService {
                 .type(RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r5SourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_FORM)
+                .name("Resource form")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rFormSourceFile))
                 .childrenIds(List.of())
                 .build()
         );

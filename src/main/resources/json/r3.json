@@ -1,14 +1,15 @@
 {
   "componentType": "verticalPanel",
   "path": "vp",
-  "border": true,
   "items": [
     {
       "componentType": "SmText",
       "path": "vsm1",
       "params": {
-        "input": {
-          "const": "ABC"
+        "textValue": {
+          "const": {
+            "constValue": "ABC"
+          }
         }
       }
     },
@@ -31,28 +32,42 @@
       }
     },
     {
-      "componentType": "SmInput",
-      "path": "vsm3bis",
-      "params": {
-        "defaultValue": {
-          "const": "OTHER"
+      "componentType": "verticalPanel",
+      "path": "vpc",
+      "items": [
+        {
+          "componentType": "SmText",
+          "path": "vsm2",
+          "col": 4,
+          "params": {
+            "textValue": {
+              "const": {
+                "constValue": "Campagne"
+              }
+            }
+          }
+        },
+        {
+          "componentType": "SmInput",
+          "path": "campaignId",
+          "col": 8,
+          "params": {
+            "defaultValue": {
+              "const": "2023"
+            }
+          }
         }
-      }
+      ]
     },
     {
       "componentType": "siteList",
-      "path": "vsmsiteList"
-    },
-    {
-      "componentType": "SmRefToResource",
-      "path": "vsm4",
-      "params": {
-        "resourceId": "r4"
-      }
+      "path": "vsmsiteList",
+      "col": 8
     },
     {
       "componentType": "SmRefToResource",
       "path": "vsm44",
+      "col": 4,
       "params": {
         "resourceId": "r5",
         "arguments": {
@@ -67,6 +82,13 @@
             "property": "selected"
           }
         }
+      }
+    },
+    {
+      "componentType": "SmRefToResource",
+      "path": "vsm4",
+      "params": {
+        "resourceId": "r4"
       }
     }
   ]

@@ -10,8 +10,6 @@ import { IAttributeIdExploded } from 'app/shared/model/attribute-id-exploded';
 import { IResource } from 'app/shared/model/resource.model';
 
 const initialState = {
-  loading: false,
-  tototot: 'starval',
   context: {},
   renderingState: {},
 };

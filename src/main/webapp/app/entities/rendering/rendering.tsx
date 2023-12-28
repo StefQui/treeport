@@ -9,6 +9,7 @@ import { getAttribute, getResource, setAction, setRenderingForPath } from './ren
 import SiteList from '../site/site-list';
 import { AttValue } from '../attribute-value/attribute-value';
 import { SmRefToResource, ZZZResourceContent } from './resource-content';
+import { SmAttributeField, SmForm } from './render-form';
 
 export const TextBasic = props => {
   const siteEntity = useAppSelector(state => state.site.entity);
@@ -63,6 +64,7 @@ export const ATT_CONFIG_KEY = 'attConfig';
 export const CAMPAIGN_ID_KEY = 'campaignId';
 export const REF_TO_PATH_KEY = 'refToPath';
 export const REF_TO_CONTEXT_KEY = 'refToContext';
+export const REF_TO_LOCAL_CONTEXT_KEY = 'refToLocalContext';
 export const CONST_KEY = 'const';
 export const CONST_VALUE_KEY = 'constValue';
 export const SITE_VALUE_KEY = 'siteValue';
@@ -92,7 +94,6 @@ export const RESOURCE_NAME_KEY = 'name';
 // };
 
 export const getValueForPathInObject = (obj, path) => {
-  console.log('getValueForPathInObject', obj, path);
   try {
     const splited = path.split('.');
     return splited.reduce((acc, current) => acc[current], obj);
@@ -119,7 +120,7 @@ export const SmText = props => {
     );
   }
 
-  const calculatedValue = useCalculatedValue(props, textValue);
+  const calculatedValue = useCalculatedValueState(props, textValue);
 
   if (calculatedValue) {
     return <span>{calculatedValue}</span>;
@@ -140,19 +141,60 @@ export const SmText = props => {
   // return <span>You should have at least refToPath or refToContext or const in SmText</span>;
 };
 
-export const useCalculatedValue = (props, elem) => {
+// export const useCalculatedValue = (props, elem) => {
+//   if (elem[REF_TO_PATH_KEY]) {
+//     const builtPath = buildPath(props);
+//     const refToPath = elem[REF_TO_PATH_KEY];
+//     const calculatedPath = applyPath(builtPath, refToPath.path);
+//     const referencedValue = useRenderingState(calculatedPath);
+//     if (referencedValue) {
+//       return getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY);
+//     }
+//     return null;
+//   } else if (elem[REF_TO_CONTEXT_KEY]) {
+//     const refToContext = elem[REF_TO_CONTEXT_KEY];
+//     return useRenderingContextState(refToContext.property);
+//   } else if (elem[CONST_KEY]) {
+//     return elem[CONST_KEY][CONST_VALUE_KEY];
+//   }
+//   return null;
+// };
+
+export const useCalculatedValueState = (props, elem) => {
   if (elem[REF_TO_PATH_KEY]) {
     const builtPath = buildPath(props);
     const refToPath = elem[REF_TO_PATH_KEY];
     const calculatedPath = applyPath(builtPath, refToPath.path);
-    const referencedValue = useRenderingState(calculatedPath);
-    if (referencedValue) {
-      return getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY);
-    }
-    return null;
+    return useAppSelector(state => {
+      const aaa = state.rendering.renderingState[calculatedPath];
+      return aaa ? getValueForPathInObject(aaa, refToPath.property ?? OUTPUT_KEY) : null;
+    });
+    // const [aaa, setAaa] = useState();
+
+    // useEffect(() => {
+    //   console.log('SmAttributeField has changed');
+    //   setAaa(getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY));
+    // }, [referencedValue]);
+    // return aaa;
   } else if (elem[REF_TO_CONTEXT_KEY]) {
     const refToContext = elem[REF_TO_CONTEXT_KEY];
-    return useRenderingContextState(refToContext.property);
+
+    return useAppSelector(state => getValueForPathInObject(state.rendering.context, refToContext.property));
+  } else if (elem[REF_TO_LOCAL_CONTEXT_KEY]) {
+    const refToLocalContext = elem[REF_TO_LOCAL_CONTEXT_KEY];
+
+    return useAppSelector(state => {
+      const aaa = state.rendering.renderingState[props.localContextPath];
+      return aaa ? getValueForPathInObject(aaa, refToLocalContext.property ?? OUTPUT_KEY) : null;
+    });
+    // return useRenderingContextState(refToContext.property);
+    // const [aaa, setAaa] = useState();
+
+    // useEffect(() => {
+    //   console.log('SmAttributeField has changed');
+    //   setAaa(getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY));
+    // }, [referencedValue]);
+    // return aaa;
   } else if (elem[CONST_KEY]) {
     return elem[CONST_KEY][CONST_VALUE_KEY];
   }
@@ -262,7 +304,7 @@ export const SmSiteRef = props => {
     return <span>Missing param {SITE_VALUE_KEY} in SmSiteRef</span>;
   }
 
-  const calculatedValue = useCalculatedValue(props, siteValue);
+  const calculatedValue = useCalculatedValueState(props, siteValue);
   if (calculatedValue) {
     return (
       <span>
@@ -343,39 +385,24 @@ export const SmAttRef = props => {
   const campaignId = props.params[CAMPAIGN_ID_KEY];
   const attConfig = props.params[ATT_CONFIG_KEY];
 
-  if (!resourceId) {
-    return (
-      <span>
-        <i>{RESOURCE_ID_KEY} is mandatory in SmAttRef</i>
-      </span>
-    );
-  } else if (!campaignId && !attConfig) {
-    return (
-      <span>
-        <i>{CAMPAIGN_ID_KEY} is mandatory in SmAttRef</i>
-      </span>
-    );
-  } else if (!attConfig) {
-    return (
-      <span>
-        <i>{ATT_CONFIG_KEY} is mandatory in SmAttRef</i>
-      </span>
-    );
+  if (!resourceId || !campaignId || !attConfig) {
+    return displayWarning(resourceId, campaignId, attConfig);
   }
+
   const builtPath = buildPath(props);
   const attribute = useAppSelector(state => {
     const aaa = state.rendering.renderingState[builtPath];
     return aaa ? (aaa.attribute ? aaa.attribute : null) : null;
   });
 
-  const resourceIdVal = useCalculatedValue(props, resourceId);
-  const campaignIdVal = useCalculatedValue(props, campaignId);
-  const attConfigVal = useCalculatedValue(props, attConfig);
+  const resourceIdVal = useCalculatedValueState(props, resourceId);
+  const campaignIdVal = useCalculatedValueState(props, campaignId);
+  const attConfigVal = useCalculatedValueState(props, attConfig);
 
   const [attValue, setAttValue] = useState('??');
 
   useEffect(() => {
-    console.log('useEffect111', resourceIdVal, campaignIdVal, attConfigVal);
+    // console.log('useEffect111', resourceIdVal, campaignIdVal, attConfigVal);
     if (resourceIdVal && campaignIdVal && attConfigVal) {
       dispatch(
         getAttribute({
@@ -391,7 +418,7 @@ export const SmAttRef = props => {
   }, [resourceIdVal, campaignIdVal, attConfigVal]);
 
   useEffect(() => {
-    console.log('useEffect222', resourceIdVal, campaignIdVal, attConfigVal);
+    // console.log('useEffect222', resourceIdVal, campaignIdVal, attConfigVal);
     if (attribute) {
       setAttValue(attribute);
     } else {
@@ -402,13 +429,41 @@ export const SmAttRef = props => {
   return <AttValue attValue={attValue}></AttValue>;
 };
 
+export const displayWarning = (resourceId, campaignId, attConfig) => {
+  if (!resourceId) {
+    return (
+      <span>
+        <i>{RESOURCE_ID_KEY} is mandatory in SmAttRef</i>
+      </span>
+    );
+  } else if (!campaignId) {
+    return (
+      <span>
+        <i>{CAMPAIGN_ID_KEY} is mandatory in SmAttRef</i>
+      </span>
+    );
+  } else if (!attConfig) {
+    return (
+      <span>
+        <i>{ATT_CONFIG_KEY} is mandatory in SmAttRef</i>
+      </span>
+    );
+  }
+};
+
 export const PATH_SEPARATOR = '/';
 export const ROOT_PATH_SEPARATOR = '/';
 
 export const MyVerticalPanel = props => {
   const renderItems = items =>
     items.map((item, index) => (
-      <MyElem key={index} input={{ ...item }} currentPath={props.currentPath + PATH_SEPARATOR + props.path}></MyElem>
+      <MyElem
+        key={index}
+        input={{ ...item }}
+        currentPath={props.currentPath + PATH_SEPARATOR + props.path}
+        form={props.form}
+        localContextPath={props.localContextPath}
+      ></MyElem>
     ));
 
   return <Row className="border-blue padding-4">{renderItems(props.items)}</Row>;
@@ -472,6 +527,10 @@ export const MyElem = props => {
         return <MyInput {...params}></MyInput>;
       case 'siteList':
         return <TheSiteList {...params}></TheSiteList>;
+      case 'Form':
+        return <SmForm {...params}></SmForm>;
+      case 'AttributeField':
+        return <SmAttributeField {...params}></SmAttributeField>;
       case 'resourceContent':
         return <ZZZResourceContent {...params}></ZZZResourceContent>;
       case 'verticalPanel':
@@ -483,7 +542,7 @@ export const MyElem = props => {
 
   return (
     <MyWrapper {...{ ...props.input, currentPath: props.currentPath }}>
-      {renderSwitch({ ...props.input, currentPath: props.currentPath })}
+      {renderSwitch({ ...props.input, currentPath: props.currentPath, form: props.form, localContextPath: props.localContextPath })}
     </MyWrapper>
   );
 };
@@ -493,7 +552,7 @@ export const MyWrapper = ({ children, ...props }) => {
   if (props.border) {
     cn += ' border-2';
   }
-  const displayPath = false;
+  const displayPath = true;
   if (displayPath) {
     return (
       <Col md={props.col ?? 12} className={cn}>

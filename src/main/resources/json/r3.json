@@ -72,11 +72,25 @@
         "resourceId": "r5",
         "arguments": {
           "toto": {
-            "refToPath": "/vp/vsm3"
+            "refToPath": "/vp/vsm3",
+            "property": "output"
           },
           "tata": {
             "refToPath": "/vp/vsm3bis"
           },
+          "selectedResource": {
+            "refToPath": "/vp/vsmsiteList",
+            "property": "selected"
+          }
+        }
+      }
+    },
+    {
+      "componentType": "SmRefToResource",
+      "path": "vsm44form",
+      "params": {
+        "resourceId": "rform",
+        "arguments": {
           "selectedResource": {
             "refToPath": "/vp/vsmsiteList",
             "property": "selected"

@@ -1,5 +1,6 @@
 package com.sm.service;
 
+import static com.sm.domain.attribute.AggInfo.AttributeType.BOOLEAN;
 import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.enumeration.AssetType.RESOURCE;
 import static com.sm.domain.enumeration.AssetType.SITE;
@@ -7,6 +8,7 @@ import static com.sm.domain.operation.OperationType.CONSO_SUM;
 
 import com.sm.domain.*;
 import com.sm.domain.attribute.Attribute;
+import com.sm.domain.attribute.BooleanValue;
 import com.sm.domain.attribute.DoubleValue;
 import com.sm.repository.*;
 import java.util.List;
@@ -38,6 +40,7 @@ public class InitialLoadService {
     public static final String TRA = "TRA";
     public static final String HQ = "HQ";
     public static final String TO_SITE = "toSite";
+    public static final String IS_CERT = "isCert";
     private final Logger log = LoggerFactory.getLogger(InitialLoadService.class);
     private final OrganisationRepository organisationRepository;
     private final TagRepository tagRepository;
@@ -225,6 +228,19 @@ public class InitialLoadService {
         attributeConfigRepository.save(
             AttributeConfig
                 .builder()
+                .id(IS_CERT)
+                .isConsolidable(false)
+                .isWritable(true)
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .attributeType(BOOLEAN)
+                .orgaId(COCA)
+                .applyOnChildren(true)
+                .siteId(ROOT)
+                .build()
+        );
+        attributeConfigRepository.save(
+            AttributeConfig
+                .builder()
                 .id("toConso")
                 .isConsolidable(true)
                 .consoParameterKey(TO_SITE)
@@ -241,10 +257,14 @@ public class InitialLoadService {
     }
 
     public void setSomeValues() {
-        String attId = "site:s1:toSite:period:2023";
-        Optional<Attribute> att = attributeService.findByIdAndOrgaId(attId, COCA);
-        Attribute att1 = att.get().toBuilder().attributeValue(DoubleValue.builder().value(120.).build()).build();
+        String attId1 = "site:s1:toSite:period:2023";
+        String attId2 = "site:s1:isCert:period:2023";
+        Optional<Attribute> attOpt1 = attributeService.findByIdAndOrgaId(attId1, COCA);
+        Optional<Attribute> attOpt2 = attributeService.findByIdAndOrgaId(attId2, COCA);
+        Attribute att1 = attOpt1.get().toBuilder().attributeValue(DoubleValue.builder().value(120.).build()).build();
+        Attribute att2 = attOpt2.get().toBuilder().attributeValue(BooleanValue.builder().value(true).build()).build();
         attributeService.save(att1);
-        computeService.reCalculateSomeAttributes(Set.of(attId), COCA);
+        attributeService.save(att2);
+        computeService.reCalculateSomeAttributes(Set.of(attId1, attId2), COCA);
     }
 }

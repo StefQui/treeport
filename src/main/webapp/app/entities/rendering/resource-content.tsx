@@ -72,26 +72,39 @@ export const SmRefToResource = props => {
 
   const [resourceContent, setResourceContent] = useState();
 
+  // const [enrichedContext, setEnrichedContext] = useState({});
+
   // const resource = useAppSelector(state => {
   //   const aaa = state.rendering.renderingState[props.path];
   //   return aaa ? (aaa.resource ? aaa.resource : null) : null;
   // });
 
-  const aaa: [number, string] = [2, 'jjj'];
-  console.log('arguments', props.params.arguments);
+  // console.log('arguments', props.params.arguments);
   if (props.params.arguments) {
     Object.entries(props.params.arguments).forEach(([argKey, argValue]: [string, { refToPath: string; property?: string }]) => {
-      console.log('argKey', argKey, argValue, builtPath, argValue.refToPath);
+      // console.log('argKey', argKey, argValue, builtPath, argValue.refToPath);
       // const calculatedPath = applyPath(builtPath, argValue.refToPath);
       const referencedValue = useRenderingState(argValue.refToPath);
       useEffect(() => {
-        console.log('changed', referencedValue, argValue.property);
+        // console.log('changed', referencedValue, argValue.property);
         if (referencedValue) {
+          // const aaa = referencedValue[argValue.property ?? OUTPUT_KEY];
+          // console.log('changedeebefore', aaa, enrichedContext);
+          // setEnrichedContext(previous => ({ ...previous, ...{ toto: aaa } }));
           updateRenderingState(dispatch, builtPath, { [argKey]: referencedValue[argValue.property ?? OUTPUT_KEY] });
+          // console.log('changedeeafter', referencedValue[argValue.property ?? OUTPUT_KEY], enrichedContext);
         }
       }, [referencedValue]);
     });
   }
+
+  // const [toto, setToto] = useState('mm');
+
+  // useEffect(() => {
+  //   console.log('changedeeafter2', enrichedContext);
+  //   setToto('mmm');
+  //   // setEnrichedContext({ ...enrichedContext });
+  // }, [enrichedContext]);
 
   useEffect(() => {
     dispatch(
@@ -110,10 +123,10 @@ export const SmRefToResource = props => {
     }
   }, [resource]);
 
-  console.log('SmRefToResource', props.currentPath, props.path);
+  // console.log('SmRefToResource', props.currentPath, props.path);
 
   if (resourceContent) {
-    return <MyRend content={resourceContent} params={props.params} currentPath={builtPath}></MyRend>;
+    return <MyRend content={resourceContent} params={props.params} currentPath={builtPath} localContextPath={builtPath}></MyRend>;
   }
   return (
     <div>
@@ -138,11 +151,16 @@ export const MyRend = props => {
     return <Row md="8">{error}</Row>;
   }
 
-  console.log('......', props.currentPath, props.params);
+  // console.log('......', props.currentPath, props.params);
   return (
     <Row md="8">
       {props.content ? (
-        <MyElem input={input} params={props.params ? props.params.params : null} currentPath={props.currentPath}></MyElem>
+        <MyElem
+          input={input}
+          params={props.params ? props.params.params : null}
+          currentPath={props.currentPath}
+          localContextPath={props.localContextPath}
+        ></MyElem>
       ) : (
         <p>Loading...</p>
       )}

@@ -13,6 +13,7 @@ import com.sm.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -76,6 +77,17 @@ public class AttributeResource {
         String id = AttributeKeyUtils.key(SITE_FRAG, explodedId.getSiteId(), explodedId.getKey(), PERIOD_FRAG, explodedId.getCampaignId());
         Optional<AttributeDTO> attributeDTO = attributeService.findById(id);
         return ResponseUtil.wrapOrNotFound(attributeDTO);
+    }
+
+    @PostMapping("/{orgaId}/fieldsAttributesAndConfigs")
+    public ResponseEntity<Map<String, AttributeDTO>> fetchFieldAttributes(
+        @PathVariable(value = "orgaId") final String orgaId,
+        @RequestBody Map<String, String> fieldsAttributeIdsMap
+    ) throws URISyntaxException {
+        log.debug("REST request to fetchFieldAttributes : {}", fieldsAttributeIdsMap);
+
+        Optional<Map<String, AttributeDTO>> map = attributeService.fetchFieldAttributes(orgaId, fieldsAttributeIdsMap);
+        return ResponseUtil.wrapOrNotFound(map);
     }
 
     /**

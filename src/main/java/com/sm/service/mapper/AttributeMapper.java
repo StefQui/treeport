@@ -1,5 +1,6 @@
 package com.sm.service.mapper;
 
+import com.sm.domain.AttributeConfig;
 import com.sm.domain.attribute.Attribute;
 import com.sm.service.dto.attribute.AttributeDTO;
 import lombok.AllArgsConstructor;
@@ -47,6 +48,11 @@ public class AttributeMapper {
             .isAgg(a.getIsAgg())
             .aggInfo(a.getAggInfo())
             .build();
+    }
+
+    public AttributeDTO toDtoWithConfig(Attribute attribute, AttributeConfig attributeConfig) {
+        AttributeDTO attDto = toDto(attribute);
+        return attDto.toBuilder().config(attributeConfigMapper.toDto(attributeConfig)).build();
     }
 
     public void partialUpdate(Attribute existing, AttributeDTO attributeDTO) {

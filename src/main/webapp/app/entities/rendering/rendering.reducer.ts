@@ -5,9 +5,10 @@ import { IQueryParams, serializeAxiosError } from 'app/shared/reducers/reducer.u
 import { AppThunk } from 'app/config/store';
 import { faCircleDollarToSlot } from '@fortawesome/free-solid-svg-icons';
 import { ISite } from 'app/shared/model/site.model';
-import { IAttribute } from 'app/shared/model/attribute.model';
+import { IAttribute, IAttributeWithValue } from 'app/shared/model/attribute.model';
 import { IAttributeIdExploded } from 'app/shared/model/attribute-id-exploded';
 import { IResource } from 'app/shared/model/resource.model';
+import { FIELDS_ATTRIBUTES_KEY, UPDATED_ATTRIBUTE_IDS_KEY } from './rendering';
 
 const initialState = {
   context: {},
@@ -19,6 +20,7 @@ export type RenderingState = Readonly<typeof initialState>;
 const siteApiUrl = 'api/sites';
 const attributeApiUrl = 'api/attributes';
 const resourceApiUrl = 'api/resources';
+const computeApiUrl = 'api/compute';
 
 // Actions
 
@@ -31,6 +33,22 @@ export const getResource = createAsyncThunk(`rendering/fetch_resource`, async ({
   const requestUrl = `${resourceApiUrl}/${resourceId}`;
   return axios.get<IResource[]>(requestUrl);
 });
+
+export const getFieldAttributesAndConfig = createAsyncThunk(
+  `rendering/fetch_fieldsAttributesAndConfigs`,
+  async ({ attributeIdsMap, orgaId }: { attributeIdsMap: any; orgaId: string; path: string }) => {
+    const requestUrl = `${attributeApiUrl}/${orgaId}/fieldsAttributesAndConfigs`;
+    return axios.post<{ IFieldsAttributesConfigs }>(requestUrl, attributeIdsMap);
+  },
+);
+
+export const saveAttributes = createAsyncThunk(
+  `rendering/fetch_saveAttributes`,
+  async ({ attributesToSave, orgaId }: { attributesToSave: IAttributeWithValue[]; orgaId: string; path: string }) => {
+    const requestUrl = `${computeApiUrl}/${orgaId}/saveAttributes`;
+    return axios.post<string[]>(requestUrl, attributesToSave);
+  },
+);
 
 export const getAttribute = createAsyncThunk(
   'rendering/fetch_attribute',
@@ -87,7 +105,13 @@ export const RenderingSlice = createSlice({
     },
     // setAction(action: { source: any; actionType: string; entity: { entityType: string; entity: any; }; }): any {
     setAction(state, action) {
-      return { ...state, action: action.payload };
+      const payload: {
+        source: string;
+        actionType: 'selectSite' | 'updateAttribute';
+        entity: { entityType: 'SITE' | 'RESOURCE'; ([ENTITY_KEY]): any };
+      } = action.payload;
+
+      return { ...state, action: payload };
     },
   },
   extraReducers(builder) {
@@ -146,9 +170,30 @@ export const RenderingSlice = createSlice({
         };
 
         return { ...state, renderingState: { ...state.renderingState, ...aaa } };
+      })
+      .addMatcher(isFulfilled(getFieldAttributesAndConfig), (state, action) => {
+        return setInState(state, action.meta.arg.path, { [FIELDS_ATTRIBUTES_KEY]: action.payload.data });
+      })
+      .addMatcher(isFulfilled(saveAttributes), (state, action) => {
+        return setInState(state, action.meta.arg.path, { [UPDATED_ATTRIBUTE_IDS_KEY]: action.payload.data });
       });
   },
 });
+
+export const setInState = (state, path, value: any) => {
+  return {
+    ...state,
+    renderingState: {
+      ...state.renderingState,
+      ...{
+        [path]: {
+          ...state.renderingState[path],
+          ...value,
+        },
+      },
+    },
+  };
+};
 
 export const { reset, setRenderingForPath, setRenderingContext, setActivePage, setAction } = RenderingSlice.actions;
 

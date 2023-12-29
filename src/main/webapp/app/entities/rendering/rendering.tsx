@@ -9,7 +9,7 @@ import { getAttribute, getResource, setAction, setRenderingForPath } from './ren
 import SiteList from '../site/site-list';
 import { AttValue } from '../attribute-value/attribute-value';
 import { SmRefToResource, ZZZResourceContent } from './resource-content';
-import { SmAttributeField, SmForm } from './render-form';
+import { buildAttributeIdFormExploded, SmAttributeField, SmForm } from './render-form';
 
 export const TextBasic = props => {
   const siteEntity = useAppSelector(state => state.site.entity);
@@ -69,7 +69,10 @@ export const CONST_KEY = 'const';
 export const CONST_VALUE_KEY = 'constValue';
 export const SITE_VALUE_KEY = 'siteValue';
 export const ENTITY_KEY = 'entity';
+export const ENTITY_IDS_KEY = 'entityIds';
 export const RESOURCE_NAME_KEY = 'name';
+export const FIELDS_ATTRIBUTES_KEY = 'fieldsAttributes';
+export const UPDATED_ATTRIBUTE_IDS_KEY = 'updatedAttributeIds';
 
 // export const SmTextRefToPath = props => {
 //   const builtPath = buildPath(props);
@@ -320,9 +323,10 @@ export const SmSiteRef = props => {
   );
 };
 
-export const AttRef = (props: { refTo: string; attributeKey: string; campaignId: string; path: string; col: any }) => {
+export const ZZZZZZZZZAttRef = (props: { refTo: string; attributeKey: string; campaignId: string; path: string; col: any }) => {
   const action = useAppSelector(state => state.rendering.action);
   const dispatch = useAppDispatch();
+
   // console.log('in app selector', state.rendering.renderingState, ddd);
   // return ddd;
   // });
@@ -370,8 +374,19 @@ export const AttRef = (props: { refTo: string; attributeKey: string; campaignId:
   return <AttValue attValue={attValue}></AttValue>;
 };
 
+const loadAttribute = (props, resourceIdVal, campaignIdVal, attConfigVal) =>
+  getAttribute({
+    exploded: {
+      siteId: resourceIdVal,
+      campaignId: campaignIdVal,
+      key: attConfigVal,
+    },
+    path: buildPath(props),
+  });
+
 export const SmAttRef = props => {
   const dispatch = useAppDispatch();
+  const action = useAppSelector(state => state.rendering.action);
 
   if (!props.params) {
     return (
@@ -402,18 +417,21 @@ export const SmAttRef = props => {
   const [attValue, setAttValue] = useState('??');
 
   useEffect(() => {
+    if (action && action.actionType === 'updateAttributes') {
+      if (resourceIdVal && campaignIdVal && attConfigVal) {
+        const attId = buildAttributeIdFormExploded(resourceIdVal, attConfigVal, campaignIdVal);
+        console.log('action...', action, attId);
+        if (action[ENTITY_KEY][ENTITY_IDS_KEY].indexOf(attId) !== -1) {
+          dispatch(loadAttribute(props, resourceIdVal, campaignIdVal, attConfigVal));
+        }
+      }
+    }
+  }, [action]);
+
+  useEffect(() => {
     // console.log('useEffect111', resourceIdVal, campaignIdVal, attConfigVal);
     if (resourceIdVal && campaignIdVal && attConfigVal) {
-      dispatch(
-        getAttribute({
-          exploded: {
-            siteId: resourceIdVal,
-            campaignId: campaignIdVal,
-            key: attConfigVal,
-          },
-          path: builtPath,
-        }),
-      );
+      dispatch(loadAttribute(props, resourceIdVal, campaignIdVal, attConfigVal));
     }
   }, [resourceIdVal, campaignIdVal, attConfigVal]);
 
@@ -520,7 +538,7 @@ export const MyElem = props => {
       case 'SmSiteRef':
         return <SmSiteRef {...params}></SmSiteRef>;
       case 'attRef':
-        return <AttRef {...params}></AttRef>;
+        return <ZZZZZZZZZAttRef {...params}></ZZZZZZZZZAttRef>;
       case 'SmAttRef':
         return <SmAttRef {...params}></SmAttRef>;
       case 'input':
@@ -552,7 +570,7 @@ export const MyWrapper = ({ children, ...props }) => {
   if (props.border) {
     cn += ' border-2';
   }
-  const displayPath = true;
+  const displayPath = false;
   if (displayPath) {
     return (
       <Col md={props.col ?? 12} className={cn}>

@@ -4,12 +4,12 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
 import com.sm.domain.attribute.Attribute;
+import com.sm.repository.AttributeConfigRepository;
 import com.sm.repository.AttributeRepository;
 import com.sm.service.dto.attribute.AttributeDTO;
 import com.sm.service.mapper.AttributeMapper;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import com.sm.service.mapper.AttributeValueMapper;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -27,12 +27,21 @@ public class AttributeService {
     private final Logger log = LoggerFactory.getLogger(AttributeService.class);
 
     private final AttributeRepository attributeRepository;
+    private final AttributeConfigRepository attributeConfigRepository;
 
     private final AttributeMapper attributeMapper;
+    private final AttributeValueMapper attributeValueMapper;
 
-    public AttributeService(AttributeRepository attributeRepository, AttributeMapper attributeMapper) {
+    public AttributeService(
+        AttributeRepository attributeRepository,
+        AttributeConfigRepository attributeConfigRepository,
+        AttributeMapper attributeMapper,
+        AttributeValueMapper attributeValueMapper
+    ) {
         this.attributeRepository = attributeRepository;
+        this.attributeConfigRepository = attributeConfigRepository;
         this.attributeMapper = attributeMapper;
+        this.attributeValueMapper = attributeValueMapper;
     }
 
     /**
@@ -152,5 +161,28 @@ public class AttributeService {
     public Set<Attribute> findImpacted(String attKey, @NonNull String orgaId) {
         List<Attribute> atts = findAllAttributes(orgaId);
         return atts.stream().filter(a -> a.getImpacterIds().contains(attKey)).collect(Collectors.toSet());
+    }
+
+    public Optional<Map<String, AttributeDTO>> fetchFieldAttributes(String orgaId, Map<String, String> fieldsAttributeIdsMap) {
+        Map<String, AttributeDTO> result = new HashMap<>();
+        fieldsAttributeIdsMap
+            .keySet()
+            .stream()
+            .forEach(fieldId -> {
+                Optional<Attribute> att = findByIdAndOrgaId(fieldsAttributeIdsMap.get(fieldId), orgaId);
+
+                if (att.isEmpty()) {
+                    result.put(fieldId, null);
+                } else {
+                    result.put(
+                        fieldId,
+                        attributeMapper.toDtoWithConfig(
+                            att.get(),
+                            attributeConfigRepository.findAllByOrgaIdAndId(orgaId, att.get().getConfigId()).get()
+                        )
+                    );
+                }
+            });
+        return of(result);
     }
 }

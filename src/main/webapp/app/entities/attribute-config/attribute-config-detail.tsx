@@ -32,6 +32,12 @@ export const AttributeConfigDetail = () => {
           </dt>
           <dd>{attributeConfigEntity.id}</dd>
           <dt>
+            <span id="id">
+              <Translate contentKey="global.field.label">Label</Translate>
+            </span>
+          </dt>
+          <dd>{attributeConfigEntity.label}</dd>
+          <dt>
             <span id="applyOnChildren">
               <Translate contentKey="treeportApp.attributeConfig.applyOnChildren">Apply On Children</Translate>
             </span>

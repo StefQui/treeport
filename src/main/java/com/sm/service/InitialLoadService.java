@@ -216,6 +216,7 @@ public class InitialLoadService {
             AttributeConfig
                 .builder()
                 .id(TO_SITE)
+                .label("Tonnage du site")
                 .isConsolidable(false)
                 .isWritable(true)
                 .tags(Set.of(Tag.builder().id(CAR).build()))
@@ -229,6 +230,7 @@ public class InitialLoadService {
             AttributeConfig
                 .builder()
                 .id(IS_CERT)
+                .label("Site certifié")
                 .isConsolidable(false)
                 .isWritable(true)
                 .tags(Set.of(Tag.builder().id(CAR).build()))
@@ -242,6 +244,7 @@ public class InitialLoadService {
             AttributeConfig
                 .builder()
                 .id("toConso")
+                .label("Tonnage consolidé")
                 .isConsolidable(true)
                 .consoParameterKey(TO_SITE)
                 .consoOperationType(CONSO_SUM)

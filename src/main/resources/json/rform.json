@@ -18,11 +18,47 @@
     {
       "componentType": "Form",
       "path": "vsmform",
-      "formId": "f12345",
+      "attributeContext": {
+        "resourceId": {
+          "refToLocalContext": {
+            "property": "selectedResource.entity.id"
+          }
+        },
+        "campaignId": {
+          "const": {
+            "constValue": "2023"
+          }
+        }
+      },
+      "fields": [
+        {
+          "fieldType": "Field",
+          "fieldId": "theToSite",
+          "attributeConfigId": "toSite",
+          "campaignId": {
+            "useCurrent": true
+          }
+        },
+        {
+          "fieldType": "Field",
+          "fieldId": "theToConso",
+          "attributeConfigId": "toConso",
+          "campaignId": {
+            "useCurrent": true
+          }
+        },
+        {
+          "fieldType": "Field",
+          "fieldId": "theToCert",
+          "attributeConfigId": "isCert",
+          "campaignId": {
+            "useCurrent": true
+          }
+        }
+      ],
       "formContent": {
         "componentType": "verticalPanel",
-        "path": "vp12",
-        "border": true,
+        "path": "vp88",
         "items": [
           {
             "componentType": "SmText",
@@ -38,46 +74,17 @@
           {
             "componentType": "AttributeField",
             "path": "vsmatt",
-            "formId": "f12345",
-            "params": {
-              "resourceId": {
-                "refToLocalContext": {
-                  "property": "selectedResource.entity.id"
-                }
-              },
-              "campaignId": {
-                "const": {
-                  "constValue": "2023"
-                }
-              },
-              "attConfig": {
-                "const": {
-                  "constValue": "toSite"
-                }
-              }
-            }
+            "fieldId": "theToSite"
           },
           {
             "componentType": "AttributeField",
             "path": "vsmattbool",
-            "formId": "f12345",
-            "params": {
-              "resourceId": {
-                "refToLocalContext": {
-                  "property": "selectedResource.entity.id"
-                }
-              },
-              "campaignId": {
-                "const": {
-                  "constValue": "2023"
-                }
-              },
-              "attConfig": {
-                "const": {
-                  "constValue": "isCert"
-                }
-              }
-            }
+            "fieldId": "theToCert"
+          },
+          {
+            "componentType": "AttributeField",
+            "path": "vsmattconso",
+            "fieldId": "theToConso"
           }
         ]
       }

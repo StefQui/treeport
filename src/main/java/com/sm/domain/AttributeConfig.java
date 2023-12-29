@@ -41,6 +41,9 @@ public class AttributeConfig implements Serializable {
     @Field("apply_on_children")
     private Boolean applyOnChildren;
 
+    @Field("label")
+    private String label;
+
     @Field("is_consolidable")
     private Boolean isConsolidable;
 

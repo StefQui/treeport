@@ -6,6 +6,7 @@ import { ISite } from './site.model';
 
 export interface IAttributeConfig {
   id?: string;
+  label?: string;
   applyOnChildren?: boolean | null;
   isConsolidable?: boolean | null;
   relatedConfigId?: string | null;

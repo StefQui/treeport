@@ -20,6 +20,7 @@ public class AttributeConfigMapper {
         return AttributeConfig
             .builder()
             .id(attributeConfigDTO.getId())
+            .label(attributeConfigDTO.getLabel())
             .attributeType(attributeConfigDTO.getAttributeType())
             .siteId(attributeConfigDTO.getSite().getId())
             .applyOnChildren(attributeConfigDTO.getApplyOnChildren())
@@ -36,6 +37,7 @@ public class AttributeConfigMapper {
         return AttributeConfigDTO
             .builder()
             .id(a.getId())
+            .label(a.getLabel())
             .attributeType(a.getAttributeType())
             .site(siteMapper.toBasicDto(a.getSiteId()))
             .applyOnChildren(a.getApplyOnChildren())

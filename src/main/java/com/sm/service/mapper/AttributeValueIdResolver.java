@@ -5,11 +5,7 @@ import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.sm.domain.attribute.BooleanValue;
-import com.sm.domain.attribute.DoubleValue;
-import com.sm.domain.attribute.NotResolvableValue;
-import com.sm.service.dto.attribute.AttributeValueDTO;
-import com.sm.service.dto.attribute.AttributeValueType;
+import com.sm.service.dto.attribute.*;
 
 public class AttributeValueIdResolver extends TypeIdResolverBase {
 
@@ -48,9 +44,9 @@ public class AttributeValueIdResolver extends TypeIdResolverBase {
     public JavaType typeFromId(final DatabindContext ctx, final String type) {
         final Class<?> clazz =
             switch (AttributeValueType.fromString(type)) {
-                case BOOLEAN_VT -> BooleanValue.class;
-                case DOUBLE_VT -> DoubleValue.class;
-                case NOT_RESOLVABLE_VT -> NotResolvableValue.class;
+                case BOOLEAN_VT -> BooleanValueDTO.class;
+                case DOUBLE_VT -> DoubleValueDTO.class;
+                case NOT_RESOLVABLE_VT -> NotResolvableValueDTO.class;
             };
 
         return TypeFactory.defaultInstance().constructSpecializedType(javaType, clazz);

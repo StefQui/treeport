@@ -20,6 +20,8 @@ public class AttributeConfigDTO implements Serializable {
 
     private String id;
 
+    private String label;
+
     private Boolean applyOnChildren;
 
     private Boolean isConsolidable;

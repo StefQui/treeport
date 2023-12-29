@@ -140,6 +140,28 @@
           }
         }
       }
+    },
+    {
+      "componentType": "SmAttRef",
+      "path": "attRefToFixed",
+      "col": 6,
+      "params": {
+        "resourceId": {
+          "const": {
+            "constValue": "root"
+          }
+        },
+        "campaignId": {
+          "const": {
+            "constValue": "2023"
+          }
+        },
+        "attConfig": {
+          "const": {
+            "constValue": "toConso"
+          }
+        }
+      }
     }
   ]
 }

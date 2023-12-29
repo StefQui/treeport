@@ -6,10 +6,13 @@ import static com.sm.domain.operation.OperationType.*;
 import static com.sm.domain.operation.TagOperationType.CONTAINS;
 import static com.sm.service.AttributeKeyUtils.fromString;
 import static com.sm.service.AttributeKeyUtils.objToString;
+import static java.util.Optional.of;
 
 import com.sm.domain.*;
 import com.sm.domain.attribute.*;
 import com.sm.domain.operation.*;
+import com.sm.service.dto.attribute.AttributeDTO;
+import com.sm.service.mapper.AttributeValueMapper;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -31,6 +34,9 @@ public class ComputeService {
 
     @Autowired
     AttributeConfigService attributeConfigService;
+
+    @Autowired
+    AttributeValueMapper attributeValueMapper;
 
     @Autowired
     AttributeService attributeService;
@@ -1035,5 +1041,18 @@ public class ComputeService {
             return campaign;
         }
         return String.valueOf(Integer.valueOf(campaign) - dateOffset);
+    }
+
+    public Optional<List<String>> saveAttributes(String orgaId, List<AttributeDTO> attributesToSave) {
+        Set<String> attIds = attributesToSave.stream().map(AttributeDTO::getId).collect(Collectors.toSet());
+
+        attributesToSave
+            .stream()
+            .forEach(attDto -> {
+                Attribute att = attributeService.findByIdAndOrgaId(attDto.getId(), orgaId).get();
+                att.setAttributeValue(attributeValueMapper.toEntity(attDto.getAttributeValue()));
+                attributeService.save(att);
+            });
+        return of(reCalculateSomeAttributes(attIds, orgaId).stream().map(Attribute::getId).collect(Collectors.toList()));
     }
 }

@@ -103,6 +103,13 @@ export const AttributeConfigUpdate = () => {
           ) : (
             <ValidatedForm defaultValues={defaultValues()} onSubmit={saveEntity}>
               <ValidatedField
+                label={translate('treeportApp.attributeConfig.label')}
+                id="attributeConfig-label"
+                name="label"
+                data-cy="label"
+                type="text"
+              />
+              <ValidatedField
                 name="id"
                 required
                 id="attribute-config-id"

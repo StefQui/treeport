@@ -5,15 +5,16 @@ import static com.sm.service.InitialLoadService.COCA;
 import com.sm.domain.AttributeConfig;
 import com.sm.service.ComputeService;
 import com.sm.service.InitialLoadService;
+import com.sm.service.dto.attribute.AttributeDTO;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import tech.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing {@link AttributeConfig}.
@@ -85,5 +86,16 @@ public class ComputeResource {
         log.debug("REST request to setSomeValues");
         initialLoadService.setSomeValues();
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{orgaId}/saveAttributes")
+    public ResponseEntity<List<String>> saveAttributes(
+        @PathVariable(value = "orgaId") final String orgaId,
+        @RequestBody List<AttributeDTO> attributesToSave
+    ) throws URISyntaxException {
+        log.debug("REST request to saveAttributes : {}", attributesToSave);
+
+        Optional<List<String>> map = computeService.saveAttributes(orgaId, attributesToSave);
+        return ResponseUtil.wrapOrNotFound(map);
     }
 }

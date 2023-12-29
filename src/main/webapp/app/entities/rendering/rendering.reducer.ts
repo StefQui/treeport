@@ -8,7 +8,7 @@ import { ISite } from 'app/shared/model/site.model';
 import { IAttribute, IAttributeWithValue } from 'app/shared/model/attribute.model';
 import { IAttributeIdExploded } from 'app/shared/model/attribute-id-exploded';
 import { IResource } from 'app/shared/model/resource.model';
-import { FIELDS_ATTRIBUTES_KEY, UPDATED_ATTRIBUTE_IDS_KEY } from './rendering';
+import { FIELDS_ATTRIBUTES_KEY, RESOURCE_FROM_REF_KEY, UPDATED_ATTRIBUTE_IDS_KEY } from './rendering';
 
 const initialState = {
   context: {},
@@ -161,15 +161,7 @@ export const RenderingSlice = createSlice({
         return { ...state, renderingState: { ...state.renderingState, ...aaa } };
       })
       .addMatcher(isFulfilled(getResource), (state, action) => {
-        const { data } = action.payload;
-        const { path } = action.meta.arg;
-
-        const aaa = {};
-        aaa[path] = {
-          resource: data,
-        };
-
-        return { ...state, renderingState: { ...state.renderingState, ...aaa } };
+        return setInState(state, action.meta.arg.path, { [RESOURCE_FROM_REF_KEY]: action.payload.data });
       })
       .addMatcher(isFulfilled(getFieldAttributesAndConfig), (state, action) => {
         return setInState(state, action.meta.arg.path, { [FIELDS_ATTRIBUTES_KEY]: action.payload.data });

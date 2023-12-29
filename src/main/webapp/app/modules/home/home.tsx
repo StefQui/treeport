@@ -135,6 +135,11 @@ export const Home = () => {
           </Button>
         </p>
         <p>
+          <Button tag={Link} to={`/coca/render/rpage1`} color="link" size="sm">
+            /coca/render/rpage1
+          </Button>
+        </p>
+        <p>
           <Button
             tag={Link}
             to={encodeURI(

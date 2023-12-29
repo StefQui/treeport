@@ -9,6 +9,7 @@ import {
   MyElem,
   OUTPUT_KEY,
   PATH_SEPARATOR,
+  RESOURCE_FROM_REF_KEY,
   ROOT_PATH_SEPARATOR,
   updateRenderingState,
   useRenderingState,
@@ -68,7 +69,7 @@ export const SmRefToResource = props => {
   const resourceId = props.params.resourceId;
 
   const builtPath = buildPath(props);
-  const resource = useRenderingState(builtPath, 'resource');
+  const resource = useRenderingState(builtPath, RESOURCE_FROM_REF_KEY);
 
   const [resourceContent, setResourceContent] = useState();
 
@@ -126,6 +127,7 @@ export const SmRefToResource = props => {
   // console.log('SmRefToResource', props.currentPath, props.path);
 
   if (resourceContent) {
+    // console.log('resourceContent', resourceContent);
     return <MyRend content={resourceContent} params={props.params} currentPath={builtPath} localContextPath={builtPath}></MyRend>;
   }
   return (
@@ -136,7 +138,7 @@ export const SmRefToResource = props => {
 };
 
 export const MyRend = props => {
-  const [input, setInput] = useState({ type: 'notype', text: 'kkk' });
+  const [input, setInput] = useState({ type: 'notype', text: 'kkk', layoutElements: {} });
   const [error, setError] = useState('');
   useEffect(() => {
     try {
@@ -160,6 +162,7 @@ export const MyRend = props => {
           params={props.params ? props.params.params : null}
           currentPath={props.currentPath}
           localContextPath={props.localContextPath}
+          layoutElements={input.layoutElements ? input.layoutElements : props.layoutElements}
         ></MyElem>
       ) : (
         <p>Loading...</p>

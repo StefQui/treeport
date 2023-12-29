@@ -35,6 +35,10 @@ public class InitialLoadService {
     public static final String R_4 = "r4";
     public static final String R_5 = "r5";
     public static final String R_FORM = "rform";
+    public static final String R_LAYOUT = "rlayout";
+    public static final String R_PAGE1 = "rpage1";
+    public static final String R_PAGE2 = "rpage2";
+    public static final String R_MENU_TOP = "rmenuTop";
 
     public static final String CAR = "CAR";
     public static final String TRA = "TRA";
@@ -69,6 +73,18 @@ public class InitialLoadService {
 
     @Value("classpath:json/rform.json")
     org.springframework.core.io.Resource rFormSourceFile;
+
+    @Value("classpath:json/rlayout.json")
+    org.springframework.core.io.Resource rlayoutSourceFile;
+
+    @Value("classpath:json/rpage1.json")
+    org.springframework.core.io.Resource rpage1SourceFile;
+
+    @Value("classpath:json/rpage2.json")
+    org.springframework.core.io.Resource rpage2SourceFile;
+
+    @Value("classpath:json/rmenutop.json")
+    org.springframework.core.io.Resource rmenutopSourceFile;
 
     public InitialLoadService(
         OrganisationRepository organisationRepository,
@@ -205,6 +221,50 @@ public class InitialLoadService {
                 .type(RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rFormSourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_LAYOUT)
+                .name("Resource layout")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rlayoutSourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_PAGE1)
+                .name("Resource page 1")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rpage1SourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_PAGE2)
+                .name("Resource page 2")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rpage2SourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_MENU_TOP)
+                .name("Resource menutop")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rmenutopSourceFile))
                 .childrenIds(List.of())
                 .build()
         );

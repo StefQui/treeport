@@ -1,0 +1,15 @@
+{
+  "componentType": "page",
+  "path": "pag",
+  "layoutResourceId": "rlayout",
+  "layoutElements": [
+    {
+      "layoutElementId": "menuTop",
+      "resourceId": "rmenuTop"
+    },
+    {
+      "layoutElementId": "theContent",
+      "resourceId": "r3"
+    }
+  ]
+}

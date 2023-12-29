@@ -10,6 +10,7 @@ import SiteList from '../site/site-list';
 import { AttValue } from '../attribute-value/attribute-value';
 import { SmRefToResource, ZZZResourceContent } from './resource-content';
 import { buildAttributeIdFormExploded, SmAttributeField, SmForm } from './render-form';
+import { SmLayoutElement, SmMenu, SmPage } from './layout';
 
 export const TextBasic = props => {
   const siteEntity = useAppSelector(state => state.site.entity);
@@ -73,6 +74,10 @@ export const ENTITY_IDS_KEY = 'entityIds';
 export const RESOURCE_NAME_KEY = 'name';
 export const FIELDS_ATTRIBUTES_KEY = 'fieldsAttributes';
 export const UPDATED_ATTRIBUTE_IDS_KEY = 'updatedAttributeIds';
+export const LAYOUT_RESOURCE_ID_KEY = 'layoutResourceId';
+export const LAYOUT_ELEMENTS_KEY = 'layoutElements';
+export const LAYOUT_ELEMENT_ID = 'layoutElementId';
+export const RESOURCE_FROM_REF_KEY = 'resource';
 
 // export const SmTextRefToPath = props => {
 //   const builtPath = buildPath(props);
@@ -481,6 +486,7 @@ export const MyVerticalPanel = props => {
         currentPath={props.currentPath + PATH_SEPARATOR + props.path}
         form={props.form}
         localContextPath={props.localContextPath}
+        layoutElements={props.layoutElements}
       ></MyElem>
     ));
 
@@ -549,6 +555,12 @@ export const MyElem = props => {
         return <SmForm {...params}></SmForm>;
       case 'AttributeField':
         return <SmAttributeField {...params}></SmAttributeField>;
+      case 'page':
+        return <SmPage {...params}></SmPage>;
+      case 'menu':
+        return <SmMenu {...params}></SmMenu>;
+      case 'layoutElement':
+        return <SmLayoutElement {...params}></SmLayoutElement>;
       case 'resourceContent':
         return <ZZZResourceContent {...params}></ZZZResourceContent>;
       case 'verticalPanel':
@@ -560,7 +572,13 @@ export const MyElem = props => {
 
   return (
     <MyWrapper {...{ ...props.input, currentPath: props.currentPath }}>
-      {renderSwitch({ ...props.input, currentPath: props.currentPath, form: props.form, localContextPath: props.localContextPath })}
+      {renderSwitch({
+        ...props.input,
+        currentPath: props.currentPath,
+        form: props.form,
+        localContextPath: props.localContextPath,
+        layoutElements: props.layoutElements,
+      })}
     </MyWrapper>
   );
 };

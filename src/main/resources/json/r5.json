@@ -96,7 +96,7 @@
         },
         "campaignId": {
           "refToPath": {
-            "path": "/vp/vpc/campaignId"
+            "path": "/pag/vp8/vp/vpc/campaignId"
           }
         },
         "attConfig": {

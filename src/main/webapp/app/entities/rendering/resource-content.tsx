@@ -114,7 +114,7 @@ export const SmRefToResource = props => {
         path: builtPath,
       }),
     );
-  }, []);
+  }, [resourceId]);
 
   useEffect(() => {
     if (resource) {
@@ -162,7 +162,6 @@ export const MyRend = props => {
           params={props.params ? props.params.params : null}
           currentPath={props.currentPath}
           localContextPath={props.localContextPath}
-          layoutElements={input.layoutElements ? input.layoutElements : props.layoutElements}
         ></MyElem>
       ) : (
         <p>Loading...</p>

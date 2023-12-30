@@ -3,7 +3,7 @@ import { getEntity } from 'app/entities/resource/resource.reducer';
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { PATH_SEPARATOR, ROOT_PATH_SEPARATOR } from './rendering';
-import { setRenderingContext } from './rendering.reducer';
+import { setRenderingContext, setRenderingCurrentPageId } from './rendering.reducer';
 import { SmRefToResource } from './resource-content';
 
 export const RenderResourcePage = props => {
@@ -32,6 +32,10 @@ export const RenderResourcePage = props => {
     }
   }, [location]);
 
+  useEffect(() => {
+    // setLocalContext(localContext);
+    dispatch(setRenderingCurrentPageId(resourceId));
+  }, [resourceId]);
   // const resource = useAppSelector(state => state.resource.entity);
 
   if (!resourceId) {
@@ -40,7 +44,10 @@ export const RenderResourcePage = props => {
 
   return (
     <div>
-      <h1>Orga: {orgaId}</h1>
+      <h1>
+        ResourceId:
+        {orgaId}
+      </h1>
       <h1>ResourceId: {resourceId}</h1>
       <SmRefToResource currentPath="" path="" params={{ resourceId }} localContextPath=""></SmRefToResource>
     </div>

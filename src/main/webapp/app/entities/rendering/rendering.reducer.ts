@@ -12,6 +12,7 @@ import { FIELDS_ATTRIBUTES_KEY, RESOURCE_FROM_REF_KEY, UPDATED_ATTRIBUTE_IDS_KEY
 
 const initialState = {
   context: {},
+  renderingLayout: [],
   renderingState: {},
 };
 
@@ -74,6 +75,18 @@ export const RenderingSlice = createSlice({
       return {
         ...state,
         context: action.payload,
+      };
+    },
+    setRenderingLayout(state, action) {
+      return {
+        ...state,
+        layoutElements: action.payload,
+      };
+    },
+    setRenderingCurrentPageId(state, action) {
+      return {
+        ...state,
+        currentPageId: action.payload,
       };
     },
     setRenderingForPath(state, action) {
@@ -187,7 +200,8 @@ export const setInState = (state, path, value: any) => {
   };
 };
 
-export const { reset, setRenderingForPath, setRenderingContext, setActivePage, setAction } = RenderingSlice.actions;
+export const { reset, setRenderingForPath, setRenderingContext, setRenderingLayout, setRenderingCurrentPageId, setActivePage, setAction } =
+  RenderingSlice.actions;
 
 // Reducer
 export default RenderingSlice.reducer;

@@ -15,10 +15,13 @@
     },
     {
       "componentType": "SmText",
-      "path": "vsm2",
+      "path": "vsm2aaa",
       "params": {
-        "input": {
-          "refToPath": "/vp/vsm3"
+        "textValue": {
+          "refToPath": {
+            "path": "../vsmsiteList",
+            "property": "selected.entity.name"
+          }
         }
       }
     },
@@ -79,7 +82,7 @@
             "refToPath": "/vp/vsm3bis"
           },
           "selectedResource": {
-            "refToPath": "/vp/vsmsiteList",
+            "refToPath": "/pag/vp8/vp/vsmsiteList",
             "property": "selected"
           }
         }
@@ -92,7 +95,7 @@
         "resourceId": "rform",
         "arguments": {
           "selectedResource": {
-            "refToPath": "/vp/vsmsiteList",
+            "refToPath": "/pag/vp8/vp/vsmsiteList",
             "property": "selected"
           }
         }

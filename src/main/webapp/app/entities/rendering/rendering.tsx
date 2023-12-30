@@ -486,7 +486,6 @@ export const MyVerticalPanel = props => {
         currentPath={props.currentPath + PATH_SEPARATOR + props.path}
         form={props.form}
         localContextPath={props.localContextPath}
-        layoutElements={props.layoutElements}
       ></MyElem>
     ));
 
@@ -577,7 +576,6 @@ export const MyElem = props => {
         currentPath: props.currentPath,
         form: props.form,
         localContextPath: props.localContextPath,
-        layoutElements: props.layoutElements,
       })}
     </MyWrapper>
   );
@@ -588,7 +586,7 @@ export const MyWrapper = ({ children, ...props }) => {
   if (props.border) {
     cn += ' border-2';
   }
-  const displayPath = false;
+  const displayPath = true;
   if (displayPath) {
     return (
       <Col md={props.col ?? 12} className={cn}>

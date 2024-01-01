@@ -5,7 +5,7 @@ import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { getAttribute, getResource, setAction, setRenderingForPath } from './rendering.reducer';
+import { getAttribute, setAction, setInRenderingStateOutputs } from './rendering.reducer';
 import SiteList from '../site/site-list';
 import { AttValue } from '../attribute-value/attribute-value';
 import { SmRefToResource, ZZZResourceContent } from './resource-content';
@@ -35,6 +35,10 @@ export function buildPath(props) {
   return props.path ? props.currentPath + PATH_SEPARATOR + props.path : props.currentPath;
 }
 
+export function getRootPath() {
+  return PATH_SEPARATOR;
+}
+
 export const applyPath = (path, pathToApply) => {
   if (pathToApply.startsWith(ROOT_PATH_SEPARATOR)) {
     return pathToApply;
@@ -58,6 +62,7 @@ export const applyPath = (path, pathToApply) => {
   }
 };
 
+export const PATH_KEY = 'path';
 export const OUTPUT_KEY = 'output';
 export const TEXT_VALUE_KEY = 'textValue';
 export const RESOURCE_ID_KEY = 'resourceId';
@@ -77,7 +82,45 @@ export const UPDATED_ATTRIBUTE_IDS_KEY = 'updatedAttributeIds';
 export const LAYOUT_RESOURCE_ID_KEY = 'layoutResourceId';
 export const LAYOUT_ELEMENTS_KEY = 'layoutElements';
 export const LAYOUT_ELEMENT_ID = 'layoutElementId';
+export const LAYOUT_ELEMENT_RESOURCE_ID = 'resourceId';
 export const RESOURCE_FROM_REF_KEY = 'resource';
+export const SITE_FROM_REF_KEY = 'site';
+export const RESOURCE_CONTENT_KEY = 'content';
+export const RESOURCE_PARAMETERS_KEY = 'parameters';
+export const RESOURCE_PARAMETER_KEY = 'parameterKey';
+export const RESOURCE_PARAMETER_TYPE_KEY = 'parameterType';
+export const RESOURCE_PARAMETER_SOURCES_KEY = 'parameterSources';
+export const RESOURCE_PARAMETER_SOURCE_KEY = 'source';
+export const RESOURCE_PARAMETER_SOURCE_PARAMETER_KEY_KEY = 'sourceParameterKey';
+
+export const COMPONENT_TYPE = 'componentType';
+
+export const RESOURCE_CONTENT_PROPERTY = 'content';
+
+export const STATE_RS_PARAMETERS_KEY = 'parameters';
+export const STATE_RS_OUTPUTS_KEY = 'outputs';
+export const STATE_RS_SELF_KEY = 'self';
+// export const STATE_RS_LOCAL_CONTEXT_KEY = 'localContext';
+
+export const STATE_CURRENT_PAGE_ID_KEY = 'currentPageId';
+export const STATE_PAGE_RESOURCE_KEY = 'pageResource';
+export const STATE_PAGE_RESOURCES_KEY = 'pageResources';
+export const STATE_PAGE_CONTEXT_KEY = 'pageContext';
+export const STATE_LAYOUT_ELEMENTS_KEY = 'layoutElements';
+
+export type PARAMETER_SOURCE_TYPE = 'pageContext' | 'localContext';
+export type PARAMETER_TYPE = 'site' | 'string';
+export type PARAMETER_SOURCE = {
+  [RESOURCE_PARAMETER_SOURCE_KEY]: PARAMETER_SOURCE_TYPE;
+  [RESOURCE_PARAMETER_SOURCE_PARAMETER_KEY_KEY]: string;
+};
+export type PARAMETER = {
+  [RESOURCE_PARAMETER_KEY]: string;
+  [RESOURCE_PARAMETER_TYPE_KEY]: PARAMETER_TYPE;
+  [RESOURCE_PARAMETER_SOURCES_KEY]?: PARAMETER_SOURCE[];
+};
+export type PARAMETER_SOURCES_TYPE = PARAMETER_SOURCE[];
+export type PARAMETERS_TYPE = PARAMETER[];
 
 // export const SmTextRefToPath = props => {
 //   const builtPath = buildPath(props);
@@ -111,6 +154,7 @@ export const getValueForPathInObject = (obj, path) => {
 };
 
 export const SmText = props => {
+  // console.log('SmText', props);
   if (!props.params) {
     return (
       <span>
@@ -223,14 +267,14 @@ export function useRenderingContextState(property) {
   return useAppSelector(state => getValueForPathInObject(state.rendering.context, property));
 }
 
-export function updateRenderingState(dispatch, path: string, value) {
-  dispatch(
-    setRenderingForPath({
-      path,
-      value,
-    }),
-  );
-}
+// export function updateRenderingStatezzz(dispatch, path: string, value) {
+//   dispatch(
+//     setRenderingForPath({
+//       path,
+//       value,
+//     }),
+//   );
+// }
 
 export const SmInput = props => {
   const [value, setValue] = useState(props.params.defaultValue.const);
@@ -239,17 +283,27 @@ export const SmInput = props => {
 
   useEffect(() => {
     if (props.params.defaultValue.const) {
-      updateRenderingState(dispatch, builtPath, {
-        [OUTPUT_KEY]: props.params.defaultValue.const,
-      });
+      dispatch(
+        setInRenderingStateOutputs({
+          path: builtPath,
+          value: {
+            [OUTPUT_KEY]: props.params.defaultValue.const,
+          },
+        }),
+      );
     }
   }, []);
 
   const handleChange = event => {
     setValue(event.target.value);
-    updateRenderingState(dispatch, builtPath, {
-      [OUTPUT_KEY]: event.target.value,
-    });
+    dispatch(
+      setInRenderingStateOutputs({
+        path: builtPath,
+        value: {
+          [OUTPUT_KEY]: event.target.value,
+        },
+      }),
+    );
     dispatch(setAction({ source: builtPath, actionType: 'textChanged', value: event.target.value }));
   };
 
@@ -328,56 +382,56 @@ export const SmSiteRef = props => {
   );
 };
 
-export const ZZZZZZZZZAttRef = (props: { refTo: string; attributeKey: string; campaignId: string; path: string; col: any }) => {
-  const action = useAppSelector(state => state.rendering.action);
-  const dispatch = useAppDispatch();
+// export const ZZZZZZZZZAttRef = (props: { refTo: string; attributeKey: string; campaignId: string; path: string; col: any }) => {
+//   const action = useAppSelector(state => state.rendering.action);
+//   const dispatch = useAppDispatch();
 
-  // console.log('in app selector', state.rendering.renderingState, ddd);
-  // return ddd;
-  // });
-  const initialState = {
-    attribute: null,
-  };
+//   // console.log('in app selector', state.rendering.renderingState, ddd);
+//   // return ddd;
+//   // });
+//   const initialState = {
+//     attribute: null,
+//   };
 
-  const [attValue, setAttValue] = useState('??');
+//   const [attValue, setAttValue] = useState('??');
 
-  const attribute = useAppSelector(state => {
-    const aaa = state.rendering.renderingState[props.path];
-    return aaa ? (aaa.attribute ? aaa.attribute : null) : null;
-  });
+//   const attribute = useAppSelector(state => {
+//     const aaa = state.rendering.renderingState[props.path];
+//     return aaa ? (aaa.attribute ? aaa.attribute : null) : null;
+//   });
 
-  useEffect(() => {
-    dispatch(setRenderingForPath({ path: props.path, value: initialState }));
-  }, []);
+//   useEffect(() => {
+//     dispatch(setRenderingForPath({ path: props.path, value: initialState }));
+//   }, []);
 
-  useEffect(() => {
-    if (!action || action.source !== props.refTo) {
-      return;
-    }
-    if (action.actionType === 'selectSite') {
-      dispatch(
-        getAttribute({
-          exploded: {
-            siteId: action.entity[ENTITY_KEY].id,
-            campaignId: props.campaignId,
-            key: props.attributeKey,
-          },
-          path: props.path,
-        }),
-      );
-    }
-  }, [action]);
+//   useEffect(() => {
+//     if (!action || action.source !== props.refTo) {
+//       return;
+//     }
+//     if (action.actionType === 'selectSite') {
+//       dispatch(
+//         getAttribute({
+//           exploded: {
+//             siteId: action.entity[ENTITY_KEY].id,
+//             campaignId: props.campaignId,
+//             key: props.attributeKey,
+//           },
+//           path: props.path,
+//         }),
+//       );
+//     }
+//   }, [action]);
 
-  useEffect(() => {
-    if (attribute) {
-      setAttValue(attribute);
-    } else {
-      setAttValue(null);
-    }
-  }, [attribute]);
+//   useEffect(() => {
+//     if (attribute) {
+//       setAttValue(attribute);
+//     } else {
+//       setAttValue(null);
+//     }
+//   }, [attribute]);
 
-  return <AttValue attValue={attValue}></AttValue>;
-};
+//   return <AttValue attValue={attValue}></AttValue>;
+// };
 
 const loadAttribute = (props, resourceIdVal, campaignIdVal, attConfigVal) =>
   getAttribute({
@@ -478,6 +532,8 @@ export const PATH_SEPARATOR = '/';
 export const ROOT_PATH_SEPARATOR = '/';
 
 export const MyVerticalPanel = props => {
+  console.log('MyVerticalPanel', props);
+
   const renderItems = items =>
     items.map((item, index) => (
       <MyElem
@@ -502,7 +558,14 @@ export const MyInput = props => {
 
   const handleChange = event => {
     setValue(event.target.value);
-    dispatch(setRenderingForPath({ path: builtPath, value: event.target.value }));
+    dispatch(
+      setInRenderingStateOutputs({
+        path: builtPath,
+        value: {
+          [OUTPUT_KEY]: event.target.value,
+        },
+      }),
+    );
 
     dispatch(setAction({ source: builtPath, actionType: 'textChanged', value: event.target.value }));
 
@@ -526,6 +589,7 @@ export const MyInput = props => {
 };
 
 export const MyElem = props => {
+  console.log('MyElem', props);
   const renderSwitch = params => {
     switch (params.componentType) {
       case 'textBasic':
@@ -542,8 +606,8 @@ export const MyElem = props => {
         return <SiteRef {...params}></SiteRef>;
       case 'SmSiteRef':
         return <SmSiteRef {...params}></SmSiteRef>;
-      case 'attRef':
-        return <ZZZZZZZZZAttRef {...params}></ZZZZZZZZZAttRef>;
+      // case 'attRef':
+      //   return <ZZZZZZZZZAttRef {...params}></ZZZZZZZZZAttRef>;
       case 'SmAttRef':
         return <SmAttRef {...params}></SmAttRef>;
       case 'input':

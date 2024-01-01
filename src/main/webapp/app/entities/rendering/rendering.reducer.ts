@@ -8,12 +8,29 @@ import { ISite } from 'app/shared/model/site.model';
 import { IAttribute, IAttributeWithValue } from 'app/shared/model/attribute.model';
 import { IAttributeIdExploded } from 'app/shared/model/attribute-id-exploded';
 import { IResource } from 'app/shared/model/resource.model';
-import { FIELDS_ATTRIBUTES_KEY, RESOURCE_FROM_REF_KEY, UPDATED_ATTRIBUTE_IDS_KEY } from './rendering';
+import {
+  FIELDS_ATTRIBUTES_KEY,
+  RESOURCE_FROM_REF_KEY,
+  SITE_FROM_REF_KEY,
+  STATE_LAYOUT_ELEMENTS_KEY,
+  STATE_PAGE_CONTEXT_KEY,
+  STATE_PAGE_RESOURCES_KEY,
+  STATE_PAGE_RESOURCE_KEY,
+  // STATE_RS_LOCAL_CONTEXT_KEY,
+  STATE_RS_SELF_KEY,
+  STATE_RS_OUTPUTS_KEY,
+  STATE_RS_PARAMETERS_KEY,
+  UPDATED_ATTRIBUTE_IDS_KEY,
+  STATE_CURRENT_PAGE_ID_KEY,
+} from './rendering';
+import { stubbedResources } from './fake-resource';
 
 const initialState = {
-  context: {},
-  renderingLayout: [],
+  // context: {},
+  // renderingLayout: [],
   renderingState: {},
+  [STATE_PAGE_RESOURCES_KEY]: {},
+  [STATE_PAGE_CONTEXT_KEY]: {},
 };
 
 export type RenderingState = Readonly<typeof initialState>;
@@ -30,10 +47,18 @@ export const getSites = createAsyncThunk(`rendering/fetch_site_list`, async ({ p
   return axios.get<ISite[]>(requestUrl);
 });
 
-export const getResource = createAsyncThunk(`rendering/fetch_resource`, async ({ resourceId }: { resourceId: string; path: string }) => {
+export const getResourceForPageResources = createAsyncThunk(`rendering/fetch_resource`, async ({ resourceId }: { resourceId: string }) => {
   const requestUrl = `${resourceApiUrl}/${resourceId}`;
   return axios.get<IResource[]>(requestUrl);
 });
+
+export const getSiteForRenderingStateParamaters = createAsyncThunk(
+  `rendering/fetch_site`,
+  async ({ siteId }: { siteId: string; destinationSiteKey: string; path: string }) => {
+    const requestUrl = `${siteApiUrl}/${siteId}`;
+    return axios.get<ISite[]>(requestUrl);
+  },
+);
 
 export const getFieldAttributesAndConfig = createAsyncThunk(
   `rendering/fetch_fieldsAttributesAndConfigs`,
@@ -60,9 +85,9 @@ export const getAttribute = createAsyncThunk(
   { serializeError: serializeAxiosError },
 );
 
-export const setRendering = (path, value) => dispatch => {
-  dispatch(setRenderingForPath({ path, value }));
-};
+// export const setRendering = (path, value) => dispatch => {
+//   dispatch(setRenderingForPath({ path, value }));
+// };
 
 export const RenderingSlice = createSlice({
   name: 'rendering',
@@ -77,32 +102,56 @@ export const RenderingSlice = createSlice({
         context: action.payload,
       };
     },
-    setRenderingLayout(state, action) {
+    setRenderingPageContext(state, action) {
       return {
         ...state,
-        layoutElements: action.payload,
+        [STATE_PAGE_CONTEXT_KEY]: action.payload,
+      };
+    },
+    setRenderingPageResources(state, action) {
+      return {
+        ...state,
+        [STATE_PAGE_RESOURCES_KEY]: action.payload,
+      };
+    },
+    setRenderingLayoutElements(state, action) {
+      return {
+        ...state,
+        [STATE_LAYOUT_ELEMENTS_KEY]: action.payload,
       };
     },
     setRenderingCurrentPageId(state, action) {
       return {
         ...state,
-        currentPageId: action.payload,
+        [STATE_CURRENT_PAGE_ID_KEY]: action.payload,
       };
     },
-    setRenderingForPath(state, action) {
-      return {
-        ...state,
-        renderingState: {
-          ...state.renderingState,
-          ...{
-            [action.payload.path]: {
-              ...state.renderingState[action.payload.path],
-              ...action.payload.value,
-            },
-          },
-        },
-      };
+    setInRenderingStateParameters(state, action) {
+      return setInRenderingState(state, action.payload.path, action.payload.value, STATE_RS_PARAMETERS_KEY);
     },
+    setInRenderingStateOutputs(state, action) {
+      return setInRenderingState(state, action.payload.path, action.payload.value, STATE_RS_OUTPUTS_KEY);
+    },
+    setInRenderingStateSelf(state, action) {
+      return setInRenderingState(state, action.payload.path, action.payload.value, STATE_RS_SELF_KEY);
+    },
+    // setInRenderingStateLocalContext(state, action) {
+    //   return setInRenderingState(state, action.payload.path, action.payload.value, STATE_RS_LOCAL_CONTEXT_KEY);
+    // },
+    // setRenderingForPath(state, action) {
+    //   return {
+    //     ...state,
+    //     renderingState: {
+    //       ...state.renderingState,
+    //       ...{
+    //         [action.payload.path]: {
+    //           ...state.renderingState[action.payload.path],
+    //           ...action.payload.value,
+    //         },
+    //       },
+    //     },
+    //   };
+    // },
     setActivePage(state, action) {
       const aaa = {};
       aaa[action.payload.path] = {
@@ -133,10 +182,9 @@ export const RenderingSlice = createSlice({
         const { data, headers } = action.payload;
         const { path } = action.meta.arg;
 
-        const aaa = {};
-        aaa[path] = {
+        const newOne = {
           paginationState: {
-            ...state.renderingState[path].paginationState,
+            ...state.renderingState[path][STATE_RS_OUTPUTS_KEY].paginationState,
           },
           listState: {
             loading: false,
@@ -144,15 +192,32 @@ export const RenderingSlice = createSlice({
             totalItems: parseInt(headers['x-total-count'], 10),
           },
         };
-
-        return { ...state, renderingState: { ...state.renderingState, ...aaa } };
+        return {
+          ...state,
+          renderingState: {
+            ...state.renderingState,
+            ...{
+              [path]: {
+                ...state.renderingState[path],
+                ...{
+                  [STATE_RS_OUTPUTS_KEY]: {
+                    ...(state.renderingState[path] ? state.renderingState[path][STATE_RS_OUTPUTS_KEY] : null),
+                    ...newOne,
+                  },
+                },
+              },
+            },
+          },
+        };
       })
       .addMatcher(isPending(getSites), (state, action) => {
         const { path } = action.meta.arg;
-        const aaa = {};
-        aaa[path] = {
+
+        // console.log('newOne3', state.renderingState[path]);
+
+        const newOne = {
           paginationState: {
-            ...state.renderingState[path].paginationState,
+            ...state.renderingState[path][STATE_RS_OUTPUTS_KEY].paginationState,
           },
           listState: {
             errorMessage: null,
@@ -160,7 +225,23 @@ export const RenderingSlice = createSlice({
             loading: true,
           },
         };
-        return { ...state, renderingState: { ...state.renderingState, ...aaa } };
+        return {
+          ...state,
+          renderingState: {
+            ...state.renderingState,
+            ...{
+              [path]: {
+                ...state.renderingState[path],
+                ...{
+                  [STATE_RS_OUTPUTS_KEY]: {
+                    ...(state.renderingState[path] ? state.renderingState[path][STATE_RS_OUTPUTS_KEY] : null),
+                    ...newOne,
+                  },
+                },
+              },
+            },
+          },
+        };
       })
       .addMatcher(isFulfilled(getAttribute), (state, action) => {
         const { data } = action.payload;
@@ -173,19 +254,70 @@ export const RenderingSlice = createSlice({
 
         return { ...state, renderingState: { ...state.renderingState, ...aaa } };
       })
-      .addMatcher(isFulfilled(getResource), (state, action) => {
-        return setInState(state, action.meta.arg.path, { [RESOURCE_FROM_REF_KEY]: action.payload.data });
+      .addMatcher(isFulfilled(getResourceForPageResources), (state, action) => {
+        return putRenderingPageResources(state, {
+          [action.meta.arg.resourceId]: getStubbedOrNot(action.meta.arg.resourceId, action.payload.data),
+        });
+      })
+      .addMatcher(isFulfilled(getSiteForRenderingStateParamaters), (state, action) => {
+        return putInRenderingStateParameters(state, action.meta.arg.path, { [action.meta.arg.destinationSiteKey]: action.payload.data });
       })
       .addMatcher(isFulfilled(getFieldAttributesAndConfig), (state, action) => {
-        return setInState(state, action.meta.arg.path, { [FIELDS_ATTRIBUTES_KEY]: action.payload.data });
+        return putInRenderingStateOutputs(state, action.meta.arg.path, { [FIELDS_ATTRIBUTES_KEY]: action.payload.data });
       })
       .addMatcher(isFulfilled(saveAttributes), (state, action) => {
-        return setInState(state, action.meta.arg.path, { [UPDATED_ATTRIBUTE_IDS_KEY]: action.payload.data });
+        return putInRenderingStateOutputs(state, action.meta.arg.path, { [UPDATED_ATTRIBUTE_IDS_KEY]: action.payload.data });
       });
   },
 });
 
-export const setInState = (state, path, value: any) => {
+const getStubbedOrNot = (resourceId, data) => {
+  const stubbed = true;
+  if (!stubbed) {
+    return data;
+  }
+  return {
+    id: resourceId,
+    content: JSON.stringify(stubbedResources[resourceId]),
+  };
+};
+
+// export const setInRenderingState = (state, path, value: any) => {
+//   return {
+//     ...state,
+//     renderingState: {
+//       ...state.renderingState,
+//       ...{
+//         [path]: {
+//           ...state.renderingState[path],
+//           ...value,
+//         },
+//       },
+//     },
+//   };
+// };
+
+const putRenderingPageResources = (state, value: any) => {
+  return setInState(state, STATE_PAGE_RESOURCES_KEY, value);
+};
+
+const putInRenderingStateParameters = (state, path, value: any) => {
+  return setInRenderingState(state, path, value, STATE_RS_PARAMETERS_KEY);
+};
+
+const putInRenderingStateOutputs = (state, path, value: any) => {
+  return setInRenderingState(state, path, value, STATE_RS_OUTPUTS_KEY);
+};
+
+const putInRenderingStateSelf = (state, path, value: any) => {
+  return setInRenderingState(state, path, value, STATE_RS_SELF_KEY);
+};
+
+// const putInRenderingStateLocalContext = (state, path, value: any) => {
+//   return setInRenderingState(state, path, value, STATE_RS_LOCAL_CONTEXT_KEY);
+// };
+
+export const setInRenderingState = (state, path, value: any, key: string) => {
   return {
     ...state,
     renderingState: {
@@ -193,15 +325,43 @@ export const setInState = (state, path, value: any) => {
       ...{
         [path]: {
           ...state.renderingState[path],
-          ...value,
+          ...{
+            [key]: {
+              ...(state.renderingState[path] ? state.renderingState[path][key] : null),
+              ...value,
+            },
+          },
         },
       },
     },
   };
 };
 
-export const { reset, setRenderingForPath, setRenderingContext, setRenderingLayout, setRenderingCurrentPageId, setActivePage, setAction } =
-  RenderingSlice.actions;
+export const setInState = (state, path, value: any) => {
+  return {
+    ...state,
+    ...{
+      [path]: {
+        ...state[path],
+        ...value,
+      },
+    },
+  };
+};
+
+export const {
+  reset,
+  setRenderingContext,
+  setRenderingPageContext,
+  setRenderingPageResources,
+  setRenderingLayoutElements,
+  setRenderingCurrentPageId,
+  setInRenderingStateParameters,
+  setInRenderingStateOutputs,
+  // setInRenderingStateLocalContext,
+  setActivePage,
+  setAction,
+} = RenderingSlice.actions;
 
 // Reducer
 export default RenderingSlice.reducer;

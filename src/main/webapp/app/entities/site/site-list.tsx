@@ -9,8 +9,8 @@ import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-u
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { getEntities } from './site.reducer';
-import { getSites, setAction, setActivePage, setRenderingForPath } from 'app/entities/rendering/rendering.reducer';
-import { buildPath, ENTITY_KEY } from '../rendering/rendering';
+import { getSites, setAction, setActivePage, setInRenderingStateOutputs } from 'app/entities/rendering/rendering.reducer';
+import { buildPath, ENTITY_KEY, STATE_RS_OUTPUTS_KEY } from '../rendering/rendering';
 
 export const SiteList = props => {
   const dispatch = useAppDispatch();
@@ -36,40 +36,44 @@ export const SiteList = props => {
 
   // const pageLocation = useLocation();
   // const navigate = useNavigate();
-  console.log('start', props.path);
+  // console.log('start', props.path);
   // const listState = useAppSelector(state => {
   //   console.log('start-listState', state.rendering.renderingState[props.path]);
   //   return state.rendering.renderingState[props.path] ? state.rendering.renderingState[props.path].listState : null;
   // });
   const builtPath = buildPath(props);
   const paginationState = useAppSelector(state => {
-    return state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath].paginationState : null;
+    return state.rendering.renderingState[builtPath]
+      ? state.rendering.renderingState[builtPath][STATE_RS_OUTPUTS_KEY].paginationState
+      : null;
   });
 
   const siteList = useAppSelector(state =>
-    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath].listState.entities : null,
+    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_OUTPUTS_KEY].listState.entities : null,
   );
 
   const loading = useAppSelector(state =>
-    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath].listState.loading : null,
+    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_OUTPUTS_KEY].listState.loading : null,
   );
 
   const totalItems = useAppSelector(state =>
-    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath].listState.totalItems : null,
+    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_OUTPUTS_KEY].listState.totalItems : null,
   );
 
   const activePage = useAppSelector(state =>
-    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath].paginationState.activePage : null,
+    state.rendering.renderingState[builtPath]
+      ? state.rendering.renderingState[builtPath][STATE_RS_OUTPUTS_KEY].paginationState.activePage
+      : null,
   );
 
   useEffect(() => {
-    console.log('useEffect1');
-    dispatch(setRenderingForPath({ path: builtPath, value: initialState }));
+    // console.log('useEffect1');
+    dispatch(setInRenderingStateOutputs({ path: builtPath, value: initialState }));
     sortEntities();
   }, []);
 
   useEffect(() => {
-    console.log('useEffect22', paginationState);
+    // console.log('useEffect22', paginationState);
     // dispatch(setRenderingForPath({ path: props.path, value: initialState }));
 
     if (activePage) {
@@ -92,7 +96,7 @@ export const SiteList = props => {
   // const totalItems = useAppSelector(state => state.site.totalItems);
 
   const getAllSites = () => {
-    console.log('getAllSites', builtPath);
+    // console.log('getAllSites', builtPath);
     // const rendering = useAppSelector(state => state.rendering.renderingState[props.refTo]);
 
     // const listState = getRenderingStateForPath(rendering, props.path);
@@ -110,7 +114,7 @@ export const SiteList = props => {
   };
 
   const sortEntities = () => {
-    console.log('sortEntities', builtPath);
+    // console.log('sortEntities', builtPath);
     getAllSites();
     // const endURL = `?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`;
     // if (pageLocation.search !== endURL) {
@@ -141,7 +145,7 @@ export const SiteList = props => {
   // }, [pageLocation.search]);
 
   const sort = p => () => {
-    console.log('sort', builtPath);
+    // console.log('sort', builtPath);
     // const listState = getRenderingStateForPath(rendering, props.path);
     // setStateForPath({
     //   path: props.path,
@@ -152,7 +156,6 @@ export const SiteList = props => {
     //   },
     // });
     // setRs(listState);
-
     // setPaginationState({
     //   ...paginationState,
     //   order: paginationState.order === ASC ? DESC : ASC,
@@ -161,13 +164,13 @@ export const SiteList = props => {
   };
 
   const handleSelect = selected => () => {
-    console.log('handleSelect', selected);
-    dispatch(setRenderingForPath({ path: builtPath, value: { selected: { entityType: 'SITE', [ENTITY_KEY]: selected } } }));
+    // console.log('handleSelect', selected);
+    dispatch(setInRenderingStateOutputs({ path: builtPath, value: { selected: { entityType: 'SITE', [ENTITY_KEY]: selected } } }));
     dispatch(setAction({ source: builtPath, actionType: 'selectSite', entity: { entityType: 'SITE', [ENTITY_KEY]: selected } }));
   };
 
   const handlePagination = currentPage => {
-    console.log('handlePagination', currentPage);
+    // console.log('handlePagination', currentPage);
     dispatch(setActivePage({ path: builtPath, value: currentPage }));
 
     // const listState = getRenderingStateForPath(rendering, props.path);
@@ -259,6 +262,9 @@ export const SiteList = props => {
                             <span className="d-none d-md-inline">
                               <Translate contentKey="entity.action.select">Select</Translate>
                             </span>
+                          </Button>
+                          <Button tag={Link} to={`/coca/render/rpage2?sid=${site.id}`} color="info" size="sm" data-cy="entitySelectButton">
+                            <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Open </span>
                           </Button>
                           <Button tag={Link} to={`/site/${site.id}`} color="info" size="sm" data-cy="entityDetailsButton">
                             <FontAwesomeIcon icon="eye" />{' '}

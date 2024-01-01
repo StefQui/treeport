@@ -1,16 +1,18 @@
 {
-  "componentType": "verticalPanel",
-  "path": "vp8",
-  "items": [
-    {
-      "componentType": "layoutElement",
-      "path": "lemt",
-      "layoutElementId": "menuTop"
-    },
-    {
-      "componentType": "layoutElement",
-      "path": "lecontent",
-      "layoutElementId": "theContent"
-    }
-  ]
+  "content": {
+    "componentType": "verticalPanel",
+    "path": "vp8",
+    "items": [
+      {
+        "componentType": "layoutElement",
+        "path": "lemt",
+        "layoutElementId": "menuTop"
+      },
+      {
+        "componentType": "layoutElement",
+        "path": "lecontent",
+        "layoutElementId": "theContent"
+      }
+    ]
+  }
 }

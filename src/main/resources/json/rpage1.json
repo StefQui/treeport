@@ -1,15 +1,27 @@
 {
-  "componentType": "page",
-  "path": "pag",
-  "layoutResourceId": "rlayout",
-  "layoutElements": [
+  "content": {
+    "componentType": "page",
+    "path": "pag",
+    "layoutResourceId": "rlayout",
+    "layoutElements": [
+      {
+        "layoutElementId": "menuTop",
+        "resourceId": "rmenuTop"
+      },
+      {
+        "layoutElementId": "theContent",
+        "resourceId": "r3"
+      }
+    ]
+  },
+  "parameters": [
     {
-      "layoutElementId": "menuTop",
-      "resourceId": "rmenuTop"
+      "parameterKey": "sid",
+      "parameterType": "string"
     },
     {
-      "layoutElementId": "theContent",
-      "resourceId": "r3"
+      "parameterKey": "category",
+      "parameterType": "string"
     }
   ]
 }

@@ -1,0 +1,41 @@
+{
+  "pageContext": {
+    "param1": "id1",
+    "param2": "233"
+  },
+  "layoutElements": [
+    {
+      "layoutElementId": "menuTop",
+      "resourceId": "rmenuTop"
+    },
+    {
+      "layoutElementId": "theContent",
+      "resourceId": "r3"
+    }
+  ],
+  "pageResourceId": "rpage1",
+  "pageResources": {
+    "rpage1": {},
+    "rlayout": {},
+    "rpage2": {},
+    "rmenu": {},
+    "r3": {}
+  },
+  "renderingState": {
+    "/page": {},
+    "/page/vp/txt": {
+      "parameters": {
+        "param1": "id1",
+        "param2": "233"
+      },
+      "outputs": {
+        "param1": "id1",
+        "param2": "233"
+      },
+      "localContext": {
+        "param1": "id1",
+        "param2": "233"
+      }
+    }
+  }
+}

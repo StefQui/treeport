@@ -203,7 +203,7 @@ export const extractAttributeId = (props, params) => {
 export const SmAttributeField = props => {
   const form = props.form;
 
-  console.log('props.form.formPath', props.form.formPath);
+  // console.log('props.form.formPath', props.form.formPath);
 
   if (!form) {
     return <span>form is mandatory in AttributeField</span>;
@@ -246,11 +246,11 @@ export const SmAttributeField = props => {
       //   props.form.unregister(attributeId);
       //   props.form.doWatch('-------unregister:   ' + attributeId);
       // }
-      console.log('-----', attribute);
+      // console.log('-----', attribute);
       // setAttributeId(buildAttributeIdFormExploded(resourceIdVal, attConfigVal, campaignIdVal));
       // props.form.doWatch('--------register:   ' + buildAttributeIdFormExploded(resourceIdVal, attConfigVal, campaignIdVal));
     }
-    console.log('SmAttributeField has changed===', props);
+    // console.log('SmAttributeField has changed===', props);
   }, [attribute]);
 
   // useEffect(() => {

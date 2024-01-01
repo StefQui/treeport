@@ -1,112 +1,114 @@
 {
-  "componentType": "verticalPanel",
-  "path": "vp",
-  "items": [
-    {
-      "componentType": "SmText",
-      "path": "vsm1",
-      "params": {
-        "textValue": {
-          "const": {
-            "constValue": "ABC"
+  "content": {
+    "componentType": "verticalPanel",
+    "path": "vp",
+    "items": [
+      {
+        "componentType": "SmText",
+        "path": "vsm1",
+        "params": {
+          "textValue": {
+            "const": {
+              "constValue": "ABC"
+            }
           }
         }
-      }
-    },
-    {
-      "componentType": "SmText",
-      "path": "vsm2aaa",
-      "params": {
-        "textValue": {
-          "refToPath": {
-            "path": "../vsmsiteList",
-            "property": "selected.entity.name"
+      },
+      {
+        "componentType": "SmText",
+        "path": "vsm2aaa",
+        "params": {
+          "textValue": {
+            "refToPath": {
+              "path": "../vsmsiteList",
+              "property": "selected.entity.name"
+            }
           }
         }
-      }
-    },
-    {
-      "componentType": "SmInput",
-      "path": "vsm3",
-      "params": {
-        "defaultValue": {
-          "const": "DEFEDF"
+      },
+      {
+        "componentType": "SmInput",
+        "path": "vsm3",
+        "params": {
+          "defaultValue": {
+            "const": "DEFEDF"
+          }
         }
-      }
-    },
-    {
-      "componentType": "verticalPanel",
-      "path": "vpc",
-      "items": [
-        {
-          "componentType": "SmText",
-          "path": "vsm2",
-          "col": 4,
-          "params": {
-            "textValue": {
-              "const": {
-                "constValue": "Campagne"
+      },
+      {
+        "componentType": "verticalPanel",
+        "path": "vpc",
+        "items": [
+          {
+            "componentType": "SmText",
+            "path": "vsm2",
+            "col": 4,
+            "params": {
+              "textValue": {
+                "const": {
+                  "constValue": "Campagne"
+                }
+              }
+            }
+          },
+          {
+            "componentType": "SmInput",
+            "path": "campaignId",
+            "col": 8,
+            "params": {
+              "defaultValue": {
+                "const": "2023"
               }
             }
           }
-        },
-        {
-          "componentType": "SmInput",
-          "path": "campaignId",
-          "col": 8,
-          "params": {
-            "defaultValue": {
-              "const": "2023"
+        ]
+      },
+      {
+        "componentType": "siteList",
+        "path": "vsmsiteList",
+        "col": 8
+      },
+      {
+        "componentType": "SmRefToResource",
+        "path": "vsm44",
+        "col": 4,
+        "params": {
+          "resourceId": "r5",
+          "arguments": {
+            "toto": {
+              "refToPath": "/vp/vsm3",
+              "property": "output"
+            },
+            "tata": {
+              "refToPath": "/vp/vsm3bis"
+            },
+            "selectedResource": {
+              "refToPath": "/pag/vp8/vp/vsmsiteList",
+              "property": "selected"
             }
           }
         }
-      ]
-    },
-    {
-      "componentType": "siteList",
-      "path": "vsmsiteList",
-      "col": 8
-    },
-    {
-      "componentType": "SmRefToResource",
-      "path": "vsm44",
-      "col": 4,
-      "params": {
-        "resourceId": "r5",
-        "arguments": {
-          "toto": {
-            "refToPath": "/vp/vsm3",
-            "property": "output"
-          },
-          "tata": {
-            "refToPath": "/vp/vsm3bis"
-          },
-          "selectedResource": {
-            "refToPath": "/pag/vp8/vp/vsmsiteList",
-            "property": "selected"
+      },
+      {
+        "componentType": "SmRefToResource",
+        "path": "vsm44form",
+        "params": {
+          "resourceId": "rform",
+          "arguments": {
+            "selectedResource": {
+              "refToPath": "/pag/vp8/vp/vsmsiteList",
+              "property": "selected"
+            }
           }
         }
-      }
-    },
-    {
-      "componentType": "SmRefToResource",
-      "path": "vsm44form",
-      "params": {
-        "resourceId": "rform",
-        "arguments": {
-          "selectedResource": {
-            "refToPath": "/pag/vp8/vp/vsmsiteList",
-            "property": "selected"
-          }
+      },
+      {
+        "componentType": "SmRefToResource",
+        "path": "vsm4",
+        "params": {
+          "resourceId": "r4"
         }
       }
-    },
-    {
-      "componentType": "SmRefToResource",
-      "path": "vsm4",
-      "params": {
-        "resourceId": "r4"
-      }
-    }
-  ]
+    ]
+  }
 }

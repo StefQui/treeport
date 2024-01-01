@@ -1,16 +1,18 @@
 {
-  "componentType": "menu",
-  "path": "menu",
-  "menuItems": [
-    {
-      "label": "Page 1",
-      "path": "p1",
-      "pageId": "rpage1"
-    },
-    {
-      "label": "Page 2",
-      "path": "p2",
-      "pageId": "rpage2"
-    }
-  ]
+  "content": {
+    "componentType": "menu",
+    "path": "menu",
+    "menuItems": [
+      {
+        "label": "Page 1",
+        "path": "p1",
+        "pageId": "rpage1"
+      },
+      {
+        "label": "Page 2",
+        "path": "p2",
+        "pageId": "rpage2"
+      }
+    ]
+  }
 }

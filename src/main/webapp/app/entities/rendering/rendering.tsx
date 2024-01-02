@@ -32,7 +32,16 @@ export const TextBasic = props => {
 // };
 
 export function buildPath(props) {
-  return props.path ? props.currentPath + PATH_SEPARATOR + props.path : props.currentPath;
+  const path = props.path;
+  if (!path) {
+    return props.currentPath;
+  }
+  const currentPath = props.currentPath;
+  if (getRootPath() === currentPath) {
+    return currentPath + props.path;
+  }
+
+  return props.currentPath + PATH_SEPARATOR + props.path;
 }
 
 export function getRootPath() {
@@ -69,8 +78,10 @@ export const RESOURCE_ID_KEY = 'resourceId';
 export const ATT_CONFIG_KEY = 'attConfig';
 export const CAMPAIGN_ID_KEY = 'campaignId';
 export const REF_TO_PATH_KEY = 'refToPath';
-export const REF_TO_CONTEXT_KEY = 'refToContext';
-export const REF_TO_LOCAL_CONTEXT_KEY = 'refToLocalContext';
+export const REF_TO_PAGE_CONTEXT_KEY = 'refToPageContext';
+export const REF_TO_LC_KEY = 'refToLocalContext';
+export const REF_TO_LC_PARAMETER_KEY_KEY = 'parameterKey';
+export const REF_TO_LC_PROPERTY_KEY = 'property';
 export const CONST_KEY = 'const';
 export const CONST_VALUE_KEY = 'constValue';
 export const SITE_VALUE_KEY = 'siteValue';
@@ -94,6 +105,8 @@ export const RESOURCE_PARAMETER_SOURCE_KEY = 'source';
 export const RESOURCE_PARAMETER_SOURCE_PARAMETER_KEY_KEY = 'sourceParameterKey';
 
 export const COMPONENT_TYPE = 'componentType';
+export const PARAMS_KEY = 'params';
+export const PARAMS_RESOURCE_ID_KEY = 'resourceId';
 
 export const RESOURCE_CONTENT_PROPERTY = 'content';
 
@@ -106,7 +119,7 @@ export const STATE_CURRENT_PAGE_ID_KEY = 'currentPageId';
 export const STATE_PAGE_RESOURCE_KEY = 'pageResource';
 export const STATE_PAGE_RESOURCES_KEY = 'pageResources';
 export const STATE_PAGE_CONTEXT_KEY = 'pageContext';
-export const STATE_LAYOUT_ELEMENTS_KEY = 'layoutElements';
+// export const STATE_LAYOUT_ELEMENTS_KEY = 'layoutElements';
 
 export type PARAMETER_SOURCE_TYPE = 'pageContext' | 'localContext';
 export type PARAMETER_TYPE = 'site' | 'string';
@@ -122,6 +135,15 @@ export type PARAMETER = {
 export type PARAMETER_SOURCES_TYPE = PARAMETER_SOURCE[];
 export type PARAMETERS_TYPE = PARAMETER[];
 
+export type RESOURCE_STATE = {
+  loading: boolean;
+  error?: any;
+  value?: any;
+  usedId?: string;
+};
+export type RENDERING_CONTEXT = { [key: string]: RESOURCE_STATE };
+
+export const ELEM_LAYOUT_ELEMENT = 'layoutElement';
 // export const SmTextRefToPath = props => {
 //   const builtPath = buildPath(props);
 //   const refToPath = props.params[TEXT_VALUE_KEY][REF_TO_PATH_KEY];
@@ -144,8 +166,11 @@ export type PARAMETERS_TYPE = PARAMETER[];
 //   return <span>No value found in context for SmTextRefToPath</span>;
 // };
 
-export const getValueForPathInObject = (obj, path) => {
+export const getValueForPathInObject = (obj, path?) => {
   try {
+    if (!path) {
+      return obj;
+    }
     const splited = path.split('.');
     return splited.reduce((acc, current) => acc[current], obj);
   } catch (ex) {
@@ -173,6 +198,7 @@ export const SmText = props => {
   }
 
   const calculatedValue = useCalculatedValueState(props, textValue);
+  console.log('SmText', textValue, calculatedValue);
 
   if (calculatedValue) {
     return <span>{calculatedValue}</span>;
@@ -213,6 +239,9 @@ export const SmText = props => {
 // };
 
 export const useCalculatedValueState = (props, elem) => {
+  if (!elem) {
+    return null;
+  }
   if (elem[REF_TO_PATH_KEY]) {
     const builtPath = buildPath(props);
     const refToPath = elem[REF_TO_PATH_KEY];
@@ -228,16 +257,34 @@ export const useCalculatedValueState = (props, elem) => {
     //   setAaa(getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY));
     // }, [referencedValue]);
     // return aaa;
-  } else if (elem[REF_TO_CONTEXT_KEY]) {
-    const refToContext = elem[REF_TO_CONTEXT_KEY];
+  } else if (elem[REF_TO_PAGE_CONTEXT_KEY]) {
+    const refToContext = elem[REF_TO_PAGE_CONTEXT_KEY];
 
     return useAppSelector(state => getValueForPathInObject(state.rendering.context, refToContext.property));
-  } else if (elem[REF_TO_LOCAL_CONTEXT_KEY]) {
-    const refToLocalContext = elem[REF_TO_LOCAL_CONTEXT_KEY];
+  } else if (elem[REF_TO_LC_KEY]) {
+    const refToLocalContext = elem[REF_TO_LC_KEY];
+    const paramaterKey = refToLocalContext[REF_TO_LC_PARAMETER_KEY_KEY];
+    const property = refToLocalContext[REF_TO_LC_PROPERTY_KEY];
+
+    console.log('REF_TO_LC_KEY ========> TO INVESTIGATE HERE on rpage1');
 
     return useAppSelector(state => {
       const aaa = state.rendering.renderingState[props.localContextPath];
-      return aaa ? getValueForPathInObject(aaa, refToLocalContext.property ?? OUTPUT_KEY) : null;
+      if (!aaa) {
+        return null;
+      }
+      console.log('useAppSelector', props.localContextPath, aaa);
+      const localContext = aaa[STATE_RS_PARAMETERS_KEY];
+      if (!localContext) {
+        return null;
+      }
+      const value: RESOURCE_STATE = localContext[paramaterKey];
+      if (value && value.value) {
+        return getValueForPathInObject(value.value, property);
+      }
+      if (value && value.loading) {
+        return 'Text is loading...';
+      }
     });
     // return useRenderingContextState(refToContext.property);
     // const [aaa, setAaa] = useState();
@@ -248,6 +295,8 @@ export const useCalculatedValueState = (props, elem) => {
     // }, [referencedValue]);
     // return aaa;
   } else if (elem[CONST_KEY]) {
+    console.log('isConst', elem);
+
     return elem[CONST_KEY][CONST_VALUE_KEY];
   }
   return null;
@@ -479,7 +528,7 @@ export const SmAttRef = props => {
     if (action && action.actionType === 'updateAttributes') {
       if (resourceIdVal && campaignIdVal && attConfigVal) {
         const attId = buildAttributeIdFormExploded(resourceIdVal, attConfigVal, campaignIdVal);
-        console.log('action...', action, attId);
+        // console.log('action...', action, attId);
         if (action[ENTITY_KEY][ENTITY_IDS_KEY].indexOf(attId) !== -1) {
           dispatch(loadAttribute(props, resourceIdVal, campaignIdVal, attConfigVal));
         }
@@ -532,12 +581,13 @@ export const PATH_SEPARATOR = '/';
 export const ROOT_PATH_SEPARATOR = '/';
 
 export const MyVerticalPanel = props => {
-  console.log('MyVerticalPanel', props);
+  // console.log('MyVerticalPanel', props);
 
   const renderItems = items =>
     items.map((item, index) => (
       <MyElem
         key={index}
+        depth={increment(props.depth)}
         input={{ ...item }}
         currentPath={props.currentPath + PATH_SEPARATOR + props.path}
         form={props.form}
@@ -589,7 +639,7 @@ export const MyInput = props => {
 };
 
 export const MyElem = props => {
-  console.log('MyElem', props);
+  // console.log('MyElem', props);
   const renderSwitch = params => {
     switch (params.componentType) {
       case 'textBasic':
@@ -622,7 +672,7 @@ export const MyElem = props => {
         return <SmPage {...params}></SmPage>;
       case 'menu':
         return <SmMenu {...params}></SmMenu>;
-      case 'layoutElement':
+      case ELEM_LAYOUT_ELEMENT:
         return <SmLayoutElement {...params}></SmLayoutElement>;
       case 'resourceContent':
         return <ZZZResourceContent {...params}></ZZZResourceContent>;
@@ -634,15 +684,21 @@ export const MyElem = props => {
   };
 
   return (
-    <MyWrapper {...{ ...props.input, currentPath: props.currentPath }}>
+    <MyWrapper {...{ ...props.input, currentPath: props.currentPath, depth: props.depth, localContextPath: props.localContextPath }}>
       {renderSwitch({
         ...props.input,
         currentPath: props.currentPath,
+        depth: props.depth,
         form: props.form,
         localContextPath: props.localContextPath,
       })}
     </MyWrapper>
   );
+};
+
+export const increment = (depth: string) => {
+  const depthAsNumber = Number(depth);
+  return '' + (depthAsNumber + 1);
 };
 
 export const MyWrapper = ({ children, ...props }) => {
@@ -652,9 +708,15 @@ export const MyWrapper = ({ children, ...props }) => {
   }
   const displayPath = true;
   if (displayPath) {
+    // if (displayPath && props.componentType !== ELEM_LAYOUT_ELEMENT) {
     return (
       <Col md={props.col ?? 12} className={cn}>
-        {children} - <i className="wrapper-text">({buildPath(props)})</i>
+        <Col md="12">
+          <i className="wrapper-text">
+            ({buildPath(props)})({props.componentType}, depth:{props.depth}, local={props.localContextPath})
+          </i>
+        </Col>{' '}
+        {children}
       </Col>
     );
   }

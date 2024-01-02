@@ -1,31 +1,31 @@
 const r3 = {
   content: {
     componentType: 'verticalPanel',
-    path: 'vp',
+    path: 'vp-r3',
     items: [
-      // {
-      //   componentType: 'SmText',
-      //   path: 'vsm1',
-      //   params: {
-      //     textValue: {
-      //       const: {
-      //         constValue: 'ABC123',
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   componentType: 'SmText',
-      //   path: 'vsm2aaa',
-      //   params: {
-      //     textValue: {
-      //       refToPath: {
-      //         path: '../vsmsiteList',
-      //         property: 'selected.entity.name',
-      //       },
-      //     },
-      //   },
-      // },
+      {
+        componentType: 'SmText',
+        path: 'test-in-r3',
+        params: {
+          textValue: {
+            const: {
+              constValue: 'ABC123',
+            },
+          },
+        },
+      },
+      {
+        componentType: 'SmText',
+        path: 'ref-to-selected-entity-name',
+        params: {
+          textValue: {
+            refToPath: {
+              path: '../vsmsiteList',
+              property: 'selected.entity.name',
+            },
+          },
+        },
+      },
       // {
       //   componentType: 'SmInput',
       //   path: 'vsm3',
@@ -63,32 +63,44 @@ const r3 = {
       //     },
       //   ],
       // },
-      // {
-      //   componentType: 'siteList',
-      //   path: 'vsmsiteList',
-      //   col: 8,
-      // },
-      // {
-      //   componentType: 'SmRefToResource',
-      //   path: 'vsm44',
-      //   col: 4,
-      //   params: {
-      //     resourceId: 'r5',
-      //     arguments: {
-      //       toto: {
-      //         refToPath: '/vp/vsm3',
-      //         property: 'output',
-      //       },
-      //       tata: {
-      //         refToPath: '/vp/vsm3bis',
-      //       },
-      //       selectedResource: {
-      //         refToPath: '/pag/vp8/vp/vsmsiteList',
-      //         property: 'selected',
-      //       },
-      //     },
-      //   },
-      // },
+      {
+        componentType: 'siteList',
+        path: 'vsmsiteList',
+        col: 8,
+      },
+      {
+        componentType: 'SmRefToResource',
+        path: 'ref-to-r5',
+        col: 4,
+        params: {
+          resourceId: 'r5',
+          parameters: {
+            toto: {
+              refToPath: {
+                path: '/vp/vsm3',
+                property: 'output',
+              },
+            },
+            titi: {
+              const: {
+                constValue: 'ABC123ZZZtiti',
+              },
+            },
+            tata: {
+              const: {
+                constValue: 'ABC123ZZZtata',
+              },
+            },
+            selectedResource: {
+              refToPath: {
+                path: '/pag-1/vp-layout/layout-content/vp-r3/vsmsiteList',
+                parameterKey: 'selected',
+                property: 'entity.name',
+              },
+            },
+          },
+        },
+      },
       // {
       //   componentType: 'SmRefToResource',
       //   path: 'vsm44form',
@@ -218,18 +230,29 @@ const r5 = {
       //     },
       //   },
       // },
-      // {
-      //   componentType: 'SmText',
-      //   path: 'resName',
-      //   params: {
-      //     textValue: {
-      //       refToPath: {
-      //         path: '../..',
-      //         property: 'selectedResource.entity.name',
-      //       },
-      //     },
-      //   },
-      // },
+      {
+        componentType: 'SmText',
+        path: 'ref-to-local-siteName',
+        params: {
+          textValue: {
+            refToLocalContext: {
+              parameterKey: 'site1',
+              property: 'name',
+            },
+          },
+        },
+      },
+      {
+        componentType: 'SmText',
+        path: 'ref-to-tata',
+        params: {
+          textValue: {
+            refToLocalContext: {
+              parameterKey: 'tata',
+            },
+          },
+        },
+      },
       // {
       //   componentType: 'SmSiteRef',
       //   path: 'vsm8800',
@@ -342,16 +365,24 @@ const r5 = {
       parameterType: 'string',
     },
     {
+      parameterKey: 'tata',
+      parameterType: 'string',
+    },
+    {
+      parameterKey: 'titi',
+      parameterType: 'string',
+    },
+    {
+      parameterKey: 'selectedResourceId',
+      parameterType: 'string',
+    },
+    {
       parameterKey: 'site1',
       parameterType: 'site',
       parameterSources: [
         {
           source: 'pageContext',
           sourceParameterKey: 'sid',
-        },
-        {
-          source: 'localContext',
-          sourceParameterKey: 'sid2',
         },
       ],
     },

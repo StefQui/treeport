@@ -4,11 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Row } from 'reactstrap';
 import { usePageContext } from './layout';
-import { usePageResourceContentFromResourceId, useResourceWithKey } from './render-resource-page';
+import { doesntExist, existsAndIsOk, usePageResourceContentFromResourceId, useResourceWithKey } from './render-resource-page';
 import {
   applyPath,
   buildPath,
   getValueForPathInObject,
+  increment,
   MyElem,
   OUTPUT_KEY,
   PARAMETER,
@@ -17,6 +18,7 @@ import {
   PARAMETER_SOURCES_TYPE,
   PARAMETER_SOURCE_TYPE,
   PATH_SEPARATOR,
+  RENDERING_CONTEXT,
   RESOURCE_CONTENT_KEY,
   RESOURCE_FROM_REF_KEY,
   RESOURCE_PARAMETERS_KEY,
@@ -27,6 +29,7 @@ import {
   RESOURCE_PARAMETER_TYPE_KEY,
   ROOT_PATH_SEPARATOR,
   STATE_RS_PARAMETERS_KEY,
+  useCalculatedValueState,
   useRenderingState,
 } from './rendering';
 import { getResourceForPageResources, getSiteForRenderingStateParamaters, setInRenderingStateParameters } from './rendering.reducer';
@@ -81,7 +84,7 @@ export const updateLocalContext = (resourceParameters, pageContext, localContext
   useEffect(() => {
     if (resourcesToFetch) {
       resourcesToFetch.forEach(element => {
-        console.log('resourcesToFetch', element);
+        // console.log('resourcesToFetch', element);
         dispatch(
           getSiteForRenderingStateParamaters({
             siteId: element.siteId,
@@ -104,7 +107,7 @@ export const useResourceToFetch = (resourceParameters, pageContext, builtPath) =
     if (resourceParameters && pageContext) {
       const resourcesToFetchArray = [];
       (resourceParameters as Array<any>).forEach(({ parameterKey, parameterSource, parameterType, useAs }) => {
-        console.log('resourceParameter', parameterKey);
+        // console.log('resourceParameter', parameterKey);
         parameterSource.forEach((source: PARAMETER_SOURCE_TYPE) => {
           if (source === 'pageContext') {
             const existing = pageContext[parameterKey];
@@ -131,52 +134,75 @@ export const useResourceToFetch = (resourceParameters, pageContext, builtPath) =
 };
 
 export const useParamsIdsToFetch = (resourceParameters: PARAMETERS_TYPE, builtPath) => {
-  const pageContext = usePageContext();
-  const localContext = useResourceParametersFromState(builtPath);
+  const pageContext: RENDERING_CONTEXT = usePageContext();
+  const nullableLocalContext: RENDERING_CONTEXT = useResourceParametersFromState(builtPath);
 
   const [paramIdsToFetch, setParamIdsToFetch] = useState([]);
 
   useEffect(() => {
-    console.log('useParamsIdsToFetch1...', builtPath, resourceParameters, pageContext, localContext);
-    if (resourceParameters && pageContext && localContext) {
+    // console.log('useParamsIdsToFetch1...', builtPath, resourceParameters, pageContext, localContext);
+
+    const localContext = nullableLocalContext ?? {};
+
+    if (resourceParameters && pageContext) {
       const theParamIdsToFetch = [];
-      console.log('useParamsIdsToFetch2', resourceParameters);
+      // console.log('useParamsIdsToFetch2', resourceParameters);
       resourceParameters.forEach((parameter: PARAMETER) => {
         if (parameter[RESOURCE_PARAMETER_TYPE_KEY] === 'site') {
           const sources: PARAMETER_SOURCES_TYPE = parameter[RESOURCE_PARAMETER_SOURCES_KEY];
-          const parameterKey = parameter[RESOURCE_PARAMETER_KEY];
+          const parameterKey = parameter[RESOURCE_PARAMETER_KEY]; // site1
           for (const source of sources) {
-            const paramSource = source[RESOURCE_PARAMETER_SOURCE_KEY];
-            const sourceParamKey = source[RESOURCE_PARAMETER_SOURCE_PARAMETER_KEY_KEY];
+            const paramSource = source[RESOURCE_PARAMETER_SOURCE_KEY]; // pageContext | localContext
+            const sourceParamKey = source[RESOURCE_PARAMETER_SOURCE_PARAMETER_KEY_KEY]; // sid
 
             // const resourceNotExistingOrExistsWithOtherId =
             //   !localContext[parameterKey] || localContext[parameterKey].id !== localContext[sourceParamKey];
+            console.log('---------------------------------------');
 
             if (paramSource === 'localContext') {
-              const paramaterExistsInLocalContext = localContext[sourceParamKey];
-              const parameterDoesntExistOnLocalContext = !localContext[parameterKey];
+              const sourceParamaterExistsInLocalContext = existsAndIsOk(localContext[sourceParamKey]);
+              const parameterDoesntExistOnLocalContext = doesntExist(localContext[parameterKey]);
               const parameterExistOnLocalContextButWithAWrongId =
-                localContext[parameterKey] && localContext[parameterKey].id !== localContext[sourceParamKey];
-
-              if (paramaterExistsInLocalContext && (parameterDoesntExistOnLocalContext || parameterExistOnLocalContextButWithAWrongId)) {
+                existsAndIsOk(localContext[parameterKey]) &&
+                existsAndIsOk(localContext[sourceParamKey]) &&
+                localContext[parameterKey].usedId !== localContext[sourceParamKey].value;
+              // console.log('localContext--------------');
+              if (
+                sourceParamaterExistsInLocalContext &&
+                (parameterDoesntExistOnLocalContext || parameterExistOnLocalContextButWithAWrongId)
+              ) {
                 theParamIdsToFetch.push({
                   targetParamId: parameterKey,
-                  siteIdTofetch: localContext[sourceParamKey],
+                  siteIdTofetch: localContext[sourceParamKey].value,
                 });
                 break;
               }
             } else if (paramSource === 'pageContext') {
-              const paramaterExistsInPageContext = pageContext[sourceParamKey];
-              const parameterDoesntExistOnLocalContext = !localContext[parameterKey];
+              const sourceParamaterExistsInPageContext = existsAndIsOk(pageContext[sourceParamKey]);
+              const parameterDoesntExistOnLocalContext = doesntExist(localContext[parameterKey]);
               const parameterExistOnPageContextButWithAWrongId =
-                localContext[parameterKey] && localContext[parameterKey].id !== pageContext[sourceParamKey];
+                existsAndIsOk(localContext[parameterKey]) &&
+                existsAndIsOk(pageContext[sourceParamKey]) &&
+                localContext[parameterKey].usedId !== pageContext[sourceParamKey].value;
+              console.log(
+                'pageContext--------------',
+                localContext[parameterKey],
+                pageContext[sourceParamKey],
+                sourceParamaterExistsInPageContext,
+                parameterDoesntExistOnLocalContext,
+                parameterExistOnPageContextButWithAWrongId,
+                sourceParamaterExistsInPageContext && (parameterDoesntExistOnLocalContext || parameterExistOnPageContextButWithAWrongId),
+              );
 
               // const resourceNotExistingOrExistsWithOtherId =
               // !localContext[parameterKey] || localContext[parameterKey].id !== pageContext[sourceParamKey];
-              if (paramaterExistsInPageContext && (parameterDoesntExistOnLocalContext || parameterExistOnPageContextButWithAWrongId)) {
+              if (
+                sourceParamaterExistsInPageContext &&
+                (parameterDoesntExistOnLocalContext || parameterExistOnPageContextButWithAWrongId)
+              ) {
                 theParamIdsToFetch.push({
                   targetParamId: parameterKey,
-                  siteIdTofetch: pageContext[sourceParamKey],
+                  siteIdTofetch: pageContext[sourceParamKey].value,
                 });
                 break;
               }
@@ -184,13 +210,13 @@ export const useParamsIdsToFetch = (resourceParameters: PARAMETERS_TYPE, builtPa
           }
         }
       });
-      console.log('useParamsIdsToFetch3', theParamIdsToFetch);
+      // console.log('useParamsIdsToFetch3', theParamIdsToFetch);
 
       if (theParamIdsToFetch.length > 0) {
         setParamIdsToFetch(theParamIdsToFetch);
       }
     }
-  }, [resourceParameters, pageContext, localContext]);
+  }, [resourceParameters, pageContext, nullableLocalContext]);
 
   return paramIdsToFetch;
 };
@@ -201,7 +227,7 @@ export const enrichLocalContext = (resourceParameters: PARAMETERS_TYPE, builtPat
 
   useEffect(() => {
     if (paramIdsToFetch) {
-      console.log('enrichLocalContext', paramIdsToFetch);
+      console.log('enrichLocalContext', paramIdsToFetch, builtPath);
       paramIdsToFetch.forEach(paramIdToFetch => {
         console.log('enrichLocalContext a specific', paramIdsToFetch);
         dispatch(
@@ -216,10 +242,39 @@ export const enrichLocalContext = (resourceParameters: PARAMETERS_TYPE, builtPat
   }, [paramIdsToFetch]);
 };
 
+const initLocalContext = (sourceResourceParameters, targetResourceParameters, props, builtPath) => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (sourceResourceParameters && targetResourceParameters) {
+      const targetParameterKeys = targetResourceParameters.map((trp: PARAMETER) => trp[RESOURCE_PARAMETER_KEY]);
+      const sourceParameterKeys = Object.keys(sourceResourceParameters);
+      const toBeIncluded = targetParameterKeys.filter(value => sourceParameterKeys.includes(value));
+
+      toBeIncluded.forEach(parameterKey => {
+        const calculatedValue = useCalculatedValueState(props, sourceResourceParameters[parameterKey]);
+
+        console.log('parameterKey', parameterKey, sourceResourceParameters[parameterKey], calculatedValue);
+        dispatch(
+          setInRenderingStateParameters({
+            path: builtPath,
+            value: {
+              [parameterKey]: {
+                loading: false,
+                value: calculatedValue,
+              },
+            },
+          }),
+        );
+      });
+    }
+  }, [targetResourceParameters]);
+};
+
 const useResourceParametersFromState = builtPath =>
   useAppSelector(state => {
     const aaa = state.rendering.renderingState[builtPath];
-    return aaa ? getValueForPathInObject(aaa, STATE_RS_PARAMETERS_KEY) : {};
+    return aaa ? aaa[STATE_RS_PARAMETERS_KEY] : null;
   });
 
 export const SmRefToResource = props => {
@@ -233,14 +288,16 @@ export const SmRefToResource = props => {
   const builtPath = buildPath(props);
   const resource = usePageResourceContentFromResourceId(resourceId);
   const resourceContent = useResourceWithKey(resource, RESOURCE_CONTENT_KEY);
-  const resourceParameters = useResourceWithKey(resource, RESOURCE_PARAMETERS_KEY);
+  const targetResourceParameters = useResourceWithKey(resource, RESOURCE_PARAMETERS_KEY);
+  const sourceResourceParameters = props.params[RESOURCE_PARAMETERS_KEY];
 
   // const resource = useRenderingState(builtPath, RESOURCE_FROM_REF_KEY);
-  console.log('SmRefToResource', resourceParameters);
+  // console.log('SmRefToResource', resourceParameters);
 
   // const resourcesToFetch = useResourceToFetch(resourceParameters, pageContext, builtPath);
 
-  enrichLocalContext(resourceParameters, builtPath);
+  initLocalContext(sourceResourceParameters, targetResourceParameters, props, builtPath);
+  enrichLocalContext(targetResourceParameters, builtPath);
   // const [resourceContent, setResourceContent] = useState();
 
   // const [enrichedContext, setEnrichedContext] = useState({});
@@ -251,16 +308,21 @@ export const SmRefToResource = props => {
   // });
 
   // console.log('arguments', props.params.arguments);
-  if (props.params.arguments) {
-    Object.entries(props.params.arguments).forEach(([argKey, argValue]: [string, { refToPath: string; property?: string }]) => {
-      const referencedValue = useRenderingState(argValue.refToPath);
-      useEffect(() => {
-        if (referencedValue) {
-          // updateRenderingState(dispatch, builtPath, { [argKey]: referencedValue[argValue.property ?? OUTPUT_KEY] });
-        }
-      }, [referencedValue]);
-    });
-  }
+  // if (sourceResourceParameters) {
+  //   const parameterKeys = Object.keys(sourceResourceParameters);
+  //   Object.entries(props.params[RESOURCE_PARAMETERS_KEY]).forEach(
+  //     ([argKey, argValue]: [string, { refToPath: string; property?: string }]) => {
+  //       const calculatedValue = useCalculatedValueState(props, textValue);
+
+  //       const referencedValue = useRenderingState(argValue.refToPath);
+  //       useEffect(() => {
+  //         if (referencedValue) {
+  //           // updateRenderingState(dispatch, builtPath, { [argKey]: referencedValue[argValue.property ?? OUTPUT_KEY] });
+  //         }
+  //       }, [referencedValue]);
+  //     },
+  //   );
+  // }
 
   // const [toto, setToto] = useState('mm');
 
@@ -294,6 +356,7 @@ export const SmRefToResource = props => {
     return (
       <MyElem
         input={resourceContent}
+        depth={increment(props.depth)}
         params={props.params ? props.params.params : null}
         currentPath={builtPath}
         localContextPath={props.localContextPath}
@@ -331,6 +394,7 @@ export const MyRend = props => {
       {props.content ? (
         <MyElem
           input={input}
+          depth={increment(props.depth)}
           params={props.params ? props.params.params : null}
           currentPath={props.currentPath}
           localContextPath={props.localContextPath}

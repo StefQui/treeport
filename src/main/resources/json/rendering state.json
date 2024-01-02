@@ -3,19 +3,16 @@
     "param1": "id1",
     "param2": "233"
   },
-  "layoutElements": [
-    {
-      "layoutElementId": "menuTop",
-      "resourceId": "rmenuTop"
-    },
-    {
-      "layoutElementId": "theContent",
-      "resourceId": "r3"
-    }
-  ],
   "pageResourceId": "rpage1",
   "pageResources": {
-    "rpage1": {},
+    "rpage1": {
+      "loading": true,
+      "value": {
+        "componentType": "page",
+        "...": "..."
+      },
+      "error": "Cannot find"
+    },
     "rlayout": {},
     "rpage2": {},
     "rmenu": {},
@@ -25,14 +22,25 @@
     "/page": {},
     "/page/vp/txt": {
       "parameters": {
-        "param1": "id1",
-        "param2": "233"
+        "param1": {
+          "loading": true,
+          "value": {
+            "id": "site1",
+            "...": "..."
+          },
+          "error": "Cannot find"
+        },
+        "param2": {
+          "loading": true,
+          "value": "site1",
+          "error": "Cannot find"
+        }
+      },
+      "self": {
+        "paginationState": "id1",
+        "listState": "233"
       },
       "outputs": {
-        "param1": "id1",
-        "param2": "233"
-      },
-      "localContext": {
         "param1": "id1",
         "param2": "233"
       }

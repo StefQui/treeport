@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { createAsyncThunk, createSlice, isFulfilled, isPending } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, isFulfilled, isPending, isRejected } from '@reduxjs/toolkit';
 
 import { IQueryParams, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 import { AppThunk } from 'app/config/store';
@@ -12,7 +12,6 @@ import {
   FIELDS_ATTRIBUTES_KEY,
   RESOURCE_FROM_REF_KEY,
   SITE_FROM_REF_KEY,
-  STATE_LAYOUT_ELEMENTS_KEY,
   STATE_PAGE_CONTEXT_KEY,
   STATE_PAGE_RESOURCES_KEY,
   STATE_PAGE_RESOURCE_KEY,
@@ -22,6 +21,8 @@ import {
   STATE_RS_PARAMETERS_KEY,
   UPDATED_ATTRIBUTE_IDS_KEY,
   STATE_CURRENT_PAGE_ID_KEY,
+  RENDERING_CONTEXT,
+  RESOURCE_STATE,
 } from './rendering';
 import { stubbedResources } from './fake-resource';
 
@@ -102,7 +103,7 @@ export const RenderingSlice = createSlice({
         context: action.payload,
       };
     },
-    setRenderingPageContext(state, action) {
+    setRenderingPageContext(state, action: { payload: RENDERING_CONTEXT }) {
       return {
         ...state,
         [STATE_PAGE_CONTEXT_KEY]: action.payload,
@@ -114,19 +115,19 @@ export const RenderingSlice = createSlice({
         [STATE_PAGE_RESOURCES_KEY]: action.payload,
       };
     },
-    setRenderingLayoutElements(state, action) {
-      return {
-        ...state,
-        [STATE_LAYOUT_ELEMENTS_KEY]: action.payload,
-      };
-    },
+    // setRenderingLayoutElements(state, action) {
+    //   return {
+    //     ...state,
+    //     [STATE_LAYOUT_ELEMENTS_KEY]: action.payload,
+    //   };
+    // },
     setRenderingCurrentPageId(state, action) {
       return {
         ...state,
         [STATE_CURRENT_PAGE_ID_KEY]: action.payload,
       };
     },
-    setInRenderingStateParameters(state, action) {
+    setInRenderingStateParameters(state, action: { payload: { path: string; value: RENDERING_CONTEXT } }) {
       return setInRenderingState(state, action.payload.path, action.payload.value, STATE_RS_PARAMETERS_KEY);
     },
     setInRenderingStateOutputs(state, action) {
@@ -182,66 +183,30 @@ export const RenderingSlice = createSlice({
         const { data, headers } = action.payload;
         const { path } = action.meta.arg;
 
-        const newOne = {
+        return putInRenderingStateSelf(state, path, {
           paginationState: {
-            ...state.renderingState[path][STATE_RS_OUTPUTS_KEY].paginationState,
+            ...state.renderingState[path][STATE_RS_SELF_KEY].paginationState,
           },
           listState: {
             loading: false,
             entities: data,
             totalItems: parseInt(headers['x-total-count'], 10),
           },
-        };
-        return {
-          ...state,
-          renderingState: {
-            ...state.renderingState,
-            ...{
-              [path]: {
-                ...state.renderingState[path],
-                ...{
-                  [STATE_RS_OUTPUTS_KEY]: {
-                    ...(state.renderingState[path] ? state.renderingState[path][STATE_RS_OUTPUTS_KEY] : null),
-                    ...newOne,
-                  },
-                },
-              },
-            },
-          },
-        };
+        });
       })
       .addMatcher(isPending(getSites), (state, action) => {
         const { path } = action.meta.arg;
 
-        // console.log('newOne3', state.renderingState[path]);
-
-        const newOne = {
+        return putInRenderingStateSelf(state, path, {
           paginationState: {
-            ...state.renderingState[path][STATE_RS_OUTPUTS_KEY].paginationState,
+            ...state.renderingState[path][STATE_RS_SELF_KEY].paginationState,
           },
           listState: {
             errorMessage: null,
             updateSuccess: false,
             loading: true,
           },
-        };
-        return {
-          ...state,
-          renderingState: {
-            ...state.renderingState,
-            ...{
-              [path]: {
-                ...state.renderingState[path],
-                ...{
-                  [STATE_RS_OUTPUTS_KEY]: {
-                    ...(state.renderingState[path] ? state.renderingState[path][STATE_RS_OUTPUTS_KEY] : null),
-                    ...newOne,
-                  },
-                },
-              },
-            },
-          },
-        };
+        });
       })
       .addMatcher(isFulfilled(getAttribute), (state, action) => {
         const { data } = action.payload;
@@ -254,13 +219,60 @@ export const RenderingSlice = createSlice({
 
         return { ...state, renderingState: { ...state.renderingState, ...aaa } };
       })
+      .addMatcher(isPending(getResourceForPageResources), (state, action) => {
+        return putRenderingPageResources(state, {
+          [action.meta.arg.resourceId]: {
+            loading: true,
+          },
+        });
+      })
       .addMatcher(isFulfilled(getResourceForPageResources), (state, action) => {
         return putRenderingPageResources(state, {
-          [action.meta.arg.resourceId]: getStubbedOrNot(action.meta.arg.resourceId, action.payload.data),
+          [action.meta.arg.resourceId]: {
+            loading: false,
+            value: getStubbedOrNot(action.meta.arg.resourceId, action.payload.data),
+          },
+        });
+      })
+      .addMatcher(isRejected(getResourceForPageResources), (state, action) => {
+        return putRenderingPageResources(state, {
+          [action.meta.arg.resourceId]: {
+            loading: false,
+            error: 'error when fetch ing resource',
+          },
         });
       })
       .addMatcher(isFulfilled(getSiteForRenderingStateParamaters), (state, action) => {
-        return putInRenderingStateParameters(state, action.meta.arg.path, { [action.meta.arg.destinationSiteKey]: action.payload.data });
+        console.log('mmmmm', {
+          [action.meta.arg.destinationSiteKey]: {
+            loading: false,
+            value: action.payload.data,
+            usedId: action.meta.arg.siteId,
+          },
+        });
+        return putInRenderingStateParameters(state, action.meta.arg.path, {
+          [action.meta.arg.destinationSiteKey]: {
+            loading: false,
+            value: action.payload.data,
+            usedId: action.meta.arg.siteId,
+          },
+        });
+      })
+      .addMatcher(isPending(getSiteForRenderingStateParamaters), (state, action) => {
+        return putInRenderingStateParameters(state, action.meta.arg.path, {
+          [action.meta.arg.destinationSiteKey]: {
+            loading: true,
+            usedId: action.meta.arg.siteId,
+          },
+        });
+      })
+      .addMatcher(isRejected(getSiteForRenderingStateParamaters), (state, action) => {
+        return putInRenderingStateParameters(state, action.meta.arg.path, {
+          [action.meta.arg.destinationSiteKey]: {
+            loading: false,
+            error: 'cannot load site...',
+          },
+        });
       })
       .addMatcher(isFulfilled(getFieldAttributesAndConfig), (state, action) => {
         return putInRenderingStateOutputs(state, action.meta.arg.path, { [FIELDS_ATTRIBUTES_KEY]: action.payload.data });
@@ -297,11 +309,11 @@ const getStubbedOrNot = (resourceId, data) => {
 //   };
 // };
 
-const putRenderingPageResources = (state, value: any) => {
+const putRenderingPageResources = (state, value: { [key: string]: RESOURCE_STATE }) => {
   return setInState(state, STATE_PAGE_RESOURCES_KEY, value);
 };
 
-const putInRenderingStateParameters = (state, path, value: any) => {
+const putInRenderingStateParameters = (state, path, value: { [key: string]: RESOURCE_STATE }) => {
   return setInRenderingState(state, path, value, STATE_RS_PARAMETERS_KEY);
 };
 
@@ -354,10 +366,11 @@ export const {
   setRenderingContext,
   setRenderingPageContext,
   setRenderingPageResources,
-  setRenderingLayoutElements,
+  // setRenderingLayoutElements,
   setRenderingCurrentPageId,
   setInRenderingStateParameters,
   setInRenderingStateOutputs,
+  setInRenderingStateSelf,
   // setInRenderingStateLocalContext,
   setActivePage,
   setAction,

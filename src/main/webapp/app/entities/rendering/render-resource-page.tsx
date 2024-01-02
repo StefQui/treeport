@@ -2,20 +2,24 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntity } from 'app/entities/resource/resource.reducer';
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { usePageContext, usePageResource, usePageResources } from './layout';
+import { usePageContext, usePageResource, useResourceStateFromPageResources } from './layout';
 import {
   buildPath,
   COMPONENT_TYPE,
   getRootPath,
   getValueForPathInObject,
   MyElem,
+  PARAMS_KEY,
+  PARAMS_RESOURCE_ID_KEY,
   PATH_KEY,
   PATH_SEPARATOR,
+  RENDERING_CONTEXT,
   RESOURCE_CONTENT_KEY,
   RESOURCE_CONTENT_PROPERTY,
   RESOURCE_FROM_REF_KEY,
   RESOURCE_PARAMETERS_KEY,
   RESOURCE_PARAMETER_KEY,
+  RESOURCE_STATE,
   ROOT_PATH_SEPARATOR,
   STATE_PAGE_RESOURCES_KEY,
   STATE_PAGE_RESOURCE_KEY,
@@ -31,13 +35,29 @@ import {
 } from './rendering.reducer';
 import { SmRefToResource } from './resource-content';
 
-export const useResourceFromPageResources = (resourceId, fetchedResource) => {
+export const existsAndIsOk = (resourceState: RESOURCE_STATE) => {
+  return !!(resourceState && resourceState.value);
+};
+
+export const doesntExist = (resourceState: RESOURCE_STATE) => {
+  return !resourceState || (!resourceState.loading && !resourceState.value);
+};
+
+export const isLoading = (resourceState: RESOURCE_STATE) => {
+  return resourceState && resourceState.loading;
+};
+
+export const isError = (resourceState: RESOURCE_STATE) => {
+  return resourceState && resourceState.error;
+};
+
+export const useResourceFromPageResources = (resourceId, fetchedResourceState: RESOURCE_STATE) => {
   const [resource, setResource] = useState();
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    console.log('useResourceFromPageResources 1', resourceId, fetchedResource);
-    if (fetchedResource) {
+    // console.log('useResourceFromPageResources 1', resourceId, fetchedResourceState);
+    if (existsAndIsOk(fetchedResourceState) || isLoading(fetchedResourceState) || isError(fetchedResourceState)) {
       return;
     }
     if (resourceId) {
@@ -50,11 +70,11 @@ export const useResourceFromPageResources = (resourceId, fetchedResource) => {
   }, [resourceId]);
 
   useEffect(() => {
-    console.log('useResourceFromPageResources 2', resourceId);
-    if (fetchedResource) {
-      setResource(fetchedResource);
+    // console.log('useResourceFromPageResources 2', fetchedResourceState);
+    if (fetchedResourceState) {
+      setResource(fetchedResourceState.value);
     }
-  }, [fetchedResource]);
+  }, [fetchedResourceState]);
 
   return resource;
 };
@@ -65,9 +85,9 @@ export const useResourceFromPageResources = (resourceId, fetchedResource) => {
 // };
 
 export const useResourceFromPageResourcesState = resourceId => {
-  const fetchedResource = usePageResources(resourceId);
+  const fetchedResourceState = useResourceStateFromPageResources(resourceId);
 
-  return useResourceFromPageResources(resourceId, fetchedResource);
+  return useResourceFromPageResources(resourceId, fetchedResourceState);
 };
 
 export const useResourceContentFromResource = resource => {
@@ -95,7 +115,6 @@ export const useResourceContentFromResource = resource => {
 
 export const usePageResourceContentFromResourceId = resourceId => {
   const resource = useResourceFromPageResourcesState(resourceId);
-  console.log('usePageResourceContentFromResourceId', resourceId, resource);
   return useResourceContentFromResource(resource);
 };
 
@@ -143,22 +162,26 @@ export const fillPageContext = pageParameters => {
   const dispatch = useAppDispatch();
   const location = useLocation();
   const locationSearch = useLocationSearch();
-  const pageContext = usePageContext();
+  const pageContext: RENDERING_CONTEXT = usePageContext();
 
   useEffect(() => {
     if (location && pageParameters) {
       console.log('change loc', location, pageParameters);
       const queryParams = new URLSearchParams(location.search);
-      const c = {};
+      const c: RENDERING_CONTEXT = {};
       pageParameters.forEach(param => {
-        c[param[RESOURCE_PARAMETER_KEY]] = queryParams.get(param[RESOURCE_PARAMETER_KEY]);
+        c[param[RESOURCE_PARAMETER_KEY]] = {
+          value: queryParams.get(param[RESOURCE_PARAMETER_KEY]),
+          loading: false,
+        };
+        // s;
       });
-      if (pageContext) {
-        if (JSON.stringify(pageContext) === JSON.stringify(c)) {
-          console.log('ABORT ABORT ABORT ABORT ABORT ABORT ABORT ABORT ABORT  ');
-          return;
-        }
-      }
+      // if (pageContext) {
+      //   if (JSON.stringify(pageContext) === JSON.stringify(c)) {
+      //     console.log('ABORT ABORT ABORT ABORT ABORT ABORT ABORT ABORT ABORT  ');
+      //     return;
+      //   }
+      // }
       dispatch(setRenderingPageContext(c));
       dispatch(
         setInRenderingStateParameters({
@@ -178,36 +201,45 @@ export const RenderResourcePage = () => {
   const { orgaId } = useParams<'orgaId'>();
   const { resourceId } = useParams<'resourceId'>();
 
-  const pageResourceContent = usePageResourceContentFromResourceId(resourceId);
-  const pageContent = useResourceWithKey(pageResourceContent, RESOURCE_CONTENT_KEY);
-  const pageParameters = useResourceWithKey(pageResourceContent, RESOURCE_PARAMETERS_KEY);
+  // const pageResourceContent = usePageResourceContentFromResourceId(resourceId);
+  // const pageContent = useResourceWithKey(pageResourceContent, RESOURCE_CONTENT_KEY);
+  // const pageParameters = useResourceWithKey(pageResourceContent, RESOURCE_PARAMETERS_KEY);
 
   useEffect(() => {
-    console.log('RenderResourcePage-useEffect', resourceId);
+    // console.log('RenderResourcePage-useEffect', resourceId);
     dispatch(setRenderingCurrentPageId(resourceId));
   }, [resourceId]);
 
-  fillPageContext(pageParameters);
+  // fillPageContext(pageParameters);
 
-  console.log('RenderResourcePage', pageResourceContent, pageContent, resourceId);
+  // console.log('RenderResourcePage', pageResourceContent, pageContent, resourceId);
 
   if (!resourceId) {
     return <span>Missing resourceId in RenderResourcePage</span>;
   }
 
-  if (!pageContent) {
-    return <span>Missing pageContent in RenderResourcePage</span>;
-  }
+  // if (!pageContent) {
+  //   return <span>Missing pageContent in RenderResourcePage</span>;
+  // }
 
   // console.log('pageResource', pageResourceContent);
   // console.log('pageParameters', pageParameters);
   // console.log('pageContent', pageContent);
 
+  const toRender = {
+    [COMPONENT_TYPE]: 'SmRefToResource',
+    [PARAMS_KEY]: {
+      [PARAMS_RESOURCE_ID_KEY]: resourceId,
+    },
+  };
+
+  console.log('toRender', toRender);
+
   return (
     <div>
       <h1>OrgaId: {orgaId}</h1>
       <h1>ResourceId: {resourceId}</h1>
-      <MyElem input={pageContent} params={{}} currentPath="" localContextPath={getRootPath()}></MyElem>
+      <MyElem input={toRender} params={{}} currentPath={getRootPath()} localContextPath={getRootPath()} depth="0"></MyElem>
 
       {/* <SmRefToResource currentPath="" path="" params={{ resourceId }} localContextPath={pageContext}></SmRefToResource> */}
     </div>

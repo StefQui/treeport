@@ -9,8 +9,14 @@ import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-u
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { getEntities } from './site.reducer';
-import { getSites, setAction, setActivePage, setInRenderingStateOutputs } from 'app/entities/rendering/rendering.reducer';
-import { buildPath, ENTITY_KEY, STATE_RS_OUTPUTS_KEY } from '../rendering/rendering';
+import {
+  getSites,
+  setAction,
+  setActivePage,
+  setInRenderingStateOutputs,
+  setInRenderingStateSelf,
+} from 'app/entities/rendering/rendering.reducer';
+import { buildPath, ENTITY_KEY, STATE_RS_OUTPUTS_KEY, STATE_RS_SELF_KEY } from '../rendering/rendering';
 
 export const SiteList = props => {
   const dispatch = useAppDispatch();
@@ -31,7 +37,6 @@ export const SiteList = props => {
       totalItems: 0,
       updateSuccess: false,
     },
-    selected: null,
   };
 
   // const pageLocation = useLocation();
@@ -43,40 +48,42 @@ export const SiteList = props => {
   // });
   const builtPath = buildPath(props);
   const paginationState = useAppSelector(state => {
-    return state.rendering.renderingState[builtPath]
-      ? state.rendering.renderingState[builtPath][STATE_RS_OUTPUTS_KEY].paginationState
-      : null;
+    return state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_SELF_KEY].paginationState : null;
   });
 
   const siteList = useAppSelector(state =>
-    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_OUTPUTS_KEY].listState.entities : null,
+    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_SELF_KEY].listState.entities : null,
   );
 
   const loading = useAppSelector(state =>
-    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_OUTPUTS_KEY].listState.loading : null,
+    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_SELF_KEY].listState.loading : false,
   );
 
   const totalItems = useAppSelector(state =>
-    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_OUTPUTS_KEY].listState.totalItems : null,
+    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_SELF_KEY].listState.totalItems : null,
   );
 
   const activePage = useAppSelector(state =>
     state.rendering.renderingState[builtPath]
-      ? state.rendering.renderingState[builtPath][STATE_RS_OUTPUTS_KEY].paginationState.activePage
+      ? state.rendering.renderingState[builtPath][STATE_RS_SELF_KEY].paginationState.activePage
       : null,
   );
 
   useEffect(() => {
     // console.log('useEffect1');
-    dispatch(setInRenderingStateOutputs({ path: builtPath, value: initialState }));
-    sortEntities();
+    dispatch(setInRenderingStateSelf({ path: builtPath, value: initialState }));
+    // console.log('vvvvvvvvvvvv', loading);
+    if (!loading) {
+      sortEntities();
+    }
   }, []);
 
   useEffect(() => {
     // console.log('useEffect22', paginationState);
     // dispatch(setRenderingForPath({ path: props.path, value: initialState }));
+    // console.log('tttttttttttt', loading);
 
-    if (activePage) {
+    if (activePage && !loading) {
       sortEntities();
     }
   }, [activePage]);
@@ -121,14 +128,6 @@ export const SiteList = props => {
     //   navigate(`${pageLocation.pathname}${endURL}`);
     // }
   };
-
-  useEffect(() => {
-    // console.log('useEffect2', props.path);
-    // const renderingState = getRenderingStateForPath(rendering, props.path);
-    // sortEntities();
-    // }, [renderingState.paginationState.activePage, renderingState.paginationState.order, renderingState.paginationState.sort]);
-  }, []);
-
   // useEffect(() => {
   //   const params = new URLSearchParams(pageLocation.search);
   //   const page = params.get('page');

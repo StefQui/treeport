@@ -8,9 +8,9 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getAttribute, setAction, setInRenderingStateOutputs } from './rendering.reducer';
 import SiteList from '../site/site-list';
 import { AttValue } from '../attribute-value/attribute-value';
-import { SmRefToResource, ZZZResourceContent } from './resource-content';
+import { calculateLocalContextPath, SmRefToResource, ZZZResourceContent } from './resource-content';
 import { buildAttributeIdFormExploded, SmAttributeField, SmForm } from './render-form';
-import { SmLayoutElement, SmMenu, SmPage } from './layout';
+import { SmLayoutElement, SmMenu, SmPage, usePageContext } from './layout';
 
 export const TextBasic = props => {
   const siteEntity = useAppSelector(state => state.site.entity);
@@ -144,6 +144,7 @@ export type RESOURCE_STATE = {
 export type RENDERING_CONTEXT = { [key: string]: RESOURCE_STATE };
 
 export const ELEM_LAYOUT_ELEMENT = 'layoutElement';
+export const ELEM_REF_TO_RESOURCE_ELEMENT = 'SmRefToResource';
 // export const SmTextRefToPath = props => {
 //   const builtPath = buildPath(props);
 //   const refToPath = props.params[TEXT_VALUE_KEY][REF_TO_PATH_KEY];
@@ -648,7 +649,7 @@ export const MyElem = props => {
         return <SmText {...params}></SmText>;
       case 'SmInput':
         return <SmInput {...params}></SmInput>;
-      case 'SmRefToResource':
+      case ELEM_REF_TO_RESOURCE_ELEMENT:
         return <SmRefToResource {...params}></SmRefToResource>;
       case 'textRef':
         return <TextRef {...params}></TextRef>;
@@ -703,26 +704,37 @@ export const increment = (depth: string) => {
 
 export const MyWrapper = ({ children, ...props }) => {
   let cn = '';
+  const pageContext: RENDERING_CONTEXT = usePageContext();
   if (props.border) {
     cn += ' border-2';
   }
   const displayPath = true;
   if (displayPath) {
-    // if (displayPath && props.componentType !== ELEM_LAYOUT_ELEMENT) {
+    if (displayPath) {
+      <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>;
+
+      return (
+        <Col md={props.col ?? 12} className={cn}>
+          <Col md="12">
+            <i className="wrapper-text">
+              (path={buildPath(props)})({props.componentType}, depth:{props.depth}, local={props.localContextPath})
+            </i>
+          </Col>{' '}
+          <Col md="12">
+            {/* {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT
+        ? (<pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>) : ""} */}
+            {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT
+              ? `----> localContext here for ${calculateLocalContextPath(props)} <-------`
+              : ''}
+          </Col>
+          {children}
+        </Col>
+      );
+    }
     return (
       <Col md={props.col ?? 12} className={cn}>
-        <Col md="12">
-          <i className="wrapper-text">
-            ({buildPath(props)})({props.componentType}, depth:{props.depth}, local={props.localContextPath})
-          </i>
-        </Col>{' '}
         {children}
       </Col>
     );
   }
-  return (
-    <Col md={props.col ?? 12} className={cn}>
-      {children}
-    </Col>
-  );
 };

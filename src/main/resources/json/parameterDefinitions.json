@@ -1,0 +1,57 @@
+{
+  "parameterDefinitions": [
+    {
+      "parameterKey": "const1",
+      "definition": {
+        "ruleType": "constant",
+        "constValue": "aaa"
+      }
+    },
+    {
+      "parameterKey": "inp1",
+      "definition": {
+        "ruleType": "refToLocalContext",
+        "path": "../other",
+        "sourceParameterKey": "myInput"
+      }
+    },
+    {
+      "parameterKey": "theSite",
+      "definition": {
+        "ruleType": "refToLocalContext",
+        "path": "../other",
+        "siteIdSourceParameterKey": "selectedSite1",
+        "siteIdSourceParameterProperty": "name"
+      }
+    },
+    {
+      "parameterKey": "site1",
+      "definition": {
+        "ruleType": "refToLocalContext",
+        "path": "/theContent/displaySite",
+        "sourceParameterKey": "theSelectedSite",
+        "sourceParameterProperty": "name"
+      }
+    },
+    {
+      "parameterKey": "site2",
+      "definition": {
+        "ruleType": "refToPageContext",
+        "sourceParameterKey": "theSelectedSite"
+      }
+    },
+    {
+      "parameterKey": "site3",
+      "definitions": [
+        {
+          "ruleType": "refToPageContext",
+          "sourceParameterKey": "theSelectedSite"
+        },
+        {
+          "ruleType": "constant",
+          "constValue": "aaa"
+        }
+      ]
+    }
+  ]
+}

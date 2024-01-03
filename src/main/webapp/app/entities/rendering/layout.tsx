@@ -18,7 +18,7 @@ import {
   STATE_PAGE_RESOURCE_KEY,
   useRenderingState,
 } from './rendering';
-import { enrichLocalContext, MyRend } from './resource-content';
+import { calculateLocalContextPath, enrichLocalContext, MyRend } from './resource-content';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
@@ -87,7 +87,7 @@ export const SmPage = props => {
       depth={increment(props.depth)}
       params={props.params ? props.params.params : null}
       currentPath={builtPath}
-      localContextPath={builtPath}
+      localContextPath={props.localContextPath}
     ></MyElem>
   );
 
@@ -304,7 +304,7 @@ export const SmLayoutElement = props => {
       depth={props.depth}
       params={props.params ? props.params.params : null}
       currentPath={props.currentPath + PATH_SEPARATOR + props.path}
-      localContextPath={props.currentPath + PATH_SEPARATOR + props.path}
+      localContextPath={calculateLocalContextPath(props)}
     ></MyElem>
   );
   // return <MyRend content={layoutElementContent} params={props.params} currentPath={builtPath} localContextPath={builtPath}></MyRend>;

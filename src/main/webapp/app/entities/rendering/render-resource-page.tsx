@@ -217,6 +217,7 @@ export const RenderResourcePage = () => {
   if (!resourceId) {
     return <span>Missing resourceId in RenderResourcePage</span>;
   }
+  const pageContext: RENDERING_CONTEXT = usePageContext();
 
   // if (!pageContent) {
   //   return <span>Missing pageContent in RenderResourcePage</span>;
@@ -239,9 +240,10 @@ export const RenderResourcePage = () => {
     <div>
       <h1>OrgaId: {orgaId}</h1>
       <h1>ResourceId: {resourceId}</h1>
-      <MyElem input={toRender} params={{}} currentPath={getRootPath()} localContextPath={getRootPath()} depth="0"></MyElem>
+      <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>
+      {/* <MyElem input={toRender} params={{}} currentPath={getRootPath()} localContextPath={''} depth="0"></MyElem> */}
 
-      {/* <SmRefToResource currentPath="" path="" params={{ resourceId }} localContextPath={pageContext}></SmRefToResource> */}
+      <SmRefToResource currentPath="" path="" params={{ resourceId }} localContextPath="" depth="0"></SmRefToResource>
     </div>
   );
 };

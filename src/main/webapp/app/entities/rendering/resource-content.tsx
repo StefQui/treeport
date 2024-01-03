@@ -8,6 +8,7 @@ import { doesntExist, existsAndIsOk, usePageResourceContentFromResourceId, useRe
 import {
   applyPath,
   buildPath,
+  getRootPath,
   getValueForPathInObject,
   increment,
   MyElem,
@@ -277,6 +278,15 @@ const useResourceParametersFromState = builtPath =>
     return aaa ? aaa[STATE_RS_PARAMETERS_KEY] : null;
   });
 
+export const calculateLocalContextPath = props => {
+  if (!props.localContextPath && !props.path) {
+    return getRootPath();
+  } else if (props.localContextPath === getRootPath()) {
+    return props.localContextPath + props.path;
+  }
+  return props.localContextPath + PATH_SEPARATOR + props.path;
+};
+
 export const SmRefToResource = props => {
   const dispatch = useAppDispatch();
 
@@ -359,7 +369,7 @@ export const SmRefToResource = props => {
         depth={increment(props.depth)}
         params={props.params ? props.params.params : null}
         currentPath={builtPath}
-        localContextPath={props.localContextPath}
+        localContextPath={calculateLocalContextPath(props)}
       ></MyElem>
     );
 

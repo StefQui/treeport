@@ -13,12 +13,20 @@ import {
   getSites,
   setAction,
   setActivePage,
+  setInLocalState,
   setInRenderingStateOutputs,
   setInRenderingStateSelf,
 } from 'app/entities/rendering/rendering.reducer';
-import { buildPath, ENTITY_KEY, STATE_RS_OUTPUTS_KEY, STATE_RS_SELF_KEY } from '../rendering/rendering';
+import {
+  buildPath,
+  ENTITY_KEY,
+  PARAMS_SITE_LIST_SELECTED_SITE_KEY,
+  SiteListParams,
+  STATE_RS_OUTPUTS_KEY,
+  STATE_RS_SELF_KEY,
+} from '../rendering/rendering';
 
-export const SiteList = props => {
+export const SiteList = (props: { params: SiteListParams; depth: string; currentPath: string; path: string; localContextPath: string }) => {
   const dispatch = useAppDispatch();
 
   const initialState = {
@@ -163,8 +171,15 @@ export const SiteList = props => {
   };
 
   const handleSelect = selected => () => {
-    // console.log('handleSelect', selected);
-    dispatch(setInRenderingStateOutputs({ path: builtPath, value: { selected: { entityType: 'SITE', [ENTITY_KEY]: selected } } }));
+    console.log('handleSelect', props.localContextPath, props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY], selected);
+    // dispatch(setInLocalState({ localContextPath: props.localContextPath,       parameterKey: props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY],value: { value: { entityType: 'SITE', [ENTITY_KEY]: selected } , loading: false} }));
+    dispatch(
+      setInLocalState({
+        localContextPath: props.localContextPath,
+        parameterKey: props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY],
+        value: { value: selected.id, loading: false },
+      }),
+    );
     dispatch(setAction({ source: builtPath, actionType: 'selectSite', entity: { entityType: 'SITE', [ENTITY_KEY]: selected } }));
   };
 

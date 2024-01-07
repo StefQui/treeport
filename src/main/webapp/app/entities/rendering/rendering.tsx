@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getAttribute, setAction, setInRenderingStateOutputs } from './rendering.reducer';
 import SiteList from '../site/site-list';
 import { AttValue } from '../attribute-value/attribute-value';
-import { calculateLocalContextPath, SmRefToResource, ZZZResourceContent } from './resource-content';
+import { calculateLocalContextPath, SmRefToResource, useRefToLocalContext, ZZZResourceContent } from './resource-content';
 import { buildAttributeIdFormExploded, SmAttributeField, SmForm } from './render-form';
 import { SmLayoutElement, SmMenu, SmPage, usePageContext } from './layout';
 
@@ -108,6 +108,8 @@ export const COMPONENT_TYPE = 'componentType';
 export const PARAMS_KEY = 'params';
 export const PARAMS_RESOURCE_ID_KEY = 'resourceId';
 
+export const PARAMS_SITE_LIST_SELECTED_SITE_KEY = 'selectedSiteKeyInLocalContext';
+
 export const RESOURCE_CONTENT_PROPERTY = 'content';
 
 export const STATE_RS_PARAMETERS_KEY = 'parameters';
@@ -115,10 +117,12 @@ export const STATE_RS_OUTPUTS_KEY = 'outputs';
 export const STATE_RS_SELF_KEY = 'self';
 // export const STATE_RS_LOCAL_CONTEXT_KEY = 'localContext';
 
+export const RENDERING_SLICE_KEY = 'rendering';
 export const STATE_CURRENT_PAGE_ID_KEY = 'currentPageId';
 export const STATE_PAGE_RESOURCE_KEY = 'pageResource';
 export const STATE_PAGE_RESOURCES_KEY = 'pageResources';
 export const STATE_PAGE_CONTEXT_KEY = 'pageContext';
+export const STATE_RENDERING_STATE_KEY = 'renderingState';
 // export const STATE_LAYOUT_ELEMENTS_KEY = 'layoutElements';
 
 export type PARAMETER_SOURCE_TYPE = 'pageContext' | 'localContext';
@@ -145,6 +149,36 @@ export type RENDERING_CONTEXT = { [key: string]: RESOURCE_STATE };
 
 export const ELEM_LAYOUT_ELEMENT = 'layoutElement';
 export const ELEM_REF_TO_RESOURCE_ELEMENT = 'SmRefToResource';
+
+export const PARAMETER_DEFINITIONS = 'parameterDefinitions';
+export const PARAMETER_KEY = 'parameterKey';
+export const DEFINITION = 'definition';
+export const RULE_TYPE = 'ruleType';
+export const DEFINITIONS = 'definitions';
+export const CONST_VALUE = 'constValue';
+
+export const LOCAL_CONTEXT = 'localContext';
+
+export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext';
+export type TransformTo = 'site';
+export type ConstantRuleDefinition = { [RULE_TYPE]: RuleType; [CONST_VALUE]: any };
+export type RefToContextRuleDefinition = {
+  ruleType: RuleType;
+  path: string;
+  sourceParameterKey: string;
+  sourceParameterProperty?: string;
+  transformTo?: TransformTo;
+  siteIdSourceParameterKey?: string; // if transformTo is 'site'
+  siteIdSourceParameterProperty?: string; // if transformTo is 'site'
+};
+export type RuleDefinition = RefToContextRuleDefinition | ConstantRuleDefinition;
+export type ParameterDefinition = { [PARAMETER_KEY]: string; [DEFINITION]?: RuleDefinition; [DEFINITIONS]?: RuleDefinition[] };
+export type ParameterDefinitions = { [PARAMETER_DEFINITIONS]: ParameterDefinition[] };
+export type LocalContext = { [LOCAL_CONTEXT]: ParameterDefinition[] };
+
+export type SiteListParams = { [PARAMS_SITE_LIST_SELECTED_SITE_KEY]: string };
+export type RefToResourceParams = { [PARAMS_RESOURCE_ID_KEY]: string; [PARAMETER_DEFINITIONS]: ParameterDefinition[] };
+export type Params = RefToResourceParams | SiteListParams;
 // export const SmTextRefToPath = props => {
 //   const builtPath = buildPath(props);
 //   const refToPath = props.params[TEXT_VALUE_KEY][REF_TO_PATH_KEY];
@@ -267,14 +301,14 @@ export const useCalculatedValueState = (props, elem) => {
     const paramaterKey = refToLocalContext[REF_TO_LC_PARAMETER_KEY_KEY];
     const property = refToLocalContext[REF_TO_LC_PROPERTY_KEY];
 
-    console.log('REF_TO_LC_KEY ========> TO INVESTIGATE HERE on rpage1');
+    // console.log('REF_TO_LC_KEY ========> TO INVESTIGATE HERE on rpage1');
 
     return useAppSelector(state => {
       const aaa = state.rendering.renderingState[props.localContextPath];
       if (!aaa) {
         return null;
       }
-      console.log('useAppSelector', props.localContextPath, aaa);
+      // console.log('useAppSelector', props.localContextPath, aaa);
       const localContext = aaa[STATE_RS_PARAMETERS_KEY];
       if (!localContext) {
         return null;
@@ -708,6 +742,9 @@ export const MyWrapper = ({ children, ...props }) => {
   if (props.border) {
     cn += ' border-2';
   }
+
+  const lc = useRefToLocalContext(props, calculateLocalContextPath(props));
+
   const displayPath = true;
   if (displayPath) {
     if (displayPath) {
@@ -723,9 +760,11 @@ export const MyWrapper = ({ children, ...props }) => {
           <Col md="12">
             {/* {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT
         ? (<pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>) : ""} */}
-            {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT
-              ? `----> localContext here for ${calculateLocalContextPath(props)} <-------`
-              : ''}
+            {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT ? (
+              <pre>{JSON.stringify(lc ? lc : {}, null, 2)}</pre>
+            ) : (
+              ''
+            )}
           </Col>
           {children}
         </Col>

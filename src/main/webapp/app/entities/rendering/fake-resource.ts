@@ -9,7 +9,7 @@ const r3 = {
         params: {
           textValue: {
             const: {
-              constValue: 'ABC123',
+              constValue: 'ABC123mmm',
             },
           },
         },
@@ -67,6 +67,9 @@ const r3 = {
         componentType: 'siteList',
         path: 'vsmsiteList',
         col: 8,
+        params: {
+          selectedSiteKeyInLocalContext: 'sid99',
+        },
       },
       {
         componentType: 'SmRefToResource',
@@ -74,31 +77,55 @@ const r3 = {
         col: 4,
         params: {
           resourceId: 'r5',
-          parameters: {
-            toto: {
-              refToPath: {
-                path: '/vp/vsm3',
-                property: 'output',
+          parameterDefinitions: [
+            {
+              parameterKey: 'const1',
+              definition: {
+                ruleType: 'constant',
+                constValue: 'aaa1',
               },
             },
-            titi: {
-              const: {
-                constValue: 'ABC123ZZZtiti',
+            {
+              parameterKey: 'site2',
+              definition: {
+                ruleType: 'refToPageContext',
+                sourceParameterKey: 'sid',
               },
             },
-            tata: {
-              const: {
-                constValue: 'ABC123ZZZtata',
+            {
+              parameterKey: 'siteIdFromSiteList',
+              definition: {
+                ruleType: 'refToLocalContext',
+                path: '/layout-content',
+                sourceParameterKey: 'sid99',
               },
             },
-            selectedResource: {
-              refToPath: {
-                path: '/pag-1/vp-layout/layout-content/vp-r3/vsmsiteList',
-                parameterKey: 'selected',
-                property: 'entity.name',
-              },
-            },
-          },
+          ],
+          // parameterDefinitions: {
+          //   toto: {
+          //     refToPath: {
+          //       path: '/vp/vsm3',
+          //       property: 'output',
+          //     },
+          //   },
+          //   titi: {
+          //     const: {
+          //       constValue: 'ABC123ZZZtiti',
+          //     },
+          //   },
+          //   tata: {
+          //     const: {
+          //       constValue: 'ABC123ZZZtata',
+          //     },
+          //   },
+          //   selectedResource: {
+          //     refToPath: {
+          //       path: '/pag-1/vp-layout/layout-content/vp-r3/vsmsiteList',
+          //       parameterKey: 'selected',
+          //       property: 'entity.name',
+          //     },
+          //   },
+          // },
         },
       },
       // {
@@ -359,32 +386,13 @@ const r5 = {
       // },
     ],
   },
-  parameters: [
+  localContext: [
     {
-      parameterKey: 'sid2',
-      parameterType: 'string',
-    },
-    {
-      parameterKey: 'tata',
-      parameterType: 'string',
-    },
-    {
-      parameterKey: 'titi',
-      parameterType: 'string',
-    },
-    {
-      parameterKey: 'selectedResourceId',
-      parameterType: 'string',
-    },
-    {
-      parameterKey: 'site1',
-      parameterType: 'site',
-      parameterSources: [
-        {
-          source: 'pageContext',
-          sourceParameterKey: 'sid',
-        },
-      ],
+      parameterKey: 'myConst',
+      definition: {
+        ruleType: 'constant',
+        constValue: 'aaa',
+      },
     },
   ],
 };

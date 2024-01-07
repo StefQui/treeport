@@ -9,6 +9,7 @@ import {
   getRootPath,
   getValueForPathInObject,
   MyElem,
+  PARAMETER_DEFINITIONS,
   PARAMS_KEY,
   PARAMS_RESOURCE_ID_KEY,
   PATH_KEY,
@@ -243,7 +244,13 @@ export const RenderResourcePage = () => {
       <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>
       {/* <MyElem input={toRender} params={{}} currentPath={getRootPath()} localContextPath={''} depth="0"></MyElem> */}
 
-      <SmRefToResource currentPath="" path="" params={{ resourceId }} localContextPath="" depth="0"></SmRefToResource>
+      <SmRefToResource
+        currentPath=""
+        path=""
+        params={{ resourceId, [PARAMETER_DEFINITIONS]: [] }}
+        localContextPath=""
+        depth="0"
+      ></SmRefToResource>
     </div>
   );
 };

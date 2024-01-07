@@ -166,12 +166,13 @@
       }
     ]
   },
-  "parameters": [
+  "localContext": [
     {
-      "parameterKey": "sid",
-      "parameterSource": ["pageContext"],
-      "parameterType": "siteId",
-      "useAs": "site"
+      "parameterKey": "myConst",
+      "definition": {
+        "ruleType": "constant",
+        "constValue": "aaa"
+      }
     }
   ]
 }

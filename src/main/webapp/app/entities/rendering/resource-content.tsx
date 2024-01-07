@@ -8,18 +8,29 @@ import { doesntExist, existsAndIsOk, usePageResourceContentFromResourceId, useRe
 import {
   applyPath,
   buildPath,
+  ConstantRuleDefinition,
+  CONST_VALUE,
+  DEFINITION,
   getRootPath,
   getValueForPathInObject,
   increment,
+  LOCAL_CONTEXT,
   MyElem,
   OUTPUT_KEY,
   PARAMETER,
+  ParameterDefinition,
+  ParameterDefinitions,
   PARAMETERS_TYPE,
+  PARAMETER_DEFINITIONS,
+  PARAMETER_KEY,
   PARAMETER_SOURCE,
   PARAMETER_SOURCES_TYPE,
   PARAMETER_SOURCE_TYPE,
   PATH_SEPARATOR,
+  RefToContextRuleDefinition,
+  RefToResourceParams,
   RENDERING_CONTEXT,
+  RENDERING_SLICE_KEY,
   RESOURCE_CONTENT_KEY,
   RESOURCE_FROM_REF_KEY,
   RESOURCE_PARAMETERS_KEY,
@@ -28,7 +39,10 @@ import {
   RESOURCE_PARAMETER_SOURCE_KEY,
   RESOURCE_PARAMETER_SOURCE_PARAMETER_KEY_KEY,
   RESOURCE_PARAMETER_TYPE_KEY,
+  RESOURCE_STATE,
   ROOT_PATH_SEPARATOR,
+  RULE_TYPE,
+  STATE_RENDERING_STATE_KEY,
   STATE_RS_PARAMETERS_KEY,
   useCalculatedValueState,
   useRenderingState,
@@ -222,54 +236,260 @@ export const useParamsIdsToFetch = (resourceParameters: PARAMETERS_TYPE, builtPa
   return paramIdsToFetch;
 };
 
-export const enrichLocalContext = (resourceParameters: PARAMETERS_TYPE, builtPath) => {
+export const enrichLocalContext = builtPath => {
   const dispatch = useAppDispatch();
-  const paramIdsToFetch = useParamsIdsToFetch(resourceParameters, builtPath);
+  // const paramIdsToFetch = useParamsIdsToFetch(resourceParameters, builtPath);
 
-  useEffect(() => {
-    if (paramIdsToFetch) {
-      console.log('enrichLocalContext', paramIdsToFetch, builtPath);
-      paramIdsToFetch.forEach(paramIdToFetch => {
-        console.log('enrichLocalContext a specific', paramIdsToFetch);
-        dispatch(
-          getSiteForRenderingStateParamaters({
-            siteId: paramIdToFetch.siteIdTofetch,
-            destinationSiteKey: paramIdToFetch.targetParamId,
-            path: builtPath,
-          }),
-        );
-      });
-    }
-  }, [paramIdsToFetch]);
+  // useEffect(() => {
+  //   if (paramIdsToFetch) {
+  //     console.log('enrichLocalContext', paramIdsToFetch, builtPath);
+  //     paramIdsToFetch.forEach(paramIdToFetch => {
+  //       console.log('enrichLocalContext a specific', paramIdsToFetch);
+  //       dispatch(
+  //         getSiteForRenderingStateParamaters({
+  //           siteId: paramIdToFetch.siteIdTofetch,
+  //           destinationSiteKey: paramIdToFetch.targetParamId,
+  //           path: builtPath,
+  //         }),
+  //       );
+  //     });
+  //   }
+  // }, [paramIdsToFetch]);
 };
 
-const initLocalContext = (sourceResourceParameters, targetResourceParameters, props, builtPath) => {
-  const dispatch = useAppDispatch();
+const useLocalContextDefinitions = (
+  callingParamaterDefinitions: ParameterDefinition[],
+  targetParamaterDefinitions: ParameterDefinition[],
+) => {
+  const [localContextDefinitions, setLocalContextDefinitions] = useState([]);
 
   useEffect(() => {
-    if (sourceResourceParameters && targetResourceParameters) {
-      const targetParameterKeys = targetResourceParameters.map((trp: PARAMETER) => trp[RESOURCE_PARAMETER_KEY]);
-      const sourceParameterKeys = Object.keys(sourceResourceParameters);
-      const toBeIncluded = targetParameterKeys.filter(value => sourceParameterKeys.includes(value));
+    console.log('useLocalContextDefinitions', targetParamaterDefinitions, callingParamaterDefinitions);
 
-      toBeIncluded.forEach(parameterKey => {
-        const calculatedValue = useCalculatedValueState(props, sourceResourceParameters[parameterKey]);
-
-        console.log('parameterKey', parameterKey, sourceResourceParameters[parameterKey], calculatedValue);
-        dispatch(
-          setInRenderingStateParameters({
-            path: builtPath,
-            value: {
-              [parameterKey]: {
-                loading: false,
-                value: calculatedValue,
-              },
-            },
-          }),
-        );
-      });
+    if (targetParamaterDefinitions && callingParamaterDefinitions) {
+      const callingKeys = callingParamaterDefinitions.map((trp: ParameterDefinition) => trp[PARAMETER_KEY]);
+      const res: ParameterDefinition[] = callingParamaterDefinitions;
+      res.concat(targetParamaterDefinitions.filter(pdef => callingKeys.indexOf(pdef[PARAMETER_KEY]) === -1));
+      if (res && res.length > 0) {
+        setLocalContextDefinitions(res);
+      }
     }
-  }, [targetResourceParameters]);
+  }, [targetParamaterDefinitions]);
+
+  return localContextDefinitions;
+};
+
+export const useRefToLocalContextValue = (props, localContextPath, paramaterKey): RESOURCE_STATE => {
+  return useAppSelector(state => {
+    const contextForLocalContextPath = state[RENDERING_SLICE_KEY][STATE_RENDERING_STATE_KEY]
+      ? state[RENDERING_SLICE_KEY][STATE_RENDERING_STATE_KEY][localContextPath]
+      : null;
+    if (!contextForLocalContextPath) {
+      return null;
+    }
+    const contextForLocalContextPathParameters = contextForLocalContextPath[STATE_RS_PARAMETERS_KEY];
+    if (!contextForLocalContextPathParameters) {
+      return null;
+    }
+    return contextForLocalContextPathParameters[paramaterKey];
+  });
+};
+
+export const useRefToLocalContext = (props, localContextPath): RESOURCE_STATE => {
+  return useAppSelector(state => {
+    // console.log('useRefToLocalContext--------------------', localContextPath, state[RENDERING_SLICE_KEY][STATE_RENDERING_STATE_KEY]);
+    const contextForLocalContextPath = state[RENDERING_SLICE_KEY][STATE_RENDERING_STATE_KEY]
+      ? state[RENDERING_SLICE_KEY][STATE_RENDERING_STATE_KEY][localContextPath]
+      : null;
+    if (!contextForLocalContextPath) {
+      return null;
+    }
+    return contextForLocalContextPath[STATE_RS_PARAMETERS_KEY];
+  });
+};
+
+const useRefToPageContextValue = (props, definition: ParameterDefinition): RESOURCE_STATE => {
+  const [contextValue, setContextValue] = useState({ loading: false });
+
+  // console.log('useRefToPageContextValu--------', definition);
+
+  const pageContext: RENDERING_CONTEXT = usePageContext();
+  useEffect(() => {
+    setContextValue(pageContext[(definition[DEFINITION] as RefToContextRuleDefinition).sourceParameterKey]);
+  }, [pageContext]);
+
+  return contextValue;
+  // return { loading: false, value: 'tatassss' };
+};
+
+const useConstantValue = (props, definition: ConstantRuleDefinition): RESOURCE_STATE => {
+  return { loading: false, value: definition[CONST_VALUE] };
+};
+
+// const useParamaterMapValues = (
+//   callingParamaterDefinitions: ParameterDefinition[],
+//   targetParamaterDefinitions: ParameterDefinition[],
+//   props,
+// ) => {
+//   const localContextDefinitions: ParameterDefinition[] = useLocalContextDefinitions(
+//     callingParamaterDefinitions,
+//     targetParamaterDefinitions,
+//   );
+//   console.log('aaaauseParamaterMapValues', localContextDefinitions);
+
+//   // const [paramaterMapValues, setParamaterMapValues] = useState({});
+
+//   if (localContextDefinitions) {
+//     localContextDefinitions.forEach(pdef => {
+//       const key = pdef[PARAMETER_KEY];
+//       if (pdef[DEFINITION] && pdef[DEFINITION][RULE_TYPE] === 'refToLocalContext') {
+//         const refToContextRuleDefinition: RefToContextRuleDefinition = pdef[DEFINITION] as RefToContextRuleDefinition;
+//         const aa = useRefToLocalContextValue(props, refToContextRuleDefinition.path, refToContextRuleDefinition.sourceParameterKey);
+//       } else if (pdef[DEFINITION] && pdef[DEFINITION][RULE_TYPE] === 'refToPageContext') {
+//         const aa = useRefToPageContextValue(props, pdef);
+//       } else if (pdef[DEFINITION] && pdef[DEFINITION][RULE_TYPE] === 'constant') {
+//         const aa = useConstantValue(props, pdef);
+//       } else {
+//         const aa = {
+//           loading: false,
+//           error: 'Not implemented yet2',
+//         };
+//       }
+//     });
+//   }
+//   // useEffect(() => {
+//   //   if (localContextDefinitions) {
+//   //     const result: { [paramaterKey: string]: RESOURCE_STATE } = {};
+//   //     localContextDefinitions.forEach(pdef => {
+//   //       const key = pdef[PARAMETER_KEY];
+//   //       if (pdef[DEFINITION] && pdef[DEFINITION][RULE_TYPE] === 'refToLocalContext') {
+//   //         result[key] = useRefToLocalContextValue(props, pdef);
+//   //       } else if (pdef[DEFINITION] && pdef[DEFINITION][RULE_TYPE] === 'refToPageContext') {
+//   //         result[key] = useRefToPageContextValue(props, pdef);
+//   //       } else if (pdef[DEFINITION] && pdef[DEFINITION][RULE_TYPE] === 'constant') {
+//   //         result[key] = useConstantValue(props, pdef);
+//   //       } else {
+//   //         result[key] = {
+//   //           loading: false,
+//   //           error: 'Not implemented yet2',
+//   //         };
+//   //       }
+//   //     });
+//   //     // setParamaterMapValues(result);
+//   //   }
+//   // }, [localContextDefinitions]);
+//   // }
+//   // return paramaterMapValues;
+// };
+
+const initLocalContext = (parameterDefinitions: ParameterDefinition[], props, builtPath) => {
+  const dispatch = useAppDispatch();
+  // console.log('initLocalContext', callingParamaterDefinitions, targetParamaterDefinitions);
+  // const paramaterMapValues: { [paramaterKey: string]: RESOURCE_STATE } = useParamaterMapValues(
+  //   callingParamaterDefinitions,
+  //   targetParamaterDefinitions,
+  //   props,
+  // );
+  const localContextPath = calculateLocalContextPath(props);
+
+  if (parameterDefinitions) {
+    parameterDefinitions.forEach(pdef => {
+      const key = pdef[PARAMETER_KEY];
+      // useEffect(() => {
+      //   if (paramaterMapValues[paramKey]) {
+      //     // pkeys.forEach(paramKey => {
+      //     dispatch(
+      //       setInRenderingStateParameters({
+      //         path: localContextPath,
+      //         value: {
+      //           [paramKey]: paramaterMapValues[paramKey],
+      //         },
+      //       }),
+      //     );
+      //     // });
+      //   }
+      // }, [Object.values(paramaterMapValues)]);
+
+      let result;
+      if (pdef[DEFINITION] && pdef[DEFINITION][RULE_TYPE] === 'refToLocalContext') {
+        const refToContextRuleDefinition: RefToContextRuleDefinition = pdef[DEFINITION] as RefToContextRuleDefinition;
+        result = useRefToLocalContextValue(props, refToContextRuleDefinition.path, refToContextRuleDefinition.sourceParameterKey);
+      } else if (pdef[DEFINITION] && pdef[DEFINITION][RULE_TYPE] === 'refToPageContext') {
+        result = useRefToPageContextValue(props, pdef);
+      } else if (pdef[DEFINITION] && pdef[DEFINITION][RULE_TYPE] === 'constant') {
+        result = useConstantValue(props, pdef[DEFINITION] as ConstantRuleDefinition);
+      } else {
+        result = {
+          loading: false,
+          error: 'Not implemented yet2',
+        };
+      }
+      useEffect(() => {
+        if (result) {
+          // pkeys.forEach(paramKey => {
+          dispatch(
+            setInRenderingStateParameters({
+              path: localContextPath,
+              value: {
+                [pdef[PARAMETER_KEY]]: result,
+              },
+            }),
+          );
+          // });
+        }
+      }, [result]);
+    });
+  }
+
+  // useParamaterMapValues(callingParamaterDefinitions, targetParamaterDefinitions, props);
+  // const dispatch = useAppDispatch();
+  // const localContextPath = calculateLocalContextPath(props);
+
+  // const pkeys = Object.keys(parameterDefinitions);
+  // console.log('paramaterMapValues22222', paramaterMapValues);
+
+  // pkeys.forEach(paramKey => {
+  //   console.log('inloop', paramKey);
+  //   useEffect(() => {
+  //     if (paramaterMapValues[paramKey]) {
+  //       // pkeys.forEach(paramKey => {
+  //       dispatch(
+  //         setInRenderingStateParameters({
+  //           path: localContextPath,
+  //           value: {
+  //             [paramKey]: paramaterMapValues[paramKey],
+  //           },
+  //         }),
+  //       );
+  //       // });
+  //     }
+  //   }, [Object.values(paramaterMapValues)]);
+  //   dispatch(
+  //     setInRenderingStateParameters({
+  //       path: localContextPath,
+  //       value: {
+  //         [paramKey]: paramaterMapValues[paramKey],
+  //       },
+  //     }),
+  //   );
+  // });
+  // useEffect(() => {
+  //   if (paramaterMapValues) {
+  //     console.log('paramaterMapValues in effect', paramaterMapValues);
+
+  //     const pkeys = Object.keys(paramaterMapValues);
+  //     pkeys.forEach(paramKey => {
+  //       dispatch(
+  //         setInRenderingStateParameters({
+  //           path: localContextPath,
+  //           value: {
+  //             [paramKey]: paramaterMapValues[paramKey],
+  //           },
+  //         }),
+  //       );
+  //     });
+  //   }
+  // }, [Object.values(paramaterMapValues)]);
 };
 
 const useResourceParametersFromState = builtPath =>
@@ -287,27 +507,37 @@ export const calculateLocalContextPath = props => {
   return props.localContextPath + PATH_SEPARATOR + props.path;
 };
 
-export const SmRefToResource = props => {
+export const SmRefToResource = (props: {
+  params: RefToResourceParams;
+  depth: string;
+  currentPath: string;
+  path: string;
+  localContextPath: string;
+}) => {
   const dispatch = useAppDispatch();
 
-  if (!props.params || !props.params.resourceId) {
+  console.log('TheSmRefToResource', props);
+
+  const params: RefToResourceParams = props.params;
+
+  if (!params || !params.resourceId) {
     return <span>resourceId param is mandatory</span>;
   }
-  const resourceId = props.params.resourceId;
+  const resourceId = params.resourceId;
 
   const builtPath = buildPath(props);
   const resource = usePageResourceContentFromResourceId(resourceId);
   const resourceContent = useResourceWithKey(resource, RESOURCE_CONTENT_KEY);
-  const targetResourceParameters = useResourceWithKey(resource, RESOURCE_PARAMETERS_KEY);
-  const sourceResourceParameters = props.params[RESOURCE_PARAMETERS_KEY];
+  // const targetParamaterDefinitions = useResourceWithKey(resource, LOCAL_CONTEXT);
+  const callingParamaterDefinitions = params[PARAMETER_DEFINITIONS];
 
   // const resource = useRenderingState(builtPath, RESOURCE_FROM_REF_KEY);
   // console.log('SmRefToResource', resourceParameters);
 
   // const resourcesToFetch = useResourceToFetch(resourceParameters, pageContext, builtPath);
 
-  initLocalContext(sourceResourceParameters, targetResourceParameters, props, builtPath);
-  enrichLocalContext(targetResourceParameters, builtPath);
+  initLocalContext(callingParamaterDefinitions, props, builtPath);
+  enrichLocalContext(builtPath);
   // const [resourceContent, setResourceContent] = useState();
 
   // const [enrichedContext, setEnrichedContext] = useState({});
@@ -367,7 +597,7 @@ export const SmRefToResource = props => {
       <MyElem
         input={resourceContent}
         depth={increment(props.depth)}
-        params={props.params ? props.params.params : null}
+        // params={props.params ? params.params : null}
         currentPath={builtPath}
         localContextPath={calculateLocalContextPath(props)}
       ></MyElem>

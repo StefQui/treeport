@@ -222,7 +222,7 @@ export const SmAttributeField = props => {
     if (formFieldsMap == null) {
       return null;
     }
-    console.log('useAppSelector', formFieldsMap[FIELDS_ATTRIBUTES_KEY] ? formFieldsMap[FIELDS_ATTRIBUTES_KEY][props.fieldId] : null);
+    // console.log('useAppSelector', formFieldsMap[FIELDS_ATTRIBUTES_KEY] ? formFieldsMap[FIELDS_ATTRIBUTES_KEY][props.fieldId] : null);
     return formFieldsMap[FIELDS_ATTRIBUTES_KEY] ? formFieldsMap[FIELDS_ATTRIBUTES_KEY][props.fieldId] : null;
   });
 

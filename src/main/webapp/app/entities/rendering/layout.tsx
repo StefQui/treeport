@@ -248,7 +248,7 @@ export const SmLayoutElement = props => {
   const layoutElementResourceParameters = useResourceWithKey(layoutElementResource, RESOURCE_PARAMETERS_KEY);
   // console.log('SmLayoutElement', layoutElementResourceParameters);
 
-  enrichLocalContext(layoutElementResourceParameters, builtPath);
+  enrichLocalContext(builtPath);
 
   // const pageContext = usePageContext();
   // useEffect(() => {
@@ -338,6 +338,9 @@ export const SmMenu = props => {
             </Nav.Link>
             <Nav.Link as={NavLink} to="/coca/render/rpage2?sid=s2">
               Page 2-2
+            </Nav.Link>
+            <Nav.Link as={NavLink} to="/coca/render/rpage1?sid=s2">
+              Page 1-2
             </Nav.Link>
             <Nav.Link as={NavLink} to="/contact">
               Contact

@@ -23,13 +23,15 @@ import {
   STATE_CURRENT_PAGE_ID_KEY,
   RENDERING_CONTEXT,
   RESOURCE_STATE,
+  STATE_RENDERING_STATE_KEY,
+  RENDERING_SLICE_KEY,
 } from './rendering';
 import { stubbedResources } from './fake-resource';
 
 const initialState = {
   // context: {},
   // renderingLayout: [],
-  renderingState: {},
+  [STATE_RENDERING_STATE_KEY]: {},
   [STATE_PAGE_RESOURCES_KEY]: {},
   [STATE_PAGE_CONTEXT_KEY]: {},
 };
@@ -91,7 +93,7 @@ export const getAttribute = createAsyncThunk(
 // };
 
 export const RenderingSlice = createSlice({
-  name: 'rendering',
+  name: RENDERING_SLICE_KEY,
   initialState: initialState as RenderingState,
   reducers: {
     reset() {
@@ -135,6 +137,9 @@ export const RenderingSlice = createSlice({
     },
     setInRenderingStateSelf(state, action) {
       return setInRenderingState(state, action.payload.path, action.payload.value, STATE_RS_SELF_KEY);
+    },
+    setInLocalState(state, action: { payload: { localContextPath: string; parameterKey: string; value: RESOURCE_STATE } }) {
+      return setInLocalContextState(state, action.payload.localContextPath, action.payload.parameterKey, action.payload.value);
     },
     // setInRenderingStateLocalContext(state, action) {
     //   return setInRenderingState(state, action.payload.path, action.payload.value, STATE_RS_LOCAL_CONTEXT_KEY);
@@ -329,6 +334,33 @@ const putInRenderingStateSelf = (state, path, value: any) => {
 //   return setInRenderingState(state, path, value, STATE_RS_LOCAL_CONTEXT_KEY);
 // };
 
+export const setInLocalContextState = (state, localContextPath, parameterKey: string, value: RESOURCE_STATE) => {
+  console.log('setInLocalContextState', parameterKey);
+  return {
+    ...state,
+    [STATE_RENDERING_STATE_KEY]: {
+      ...state[STATE_RENDERING_STATE_KEY],
+      ...{
+        [localContextPath]: {
+          ...state[STATE_RENDERING_STATE_KEY][localContextPath],
+          ...{
+            [STATE_RS_PARAMETERS_KEY]: {
+              ...(state[STATE_RENDERING_STATE_KEY][localContextPath]
+                ? {
+                    ...state[STATE_RENDERING_STATE_KEY][localContextPath][STATE_RS_PARAMETERS_KEY],
+                    ...{ [parameterKey]: value },
+                  }
+                : {
+                    ...{ [parameterKey]: value },
+                  }),
+            },
+          },
+        },
+      },
+    },
+  };
+};
+
 export const setInRenderingState = (state, path, value: any, key: string) => {
   return {
     ...state,
@@ -370,6 +402,7 @@ export const {
   setRenderingCurrentPageId,
   setInRenderingStateParameters,
   setInRenderingStateOutputs,
+  setInLocalState,
   setInRenderingStateSelf,
   // setInRenderingStateLocalContext,
   setActivePage,

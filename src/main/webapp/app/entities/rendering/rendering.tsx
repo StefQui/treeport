@@ -5,10 +5,18 @@ import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { getAttribute, setAction, setInRenderingStateOutputs } from './rendering.reducer';
+import { getAttribute, setAction, setInLocalState, setInRenderingStateOutputs } from './rendering.reducer';
 import SiteList from '../site/site-list';
 import { AttValue } from '../attribute-value/attribute-value';
-import { calculateLocalContextPath, SmRefToResource, useRefToLocalContext, ZZZResourceContent } from './resource-content';
+import {
+  calculateLocalContextPath,
+  SmRefToResource,
+  useConstantValue,
+  useRefToLocalContext,
+  useRefToLocalContextValue,
+  useRefToPageContextValue,
+  ZZZResourceContent,
+} from './resource-content';
 import { buildAttributeIdFormExploded, SmAttributeField, SmForm } from './render-form';
 import { SmLayoutElement, SmMenu, SmPage, usePageContext } from './layout';
 
@@ -73,7 +81,6 @@ export const applyPath = (path, pathToApply) => {
 
 export const PATH_KEY = 'path';
 export const OUTPUT_KEY = 'output';
-export const TEXT_VALUE_KEY = 'textValue';
 export const RESOURCE_ID_KEY = 'resourceId';
 export const ATT_CONFIG_KEY = 'attConfig';
 export const CAMPAIGN_ID_KEY = 'campaignId';
@@ -109,6 +116,11 @@ export const PARAMS_KEY = 'params';
 export const PARAMS_RESOURCE_ID_KEY = 'resourceId';
 
 export const PARAMS_SITE_LIST_SELECTED_SITE_KEY = 'selectedSiteKeyInLocalContext';
+
+export const PARAMS_INPUT_OUTPUT_KEY = 'outputParameterKey';
+export const PARAMS_INPUT_DEFAULT_VALUE_KEY = 'defaultValue';
+
+export const PARAMS_CONST_TEXT_VALUE_KEY = 'textValue';
 
 export const RESOURCE_CONTENT_PROPERTY = 'content';
 
@@ -156,12 +168,14 @@ export const DEFINITION = 'definition';
 export const RULE_TYPE = 'ruleType';
 export const DEFINITIONS = 'definitions';
 export const CONST_VALUE = 'constValue';
+export const RULE_SOURCE_SITE_ID_VALUE = 'sourceSiteId';
 
 export const LOCAL_CONTEXT = 'localContext';
 
-export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext';
+export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext' | 'refToSite';
 export type TransformTo = 'site';
 export type ConstantRuleDefinition = { [RULE_TYPE]: RuleType; [CONST_VALUE]: any };
+export type RefToSiteDefinition = { [RULE_TYPE]: RuleType; [RULE_SOURCE_SITE_ID_VALUE]: RuleDefinition };
 export type RefToContextRuleDefinition = {
   ruleType: RuleType;
   path: string;
@@ -171,14 +185,27 @@ export type RefToContextRuleDefinition = {
   siteIdSourceParameterKey?: string; // if transformTo is 'site'
   siteIdSourceParameterProperty?: string; // if transformTo is 'site'
 };
-export type RuleDefinition = RefToContextRuleDefinition | ConstantRuleDefinition;
+export type RuleDefinition = RefToContextRuleDefinition | ConstantRuleDefinition | RefToSiteDefinition;
 export type ParameterDefinition = { [PARAMETER_KEY]: string; [DEFINITION]?: RuleDefinition; [DEFINITIONS]?: RuleDefinition[] };
 export type ParameterDefinitions = { [PARAMETER_DEFINITIONS]: ParameterDefinition[] };
 export type LocalContext = { [LOCAL_CONTEXT]: ParameterDefinition[] };
 
 export type SiteListParams = { [PARAMS_SITE_LIST_SELECTED_SITE_KEY]: string };
+export type InputParams = { [PARAMS_INPUT_OUTPUT_KEY]: string; [PARAMS_INPUT_DEFAULT_VALUE_KEY]?: RuleDefinition };
+export type TextParams = { [PARAMS_CONST_TEXT_VALUE_KEY]: RuleDefinition };
 export type RefToResourceParams = { [PARAMS_RESOURCE_ID_KEY]: string; [PARAMETER_DEFINITIONS]: ParameterDefinition[] };
-export type Params = RefToResourceParams | SiteListParams;
+export type Params = RefToResourceParams | SiteListParams | TextParams | InputParams;
+
+export const emptyValue: RESOURCE_STATE = {
+  loading: false,
+};
+
+export const buildValue = (val: string): RESOURCE_STATE => {
+  return {
+    loading: false,
+    value: val,
+  };
+};
 // export const SmTextRefToPath = props => {
 //   const builtPath = buildPath(props);
 //   const refToPath = props.params[TEXT_VALUE_KEY][REF_TO_PATH_KEY];
@@ -213,7 +240,7 @@ export const getValueForPathInObject = (obj, path?) => {
   }
 };
 
-export const SmText = props => {
+export const SmText = (props: { params: TextParams; depth: string; currentPath: string; path: string; localContextPath: string }) => {
   // console.log('SmText', props);
   if (!props.params) {
     return (
@@ -223,11 +250,11 @@ export const SmText = props => {
     );
   }
 
-  const textValue = props.params[TEXT_VALUE_KEY];
+  const textValue = props.params[PARAMS_CONST_TEXT_VALUE_KEY];
   if (!textValue) {
     return (
       <span>
-        <i>{TEXT_VALUE_KEY} param is mandatory in SmText</i>
+        <i>{PARAMS_CONST_TEXT_VALUE_KEY} param is mandatory in SmText</i>
       </span>
     );
   }
@@ -236,7 +263,11 @@ export const SmText = props => {
   console.log('SmText', textValue, calculatedValue);
 
   if (calculatedValue) {
-    return <span>{calculatedValue}</span>;
+    if (calculatedValue.loading) {
+      return <span>Loading...</span>;
+    } else if (calculatedValue.error) {
+      return <span>Error: {calculatedValue.error}</span>;
+    } else if (calculatedValue.value) return <span>{calculatedValue.value}</span>;
   }
   return (
     <span>
@@ -273,7 +304,39 @@ export const SmText = props => {
 //   return null;
 // };
 
-export const useCalculatedValueState = (props, elem) => {
+export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): RESOURCE_STATE => {
+  const ruleType = ruleDefinition[RULE_TYPE];
+  if (ruleType === 'refToLocalContext') {
+    const refToContextRuleDefinition: RefToContextRuleDefinition = ruleDefinition as RefToContextRuleDefinition;
+    return useRefToLocalContextValue(
+      props.localContextPath,
+      refToContextRuleDefinition.path,
+      refToContextRuleDefinition.sourceParameterKey,
+      refToContextRuleDefinition.sourceParameterProperty,
+    );
+  } else if (ruleType === 'refToPageContext') {
+    return useRefToPageContextValue(props, ruleDefinition as RefToContextRuleDefinition);
+    // } else if (ruleType === 'refToSite') {
+    //   const refToSiteDefinition: RefToSiteDefinition = ruleDefinition as RefToSiteDefinition;
+    //   const siteIdRef = refToSiteDefinition[RULE_SOURCE_SITE_ID_VALUE];
+    //   if (!siteIdRef) {
+    //     return {
+    //       loading: false,
+    //       error: `${RULE_SOURCE_SITE_ID_VALUE} must be defined for refToSite ruleDefinition`,
+    //     };
+    //   }
+    //   const siteId = useCalculatedValueState(props, siteIdRef);
+    //   return useRefToLocalContextValue(props, refToContextRuleDefinition.path, refToContextRuleDefinition.sourceParameterKey);
+  } else if (ruleType === 'constant') {
+    return useConstantValue(props, ruleDefinition as ConstantRuleDefinition);
+  } else {
+    return {
+      loading: false,
+      error: 'Not implemented yet2',
+    };
+  }
+};
+export const useCalculatedValueStateOld = (props, elem) => {
   if (!elem) {
     return null;
   }
@@ -298,7 +361,7 @@ export const useCalculatedValueState = (props, elem) => {
     return useAppSelector(state => getValueForPathInObject(state.rendering.context, refToContext.property));
   } else if (elem[REF_TO_LC_KEY]) {
     const refToLocalContext = elem[REF_TO_LC_KEY];
-    const paramaterKey = refToLocalContext[REF_TO_LC_PARAMETER_KEY_KEY];
+    const ParameterKey = refToLocalContext[REF_TO_LC_PARAMETER_KEY_KEY];
     const property = refToLocalContext[REF_TO_LC_PROPERTY_KEY];
 
     // console.log('REF_TO_LC_KEY ========> TO INVESTIGATE HERE on rpage1');
@@ -313,7 +376,7 @@ export const useCalculatedValueState = (props, elem) => {
       if (!localContext) {
         return null;
       }
-      const value: RESOURCE_STATE = localContext[paramaterKey];
+      const value: RESOURCE_STATE = localContext[ParameterKey];
       if (value && value.value) {
         return getValueForPathInObject(value.value, property);
       }
@@ -360,40 +423,72 @@ export function useRenderingContextState(property) {
 //   );
 // }
 
-export const SmInput = props => {
-  const [value, setValue] = useState(props.params.defaultValue.const);
+export const SmInput = (props: { params: InputParams; depth: string; currentPath: string; path: string; localContextPath: string }) => {
+  // const defaultValue: RESOURCE_STATE = props.params[PARAMS_INPUT_DEFAULT_VALUE_KEY]
+  //   ? { loading: false, value: props.params[PARAMS_INPUT_DEFAULT_VALUE_KEY] }
+  //   : { loading: false };
+
+  const outputKey = props.params[PARAMS_INPUT_OUTPUT_KEY];
+  if (!outputKey) {
+    return (
+      <span>
+        <i>{PARAMS_INPUT_OUTPUT_KEY} param is mandatory in SmInput</i>
+      </span>
+    );
+  }
+
+  const defaultValueKey: RuleDefinition = props.params[PARAMS_INPUT_DEFAULT_VALUE_KEY];
+  const defaultValue: RESOURCE_STATE = defaultValueKey ? useCalculatedValueState(props, defaultValueKey) : { loading: false };
+  const [value, setValue] = useState(defaultValue);
   const dispatch = useAppDispatch();
   const builtPath = buildPath(props);
 
+  // const defaultValue: RuleDefinition = props.params[PARAMS_INPUT_DEFAULT_VALUE_KEY];
+
   useEffect(() => {
-    if (props.params.defaultValue.const) {
+    if (defaultValue) {
       dispatch(
-        setInRenderingStateOutputs({
-          path: builtPath,
-          value: {
-            [OUTPUT_KEY]: props.params.defaultValue.const,
-          },
+        setInLocalState({
+          localContextPath: props.localContextPath,
+          parameterKey: props.params[PARAMS_INPUT_OUTPUT_KEY],
+          value: defaultValue,
         }),
       );
+
+      // dispatch(
+      //   setInRenderingStateOutputs({
+      //     path: builtPath,
+      //     value: {
+      //       [OUTPUT_KEY]: props.params.defaultValue.const,
+      //     },
+      //   }),
+      // );
     }
   }, []);
 
   const handleChange = event => {
     setValue(event.target.value);
     dispatch(
-      setInRenderingStateOutputs({
-        path: builtPath,
-        value: {
-          [OUTPUT_KEY]: event.target.value,
-        },
+      setInLocalState({
+        localContextPath: props.localContextPath,
+        parameterKey: props.params[PARAMS_INPUT_OUTPUT_KEY],
+        value: { value: event.target.value, loading: false },
       }),
     );
+    // dispatch(
+    //     setInRenderingStateOutputs({
+    //       path: builtPath,
+    //       value: {
+    //         [OUTPUT_KEY]: event.target.value,
+    //       },
+    //     }),
+    //   );
     dispatch(setAction({ source: builtPath, actionType: 'textChanged', value: event.target.value }));
   };
 
   return (
     <div>
-      <input value={value} onChange={handleChange}></input>
+      <input value={value ? value.value : null} onChange={handleChange}></input>
     </div>
   );
 };
@@ -743,37 +838,35 @@ export const MyWrapper = ({ children, ...props }) => {
     cn += ' border-2';
   }
 
-  const lc = useRefToLocalContext(props, calculateLocalContextPath(props));
+  const lc = useRefToLocalContext(props.localContextPath, calculateLocalContextPath(props));
 
-  const displayPath = true;
+  const displayPath = false;
   if (displayPath) {
-    if (displayPath) {
-      <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>;
+    <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>;
 
-      return (
-        <Col md={props.col ?? 12} className={cn}>
-          <Col md="12">
-            <i className="wrapper-text">
-              (path={buildPath(props)})({props.componentType}, depth:{props.depth}, local={props.localContextPath})
-            </i>
-          </Col>{' '}
-          <Col md="12">
-            {/* {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT
-        ? (<pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>) : ""} */}
-            {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT ? (
-              <pre>{JSON.stringify(lc ? lc : {}, null, 2)}</pre>
-            ) : (
-              ''
-            )}
-          </Col>
-          {children}
-        </Col>
-      );
-    }
     return (
       <Col md={props.col ?? 12} className={cn}>
+        <Col md="12">
+          <i className="wrapper-text">
+            (path={buildPath(props)})({props.componentType}, depth:{props.depth}, local={props.localContextPath})
+          </i>
+        </Col>{' '}
+        <Col md="12">
+          {/* {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT
+        ? (<pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>) : ""} */}
+          {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT ? (
+            <pre>{JSON.stringify(lc ? lc : {}, null, 2)}</pre>
+          ) : (
+            ''
+          )}
+        </Col>
         {children}
       </Col>
     );
   }
+  return (
+    <Col md={props.col ?? 12} className={cn}>
+      {children}
+    </Col>
+  );
 };

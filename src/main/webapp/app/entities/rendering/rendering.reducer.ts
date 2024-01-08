@@ -55,9 +55,9 @@ export const getResourceForPageResources = createAsyncThunk(`rendering/fetch_res
   return axios.get<IResource[]>(requestUrl);
 });
 
-export const getSiteForRenderingStateParamaters = createAsyncThunk(
+export const getSiteForRenderingStateParameters = createAsyncThunk(
   `rendering/fetch_site`,
-  async ({ siteId }: { siteId: string; destinationSiteKey: string; path: string }) => {
+  async ({ siteId }: { siteId: string; destinationKey: string; localContextPath: string; inPageContext?: boolean }) => {
     const requestUrl = `${siteApiUrl}/${siteId}`;
     return axios.get<ISite[]>(requestUrl);
   },
@@ -247,37 +247,42 @@ export const RenderingSlice = createSlice({
           },
         });
       })
-      .addMatcher(isFulfilled(getSiteForRenderingStateParamaters), (state, action) => {
-        console.log('mmmmm', {
-          [action.meta.arg.destinationSiteKey]: {
-            loading: false,
+      .addMatcher(isFulfilled(getSiteForRenderingStateParameters), (state, action) => {
+        if (action.meta.arg.localContextPath) {
+          return setInLocalContextState(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, {
             value: action.payload.data,
-            usedId: action.meta.arg.siteId,
-          },
-        });
-        return putInRenderingStateParameters(state, action.meta.arg.path, {
-          [action.meta.arg.destinationSiteKey]: {
             loading: false,
+          });
+        } else if (action.meta.arg.inPageContext) {
+          return setInPageContextState(state, action.meta.arg.destinationKey, {
             value: action.payload.data,
-            usedId: action.meta.arg.siteId,
-          },
-        });
+            loading: false,
+          });
+        }
       })
-      .addMatcher(isPending(getSiteForRenderingStateParamaters), (state, action) => {
-        return putInRenderingStateParameters(state, action.meta.arg.path, {
-          [action.meta.arg.destinationSiteKey]: {
+      .addMatcher(isPending(getSiteForRenderingStateParameters), (state, action) => {
+        if (action.meta.arg.localContextPath) {
+          return setInLocalContextState(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, {
             loading: true,
-            usedId: action.meta.arg.siteId,
-          },
-        });
+          });
+        } else if (action.meta.arg.inPageContext) {
+          return setInPageContextState(state, action.meta.arg.destinationKey, {
+            loading: true,
+          });
+        }
       })
-      .addMatcher(isRejected(getSiteForRenderingStateParamaters), (state, action) => {
-        return putInRenderingStateParameters(state, action.meta.arg.path, {
-          [action.meta.arg.destinationSiteKey]: {
+      .addMatcher(isRejected(getSiteForRenderingStateParameters), (state, action) => {
+        if (action.meta.arg.localContextPath) {
+          return setInLocalContextState(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, {
             loading: false,
-            error: 'cannot load site...',
-          },
-        });
+            error: 'Cannot load site...',
+          });
+        } else if (action.meta.arg.inPageContext) {
+          return setInPageContextState(state, action.meta.arg.destinationKey, {
+            loading: false,
+            error: 'Cannot load site...',
+          });
+        }
       })
       .addMatcher(isFulfilled(getFieldAttributesAndConfig), (state, action) => {
         return putInRenderingStateOutputs(state, action.meta.arg.path, { [FIELDS_ATTRIBUTES_KEY]: action.payload.data });
@@ -335,7 +340,7 @@ const putInRenderingStateSelf = (state, path, value: any) => {
 // };
 
 export const setInLocalContextState = (state, localContextPath, parameterKey: string, value: RESOURCE_STATE) => {
-  console.log('setInLocalContextState', parameterKey);
+  // console.log('setInLocalContextState', parameterKey);
   return {
     ...state,
     [STATE_RENDERING_STATE_KEY]: {
@@ -356,6 +361,19 @@ export const setInLocalContextState = (state, localContextPath, parameterKey: st
             },
           },
         },
+      },
+    },
+  };
+};
+
+export const setInPageContextState = (state, parameterKey: string, value: RESOURCE_STATE) => {
+  // console.log('setInLocalContextState', parameterKey);
+  return {
+    ...state,
+    [STATE_PAGE_CONTEXT_KEY]: {
+      ...state[STATE_PAGE_CONTEXT_KEY],
+      ...{
+        [parameterKey]: value,
       },
     },
   };

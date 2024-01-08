@@ -3,38 +3,51 @@ const r3 = {
     componentType: 'verticalPanel',
     path: 'vp-r3',
     items: [
-      {
-        componentType: 'SmText',
-        path: 'test-in-r3',
-        params: {
-          textValue: {
-            const: {
-              constValue: 'ABC123mmm',
-            },
-          },
-        },
-      },
+      // {
+      //   componentType: 'SmText',
+      //   path: 'test-in-r3',
+      //   params: {
+      //     textValue: {
+      //       const: {
+      //         constValue: 'ABC123mmm',
+      //       },
+      //     },
+      //   },
+      // },
       {
         componentType: 'SmText',
         path: 'ref-to-selected-entity-name',
         params: {
           textValue: {
             refToPath: {
-              path: '../vsmsiteList',
-              property: 'selected.entity.name',
+              path: '/layout-content',
+              sourceParameterKey: 'sid99',
             },
           },
         },
       },
-      // {
-      //   componentType: 'SmInput',
-      //   path: 'vsm3',
-      //   params: {
-      //     defaultValue: {
-      //       const: 'DEFEDF',
-      //     },
-      //   },
-      // },
+      {
+        componentType: 'SmText',
+        path: 'ref-to-constant',
+        params: {
+          textValue: {
+            ruleType: 'refToLocalContext',
+            path: '/layout-content',
+            sourceParameterKey: 'sid99',
+          },
+        },
+      },
+      {
+        componentType: 'SmInput',
+        path: 'vsm3',
+        params: {
+          outputParameterKey: 'theoutput',
+          defaultValue: {
+            ruleType: 'constant',
+            constValue: 'aaa1',
+          },
+        },
+      },
       // {
       //   componentType: 'verticalPanel',
       //   path: 'vpc',
@@ -100,7 +113,60 @@ const r3 = {
                 sourceParameterKey: 'sid99',
               },
             },
+            {
+              parameterKey: 'theoutputFromInput',
+              definition: {
+                ruleType: 'refToLocalContext',
+                path: '/layout-content',
+                sourceParameterKey: 'theoutput',
+              },
+            },
+            {
+              parameterKey: 'thesite',
+              definition: {
+                ruleType: 'refToSite',
+                sourceSiteId: {
+                  ruleType: 'refToLocalContext',
+                  path: '/layout-content',
+                  sourceParameterKey: 'theoutput',
+                },
+              },
+            },
           ],
+          // parameterDefinitions: {
+          //   toto: {
+          //     refToPath: {
+          //       path: '/vp/vsm3',
+          //       property: 'output',
+          //     },
+          //   },
+          //   titi: {
+          //     const: {
+          //       constValue: 'ABC123ZZZtiti',
+          //     },
+          //   },
+          //   tata: {
+          //     const: {
+          //       constValue: 'ABC123ZZZtata',
+          //     },
+          //   },
+          //   selectedResource: {
+          //     refToPath: {
+          //       path: '/pag-1/vp-layout/layout-content/vp-r3/vsmsiteList',
+          //       parameterKey: 'selected',
+          //       property: 'entity.name',
+          //     },
+          //   },
+          // },
+        },
+      },
+      {
+        componentType: 'SmRefToResource',
+        path: 'ref-to-fform',
+        col: 4,
+        params: {
+          resourceId: 'rform',
+          parameterDefinitions: [],
           // parameterDefinitions: {
           //   toto: {
           //     refToPath: {
@@ -257,29 +323,53 @@ const r5 = {
       //     },
       //   },
       // },
+      // {
+      //   componentType: 'SmText',
+      //   path: 'ref-to-local-siteName',
+      //   params: {
+      //     textValue: {
+      //       refToLocalContext: {
+      //         parameterKey: 'site1',
+      //         property: 'name',
+      //       },
+      //     },
+      //   },
+      // },
       {
         componentType: 'SmText',
-        path: 'ref-to-local-siteName',
+        path: 'ref-to-theoutputFromInput',
         params: {
           textValue: {
-            refToLocalContext: {
-              parameterKey: 'site1',
-              property: 'name',
-            },
+            ruleType: 'refToLocalContext',
+            path: '/layout-content/ref-to-r5',
+            sourceParameterKey: 'theoutputFromInput',
           },
         },
       },
       {
         componentType: 'SmText',
-        path: 'ref-to-tata',
+        path: 'ref-to-thesite',
         params: {
           textValue: {
-            refToLocalContext: {
-              parameterKey: 'tata',
-            },
+            ruleType: 'refToLocalContext',
+            path: '..',
+            sourceParameterKey: 'thesite',
+            sourceParameterProperty: 'parent.id',
           },
         },
       },
+
+      // {
+      //   componentType: 'SmText',
+      //   path: 'ref-to-tata',
+      //   params: {
+      //     textValue: {
+      //       refToLocalContext: {
+      //         parameterKey: 'theoutputFromInput',
+      //       },
+      //     },
+      //   },
+      // },
       // {
       //   componentType: 'SmSiteRef',
       //   path: 'vsm8800',
@@ -395,6 +485,125 @@ const r5 = {
       },
     },
   ],
+};
+
+const rform = {
+  content: {
+    componentType: 'verticalPanel',
+    path: 'vp12',
+    border: true,
+    items: [
+      {
+        componentType: 'SmText',
+        path: 'resName',
+        params: {
+          textValue: {
+            refToPath: {
+              path: '../..',
+              property: 'selectedResource.entity.name',
+            },
+          },
+        },
+      },
+      {
+        componentType: 'Form',
+        path: 'vsmform',
+        attributeContext: {
+          resourceId: {
+            refToLocalContext: {
+              property: 'selectedResource.entity.id',
+            },
+          },
+          campaignId: {
+            const: {
+              constValue: '2023',
+            },
+          },
+        },
+        fields: [
+          {
+            fieldType: 'Field',
+            fieldId: 'theToSite',
+            attributeConfigId: 'toSite',
+            campaignId: {
+              useCurrent: true,
+            },
+          },
+          {
+            fieldType: 'Field',
+            fieldId: 'theToConso',
+            attributeConfigId: 'toConso',
+            campaignId: {
+              useCurrent: true,
+            },
+          },
+          {
+            fieldType: 'Field',
+            fieldId: 'theToCert',
+            attributeConfigId: 'isCert',
+            campaignId: {
+              useCurrent: true,
+            },
+          },
+        ],
+        formContent: {
+          componentType: 'verticalPanel',
+          path: 'vp88',
+          items: [
+            {
+              componentType: 'SmText',
+              path: 'resName',
+              params: {
+                textValue: {
+                  refToLocalContext: {
+                    property: 'selectedResource.entity.name',
+                  },
+                },
+              },
+            },
+            {
+              componentType: 'AttributeField',
+              path: 'vsmatt',
+              fieldId: 'theToSite',
+            },
+            {
+              componentType: 'AttributeField',
+              path: 'vsmattbool',
+              fieldId: 'theToCert',
+            },
+            {
+              componentType: 'AttributeField',
+              path: 'vsmattconso',
+              fieldId: 'theToConso',
+            },
+          ],
+        },
+      },
+      {
+        componentType: 'SmAttRef',
+        path: 'attRefToConso',
+        col: 6,
+        params: {
+          resourceId: {
+            refToPath: {
+              path: '../..',
+              property: 'selectedResource.entity.id',
+            },
+          },
+          campaignId: {
+            const: {
+              constValue: '2023',
+            },
+          },
+          attConfig: {
+            const: {
+              constValue: 'toConso',
+            },
+          },
+        },
+      },
+    ],
+  },
 };
 
 const rmenuTop = {

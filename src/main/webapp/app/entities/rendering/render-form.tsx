@@ -6,6 +6,7 @@ import { FieldValues, useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Input } from 'reactstrap';
 import { DoubleValue } from '../attribute-value/attribute-value';
+import { existsAndHasAValue } from './render-resource-page';
 import {
   ATT_CONFIG_KEY,
   buildPath,
@@ -14,12 +15,16 @@ import {
   ENTITY_IDS_KEY,
   ENTITY_KEY,
   FIELDS_ATTRIBUTES_KEY,
+  increment,
   MyElem,
   PATH_SEPARATOR,
   RESOURCE_ID_KEY,
+  RESOURCE_STATE,
   ROOT_PATH_SEPARATOR,
+  STATE_RS_SELF_KEY,
   UPDATED_ATTRIBUTE_IDS_KEY,
   useCalculatedValueState,
+  useCalculatedValueStateIfNotNull,
   useRenderingState,
 } from './rendering';
 import { getFieldAttributesAndConfig, saveAttributes, setAction, setRenderingContext } from './rendering.reducer';
@@ -101,27 +106,36 @@ export const SmForm = props => {
     return <span>missing resourceId or campaignId</span>;
   }
 
-  const resourceIdVal = useCalculatedValueState(props, resourceId);
-  const campaignIdVal = useCalculatedValueState(props, campaignId);
+  // const resourceId1 = useCalculatedValueState(props, resourceId);
 
-  const [attributeIdsMap, setAttributeIdsMap] = useState({});
+  const resourceIdValue = useCalculatedValueStateIfNotNull(props, resourceId);
+  const campaignIdValue = useCalculatedValueStateIfNotNull(props, campaignId);
+
+  const [previousResourceIdValue, setPreviousResourceIdValue] = useState();
+  const [previousCampaignIdValue, setPreviousCampaignIdValue] = useState();
+
+  // // const [attributeIdsMap, setAttributeIdsMap] = useState({});
+
+  // console.log('the form...', resourceId, campaignId);
 
   useEffect(() => {
-    if (resourceIdVal && campaignIdVal) {
+    console.log('useEffect...', resourceIdValue, campaignIdValue);
+    if (resourceIdValue !== previousResourceIdValue || campaignIdValue !== previousCampaignIdValue) {
+      // if (false) {
       const newMap = fields
         .filter(field => field.fieldType === 'Field')
         .reduce((acc, field) => {
-          acc[field.fieldId] = buildAttributeIdFormExploded(resourceIdVal, field.attributeConfigId, campaignIdVal);
+          acc[field.fieldId] = buildAttributeIdFormExploded(resourceIdValue, field.attributeConfigId, campaignIdValue);
           return acc;
         }, {});
-      // console.log('newMap', newMap);
-      if (attributeIdsMap) {
+      console.log('newMap', newMap);
+      if (newMap) {
         // eslint-disable-next-line guard-for-in
-        for (const k in attributeIdsMap) {
-          unregister(attributeIdsMap[k]);
+        for (const k in newMap) {
+          unregister(newMap[k]);
         }
       }
-      setAttributeIdsMap(newMap);
+      // setAttributeIdsMap(newMap);
       dispatch(
         getFieldAttributesAndConfig({
           attributeIdsMap: newMap,
@@ -129,15 +143,20 @@ export const SmForm = props => {
           path: buildPath(props),
         }),
       );
+
+      setPreviousResourceIdValue(resourceIdValue);
+      setPreviousCampaignIdValue(campaignIdValue);
     }
-  }, [resourceIdVal, campaignIdVal]);
+  }, [resourceIdValue, campaignIdValue]);
 
   const fieldAttributes: { [key: string]: IAttributeWithValue } = useAppSelector(state => {
     const formFieldsMap = state.rendering.renderingState[buildPath(props)];
-    if (formFieldsMap == null) {
+
+    if (!formFieldsMap || !formFieldsMap[STATE_RS_SELF_KEY]) {
       return null;
     }
-    return formFieldsMap[FIELDS_ATTRIBUTES_KEY];
+    console.log('formFieldsMap', formFieldsMap[STATE_RS_SELF_KEY][FIELDS_ATTRIBUTES_KEY]);
+    return formFieldsMap[STATE_RS_SELF_KEY][FIELDS_ATTRIBUTES_KEY];
   });
 
   useEffect(() => {
@@ -149,6 +168,7 @@ export const SmForm = props => {
         const att = fieldAttributes[key];
         values[key] = att ? getValueFromAttribute(att) : null;
       });
+      console.log('reseting', values);
       reset(values);
     }
   }, [fieldAttributes]);
@@ -158,6 +178,7 @@ export const SmForm = props => {
     <form onSubmit={handleSubmit(onSubmit)}>
       <MyElem
         input={{ ...formContent }}
+        depth={increment(props.depth)}
         form={{ register, unregister, formPath: buildPath(props) }}
         currentPath={props.currentPath + PATH_SEPARATOR + props.path}
         localContextPath={props.localContextPath}
@@ -194,68 +215,26 @@ export const extractAttributeId = (props, params) => {
     useCalculatedValueState(props, campaignId),
     useCalculatedValueState(props, attConfig),
   ];
-
-  // const resourceIdVal = useCalculatedValueState(props, resourceId);
-  // const campaignIdVal = useCalculatedValueState(props, campaignId);
-  // const attConfigVal = useCalculatedValueState(props, attConfig);
 };
 
 export const SmAttributeField = props => {
   const form = props.form;
-
-  // console.log('props.form.formPath', props.form.formPath);
+  console.log('SmAttributeField', props);
 
   if (!form) {
     return <span>form is mandatory in AttributeField</span>;
   }
 
-  // if (!props.params) {
-  //   return (
-  //     <span>
-  //       <i>params is mandatory in SmAttributeField</i>
-  //     </span>
-  //   );
-  // }
-
   const attribute = useAppSelector(state => {
     const formFieldsMap = state.rendering.renderingState[props.form.formPath];
-    if (formFieldsMap == null) {
+    if (!formFieldsMap || !formFieldsMap[STATE_RS_SELF_KEY]) {
       return null;
     }
-    // console.log('useAppSelector', formFieldsMap[FIELDS_ATTRIBUTES_KEY] ? formFieldsMap[FIELDS_ATTRIBUTES_KEY][props.fieldId] : null);
-    return formFieldsMap[FIELDS_ATTRIBUTES_KEY] ? formFieldsMap[FIELDS_ATTRIBUTES_KEY][props.fieldId] : null;
+    return formFieldsMap[STATE_RS_SELF_KEY][FIELDS_ATTRIBUTES_KEY]
+      ? formFieldsMap[STATE_RS_SELF_KEY][FIELDS_ATTRIBUTES_KEY][props.fieldId]
+      : null;
   });
 
-  // const resourceId = props.params[RESOURCE_ID_KEY];
-  // const campaignId = props.params[CAMPAIGN_ID_KEY];
-  // const attConfig = props.params[ATT_CONFIG_KEY];
-
-  // if (!resourceId || !campaignId || !attConfig) {
-  //   return displayWarning(resourceId, campaignId, attConfig);
-  // }
-
-  // const resourceIdVal = useCalculatedValueState(props, resourceId);
-  // const campaignIdVal = useCalculatedValueState(props, campaignId);
-  // const attConfigVal = useCalculatedValueState(props, attConfig);
-
-  // const [attributeId, setAttributeId] = useState('');
-  useEffect(() => {
-    // console.log('SmAttributeField has changed', resourceIdVal, attConfigVal, campaignIdVal);
-    if (attribute) {
-      // if (attributeId) {
-      //   props.form.unregister(attributeId);
-      //   props.form.doWatch('-------unregister:   ' + attributeId);
-      // }
-      // console.log('-----', attribute);
-      // setAttributeId(buildAttributeIdFormExploded(resourceIdVal, attConfigVal, campaignIdVal));
-      // props.form.doWatch('--------register:   ' + buildAttributeIdFormExploded(resourceIdVal, attConfigVal, campaignIdVal));
-    }
-    // console.log('SmAttributeField has changed===', props);
-  }, [attribute]);
-
-  // useEffect(() => {
-  //   props.form.doWatch('mmm');
-  // }, []);
   if (!attribute) {
     return <span>Missing attribute</span>;
   }

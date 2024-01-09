@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Row } from 'reactstrap';
 import { usePageContext } from './layout';
-import { doesntExist, existsAndIsOk, usePageResourceContentFromResourceId, useResourceWithKey } from './render-resource-page';
+import { doesntExist, usePageResourceContentFromResourceId, useResourceWithKey } from './render-resource-page';
 import {
   applyPath,
   buildPath,
@@ -153,93 +153,93 @@ export const useResourceToFetch = (resourceParameters, pageContext, builtPath) =
   return resourcesToFetch;
 };
 
-export const useParamsIdsToFetch = (resourceParameters: PARAMETERS_TYPE, builtPath) => {
-  const pageContext: RENDERING_CONTEXT = usePageContext();
-  const nullableLocalContext: RENDERING_CONTEXT = useResourceParametersFromState(builtPath);
+// export const useParamsIdsToFetch = (resourceParameters: PARAMETERS_TYPE, builtPath) => {
+//   const pageContext: RENDERING_CONTEXT = usePageContext();
+//   const nullableLocalContext: RENDERING_CONTEXT = useResourceParametersFromState(builtPath);
 
-  const [paramIdsToFetch, setParamIdsToFetch] = useState([]);
+//   const [paramIdsToFetch, setParamIdsToFetch] = useState([]);
 
-  useEffect(() => {
-    // console.log('useParamsIdsToFetch1...', builtPath, resourceParameters, pageContext, localContext);
+//   useEffect(() => {
+//     // console.log('useParamsIdsToFetch1...', builtPath, resourceParameters, pageContext, localContext);
 
-    const localContext = nullableLocalContext ?? {};
+//     const localContext = nullableLocalContext ?? {};
 
-    if (resourceParameters && pageContext) {
-      const theParamIdsToFetch = [];
-      // console.log('useParamsIdsToFetch2', resourceParameters);
-      resourceParameters.forEach((parameter: PARAMETER) => {
-        if (parameter[RESOURCE_PARAMETER_TYPE_KEY] === 'site') {
-          const sources: PARAMETER_SOURCES_TYPE = parameter[RESOURCE_PARAMETER_SOURCES_KEY];
-          const parameterKey = parameter[RESOURCE_PARAMETER_KEY]; // site1
-          for (const source of sources) {
-            const paramSource = source[RESOURCE_PARAMETER_SOURCE_KEY]; // pageContext | localContext
-            const sourceParamKey = source[RESOURCE_PARAMETER_SOURCE_PARAMETER_KEY_KEY]; // sid
+//     if (resourceParameters && pageContext) {
+//       const theParamIdsToFetch = [];
+//       // console.log('useParamsIdsToFetch2', resourceParameters);
+//       resourceParameters.forEach((parameter: PARAMETER) => {
+//         if (parameter[RESOURCE_PARAMETER_TYPE_KEY] === 'site') {
+//           const sources: PARAMETER_SOURCES_TYPE = parameter[RESOURCE_PARAMETER_SOURCES_KEY];
+//           const parameterKey = parameter[RESOURCE_PARAMETER_KEY]; // site1
+//           for (const source of sources) {
+//             const paramSource = source[RESOURCE_PARAMETER_SOURCE_KEY]; // pageContext | localContext
+//             const sourceParamKey = source[RESOURCE_PARAMETER_SOURCE_PARAMETER_KEY_KEY]; // sid
 
-            // const resourceNotExistingOrExistsWithOtherId =
-            //   !localContext[parameterKey] || localContext[parameterKey].id !== localContext[sourceParamKey];
-            console.log('---------------------------------------');
+//             // const resourceNotExistingOrExistsWithOtherId =
+//             //   !localContext[parameterKey] || localContext[parameterKey].id !== localContext[sourceParamKey];
+//             console.log('---------------------------------------');
 
-            if (paramSource === 'localContext') {
-              const sourceParameterExistsInLocalContext = existsAndIsOk(localContext[sourceParamKey]);
-              const parameterDoesntExistOnLocalContext = doesntExist(localContext[parameterKey]);
-              const parameterExistOnLocalContextButWithAWrongId =
-                existsAndIsOk(localContext[parameterKey]) &&
-                existsAndIsOk(localContext[sourceParamKey]) &&
-                localContext[parameterKey].usedId !== localContext[sourceParamKey].value;
-              // console.log('localContext--------------');
-              if (
-                sourceParameterExistsInLocalContext &&
-                (parameterDoesntExistOnLocalContext || parameterExistOnLocalContextButWithAWrongId)
-              ) {
-                theParamIdsToFetch.push({
-                  targetParamId: parameterKey,
-                  siteIdTofetch: localContext[sourceParamKey].value,
-                });
-                break;
-              }
-            } else if (paramSource === 'pageContext') {
-              const sourceParameterExistsInPageContext = existsAndIsOk(pageContext[sourceParamKey]);
-              const parameterDoesntExistOnLocalContext = doesntExist(localContext[parameterKey]);
-              const parameterExistOnPageContextButWithAWrongId =
-                existsAndIsOk(localContext[parameterKey]) &&
-                existsAndIsOk(pageContext[sourceParamKey]) &&
-                localContext[parameterKey].usedId !== pageContext[sourceParamKey].value;
-              console.log(
-                'pageContext--------------',
-                localContext[parameterKey],
-                pageContext[sourceParamKey],
-                sourceParameterExistsInPageContext,
-                parameterDoesntExistOnLocalContext,
-                parameterExistOnPageContextButWithAWrongId,
-                sourceParameterExistsInPageContext && (parameterDoesntExistOnLocalContext || parameterExistOnPageContextButWithAWrongId),
-              );
+//             if (paramSource === 'localContext') {
+//               const sourceParameterExistsInLocalContext = existsAndIsOk(localContext[sourceParamKey]);
+//               const parameterDoesntExistOnLocalContext = doesntExist(localContext[parameterKey]);
+//               const parameterExistOnLocalContextButWithAWrongId =
+//                 existsAndIsOk(localContext[parameterKey]) &&
+//                 existsAndIsOk(localContext[sourceParamKey]) &&
+//                 localContext[parameterKey].usedId !== localContext[sourceParamKey].value;
+//               // console.log('localContext--------------');
+//               if (
+//                 sourceParameterExistsInLocalContext &&
+//                 (parameterDoesntExistOnLocalContext || parameterExistOnLocalContextButWithAWrongId)
+//               ) {
+//                 theParamIdsToFetch.push({
+//                   targetParamId: parameterKey,
+//                   siteIdTofetch: localContext[sourceParamKey].value,
+//                 });
+//                 break;
+//               }
+//             } else if (paramSource === 'pageContext') {
+//               const sourceParameterExistsInPageContext = existsAndIsOk(pageContext[sourceParamKey]);
+//               const parameterDoesntExistOnLocalContext = doesntExist(localContext[parameterKey]);
+//               const parameterExistOnPageContextButWithAWrongId =
+//                 existsAndIsOk(localContext[parameterKey]) &&
+//                 existsAndIsOk(pageContext[sourceParamKey]) &&
+//                 localContext[parameterKey].usedId !== pageContext[sourceParamKey].value;
+//               console.log(
+//                 'pageContext--------------',
+//                 localContext[parameterKey],
+//                 pageContext[sourceParamKey],
+//                 sourceParameterExistsInPageContext,
+//                 parameterDoesntExistOnLocalContext,
+//                 parameterExistOnPageContextButWithAWrongId,
+//                 sourceParameterExistsInPageContext && (parameterDoesntExistOnLocalContext || parameterExistOnPageContextButWithAWrongId),
+//               );
 
-              // const resourceNotExistingOrExistsWithOtherId =
-              // !localContext[parameterKey] || localContext[parameterKey].id !== pageContext[sourceParamKey];
-              if (
-                sourceParameterExistsInPageContext &&
-                (parameterDoesntExistOnLocalContext || parameterExistOnPageContextButWithAWrongId)
-              ) {
-                theParamIdsToFetch.push({
-                  targetParamId: parameterKey,
-                  siteIdTofetch: pageContext[sourceParamKey].value,
-                });
-                break;
-              }
-            }
-          }
-        }
-      });
-      // console.log('useParamsIdsToFetch3', theParamIdsToFetch);
+//               // const resourceNotExistingOrExistsWithOtherId =
+//               // !localContext[parameterKey] || localContext[parameterKey].id !== pageContext[sourceParamKey];
+//               if (
+//                 sourceParameterExistsInPageContext &&
+//                 (parameterDoesntExistOnLocalContext || parameterExistOnPageContextButWithAWrongId)
+//               ) {
+//                 theParamIdsToFetch.push({
+//                   targetParamId: parameterKey,
+//                   siteIdTofetch: pageContext[sourceParamKey].value,
+//                 });
+//                 break;
+//               }
+//             }
+//           }
+//         }
+//       });
+//       // console.log('useParamsIdsToFetch3', theParamIdsToFetch);
 
-      if (theParamIdsToFetch.length > 0) {
-        setParamIdsToFetch(theParamIdsToFetch);
-      }
-    }
-  }, [resourceParameters, pageContext, nullableLocalContext]);
+//       if (theParamIdsToFetch.length > 0) {
+//         setParamIdsToFetch(theParamIdsToFetch);
+//       }
+//     }
+//   }, [resourceParameters, pageContext, nullableLocalContext]);
 
-  return paramIdsToFetch;
-};
+//   return paramIdsToFetch;
+// };
 
 export const enrichLocalContext = builtPath => {
   const dispatch = useAppDispatch();

@@ -285,7 +285,8 @@ export const RenderingSlice = createSlice({
         }
       })
       .addMatcher(isFulfilled(getFieldAttributesAndConfig), (state, action) => {
-        return putInRenderingStateOutputs(state, action.meta.arg.path, { [FIELDS_ATTRIBUTES_KEY]: action.payload.data });
+        return putInRenderingStateSelf(state, action.meta.arg.path, { [FIELDS_ATTRIBUTES_KEY]: action.payload.data });
+        // return putInRenderingStateOutputs(state, action.meta.arg.path, { [FIELDS_ATTRIBUTES_KEY]: action.payload.data });
       })
       .addMatcher(isFulfilled(saveAttributes), (state, action) => {
         return putInRenderingStateOutputs(state, action.meta.arg.path, { [UPDATED_ATTRIBUTE_IDS_KEY]: action.payload.data });

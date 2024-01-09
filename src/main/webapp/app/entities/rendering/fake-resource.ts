@@ -85,115 +85,105 @@ const r3 = {
         },
       },
       {
-        componentType: 'SmRefToResource',
-        path: 'ref-to-r5',
+        componentType: 'verticalPanel',
+        path: 'vp12',
         col: 4,
-        params: {
-          resourceId: 'r5',
-          parameterDefinitions: [
-            {
-              parameterKey: 'const1',
-              definition: {
-                ruleType: 'constant',
-                constValue: 'aaa1',
-              },
-            },
-            {
-              parameterKey: 'site2',
-              definition: {
-                ruleType: 'refToPageContext',
-                sourceParameterKey: 'sid',
-              },
-            },
-            {
-              parameterKey: 'siteIdFromSiteList',
-              definition: {
-                ruleType: 'refToLocalContext',
-                path: '/layout-content',
-                sourceParameterKey: 'sid99',
-              },
-            },
-            {
-              parameterKey: 'theoutputFromInput',
-              definition: {
-                ruleType: 'refToLocalContext',
-                path: '/layout-content',
-                sourceParameterKey: 'theoutput',
-              },
-            },
-            {
-              parameterKey: 'thesite',
-              definition: {
-                ruleType: 'refToSite',
-                sourceSiteId: {
-                  ruleType: 'refToLocalContext',
-                  path: '/layout-content',
-                  sourceParameterKey: 'theoutput',
+        border: true,
+        items: [
+          // {
+          //   componentType: 'SmRefToResource',
+          //   path: 'ref-to-r5',
+          //   col: 12,
+          //   params: {
+          //     resourceId: 'r5',
+          //     parameterDefinitions: [
+          //       {
+          //         parameterKey: 'const1',
+          //         definition: {
+          //           ruleType: 'constant',
+          //           constValue: 'aaa1',
+          //         },
+          //       },
+          //       {
+          //         parameterKey: 'site2',
+          //         definition: {
+          //           ruleType: 'refToPageContext',
+          //           sourceParameterKey: 'sid',
+          //         },
+          //       },
+          //       {
+          //         parameterKey: 'siteIdFromSiteList',
+          //         definition: {
+          //           ruleType: 'refToLocalContext',
+          //           path: '/layout-content',
+          //           sourceParameterKey: 'sid99',
+          //         },
+          //       },
+          //       {
+          //         parameterKey: 'theoutputFromInput',
+          //         definition: {
+          //           ruleType: 'refToLocalContext',
+          //           path: '/layout-content',
+          //           sourceParameterKey: 'theoutput',
+          //         },
+          //       },
+          //       {
+          //         parameterKey: 'thesite',
+          //         definition: {
+          //           ruleType: 'refToSite',
+          //           sourceSiteId: {
+          //             ruleType: 'refToLocalContext',
+          //             path: '/layout-content',
+          //             sourceParameterKey: 'theoutput',
+          //           },
+          //         },
+          //       },
+          //       {
+          //         parameterKey: 'thesiteFromTheList',
+          //         definition: {
+          //           ruleType: 'refToSite',
+          //           sourceSiteId: {
+          //             ruleType: 'refToLocalContext',
+          //             path: '/layout-content',
+          //             sourceParameterKey: 'sid99',
+          //           },
+          //         },
+          //       },
+          //     ],
+          //   },
+          // },
+          {
+            componentType: 'SmRefToResource',
+            path: 'ref-to-fform',
+            col: 12,
+            params: {
+              resourceId: 'rform',
+              parameterDefinitions: [
+                {
+                  parameterKey: 'siteIdFromSiteList',
+                  definition: {
+                    ruleType: 'refToLocalContext',
+                    path: '/layout-content',
+                    sourceParameterKey: 'sid99',
+                  },
                 },
-              },
+                {
+                  parameterKey: 'thesiteFromTheList',
+                  definition: {
+                    ruleType: 'refToSite',
+                    sourceSiteId: {
+                      ruleType: 'refToLocalContext',
+                      path: '/layout-content',
+                      sourceParameterKey: 'sid99',
+                    },
+                  },
+                },
+              ],
             },
-          ],
-          // parameterDefinitions: {
-          //   toto: {
-          //     refToPath: {
-          //       path: '/vp/vsm3',
-          //       property: 'output',
-          //     },
-          //   },
-          //   titi: {
-          //     const: {
-          //       constValue: 'ABC123ZZZtiti',
-          //     },
-          //   },
-          //   tata: {
-          //     const: {
-          //       constValue: 'ABC123ZZZtata',
-          //     },
-          //   },
-          //   selectedResource: {
-          //     refToPath: {
-          //       path: '/pag-1/vp-layout/layout-content/vp-r3/vsmsiteList',
-          //       parameterKey: 'selected',
-          //       property: 'entity.name',
-          //     },
-          //   },
-          // },
-        },
+          },
+        ],
       },
-      {
-        componentType: 'SmRefToResource',
-        path: 'ref-to-fform',
-        col: 4,
-        params: {
-          resourceId: 'rform',
-          parameterDefinitions: [],
-          // parameterDefinitions: {
-          //   toto: {
-          //     refToPath: {
-          //       path: '/vp/vsm3',
-          //       property: 'output',
-          //     },
-          //   },
-          //   titi: {
-          //     const: {
-          //       constValue: 'ABC123ZZZtiti',
-          //     },
-          //   },
-          //   tata: {
-          //     const: {
-          //       constValue: 'ABC123ZZZtata',
-          //     },
-          //   },
-          //   selectedResource: {
-          //     refToPath: {
-          //       path: '/pag-1/vp-layout/layout-content/vp-r3/vsmsiteList',
-          //       parameterKey: 'selected',
-          //       property: 'entity.name',
-          //     },
-          //   },
-          // },
-        },
-      },
+
       // {
       //   componentType: 'SmRefToResource',
       //   path: 'vsm44form',
@@ -358,6 +348,29 @@ const r5 = {
           },
         },
       },
+      {
+        componentType: 'SmText',
+        path: 'ref-to-theoutputFromInput',
+        params: {
+          textValue: {
+            ruleType: 'refToLocalContext',
+            path: '/layout-content/ref-to-r5',
+            sourceParameterKey: 'siteIdFromSiteList',
+          },
+        },
+      },
+      {
+        componentType: 'SmText',
+        path: 'ref-to-thesite',
+        params: {
+          textValue: {
+            ruleType: 'refToLocalContext',
+            path: '..',
+            sourceParameterKey: 'thesiteFromTheList',
+            sourceParameterProperty: 'parent.id',
+          },
+        },
+      },
 
       // {
       //   componentType: 'SmText',
@@ -493,31 +506,31 @@ const rform = {
     path: 'vp12',
     border: true,
     items: [
-      {
-        componentType: 'SmText',
-        path: 'resName',
-        params: {
-          textValue: {
-            refToPath: {
-              path: '../..',
-              property: 'selectedResource.entity.name',
-            },
-          },
-        },
-      },
+      // {
+      //   componentType: 'SmText',
+      //   path: 'ref-to-thesite',
+      //   params: {
+      //     textValue: {
+      //       ruleType: 'refToLocalContext',
+      //       path: '..',
+      //       sourceParameterKey: 'thesiteFromTheList',
+      //       sourceParameterProperty: 'name',
+      //     },
+      //   },
+      // },
       {
         componentType: 'Form',
         path: 'vsmform',
         attributeContext: {
           resourceId: {
-            refToLocalContext: {
-              property: 'selectedResource.entity.id',
-            },
+            ruleType: 'refToLocalContext',
+            path: '..',
+            sourceParameterKey: 'thesiteFromTheList',
+            sourceParameterProperty: 'id',
           },
           campaignId: {
-            const: {
-              constValue: '2023',
-            },
+            ruleType: 'constant',
+            constValue: '2023',
           },
         },
         fields: [
@@ -579,29 +592,29 @@ const rform = {
           ],
         },
       },
-      {
-        componentType: 'SmAttRef',
-        path: 'attRefToConso',
-        col: 6,
-        params: {
-          resourceId: {
-            refToPath: {
-              path: '../..',
-              property: 'selectedResource.entity.id',
-            },
-          },
-          campaignId: {
-            const: {
-              constValue: '2023',
-            },
-          },
-          attConfig: {
-            const: {
-              constValue: 'toConso',
-            },
-          },
-        },
-      },
+      // {
+      //   componentType: 'SmAttRef',
+      //   path: 'attRefToConso',
+      //   col: 6,
+      //   params: {
+      //     resourceId: {
+      //       refToPath: {
+      //         path: '../..',
+      //         property: 'selectedResource.entity.id',
+      //       },
+      //     },
+      //     campaignId: {
+      //       const: {
+      //         constValue: '2023',
+      //       },
+      //     },
+      //     attConfig: {
+      //       const: {
+      //         constValue: 'toConso',
+      //       },
+      //     },
+      //   },
+      // },
     ],
   },
 };
@@ -707,4 +720,5 @@ export const stubbedResources = {
   rlayout,
   rpage1,
   rpage2,
+  rform,
 };

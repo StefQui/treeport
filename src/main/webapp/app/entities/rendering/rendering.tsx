@@ -260,7 +260,7 @@ export const SmText = (props: { params: TextParams; depth: string; currentPath: 
   }
 
   const calculatedValue = useCalculatedValueState(props, textValue);
-  console.log('SmText', textValue, calculatedValue);
+  // console.log('SmText', textValue, calculatedValue);
 
   if (calculatedValue) {
     if (calculatedValue.loading) {
@@ -304,6 +304,19 @@ export const SmText = (props: { params: TextParams; depth: string; currentPath: 
 //   return null;
 // };
 
+export const useCalculatedValueStateIfNotNull = (props, resourceId) => {
+  const [result, setResult] = useState();
+  const value = useCalculatedValueState(props, resourceId);
+  useEffect(() => {
+    const val = value && value.value ? value.value : null;
+    if (val !== result) {
+      console.log('useCalculatedValueStateIfNotNull', val, result);
+      setResult(value && value.value ? value.value : null);
+    }
+  }, [value]);
+  return result;
+};
+
 export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): RESOURCE_STATE => {
   const ruleType = ruleDefinition[RULE_TYPE];
   if (ruleType === 'refToLocalContext') {
@@ -332,7 +345,7 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
   } else {
     return {
       loading: false,
-      error: 'Not implemented yet2',
+      error: 'Not implemented : ' + ruleType,
     };
   }
 };

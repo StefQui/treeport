@@ -36,7 +36,7 @@ import {
 } from './rendering.reducer';
 import { SmRefToResource } from './resource-content';
 
-export const existsAndIsOk = (resourceState: RESOURCE_STATE) => {
+export const existsAndHasAValue = (resourceState: RESOURCE_STATE) => {
   return !!(resourceState && resourceState.value);
 };
 
@@ -58,7 +58,7 @@ export const useResourceFromPageResources = (resourceId, fetchedResourceState: R
 
   useEffect(() => {
     // console.log('useResourceFromPageResources 1', resourceId, fetchedResourceState);
-    if (existsAndIsOk(fetchedResourceState) || isLoading(fetchedResourceState) || isError(fetchedResourceState)) {
+    if (existsAndHasAValue(fetchedResourceState) || isLoading(fetchedResourceState) || isError(fetchedResourceState)) {
       return;
     }
     if (resourceId) {

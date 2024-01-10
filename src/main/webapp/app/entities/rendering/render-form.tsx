@@ -15,8 +15,16 @@ import {
   ENTITY_IDS_KEY,
   ENTITY_KEY,
   FIELDS_ATTRIBUTES_KEY,
+  FormAttributeContextParam,
+  FormFieldParam,
   increment,
   MyElem,
+  PARAMS_FORM_ATTRIBUTE_CONTEXT_KEY,
+  PARAMS_FORM_FIELDS_ATTRIBUTE_CONFIG_ID_KEY,
+  PARAMS_FORM_FIELDS_FIELD_ID_KEY,
+  PARAMS_FORM_FIELDS_FIELD_TYPE_KEY,
+  PARAMS_FORM_FIELDS_KEY,
+  PARAMS_FORM_FORM_CONTENT_KEY,
   PATH_SEPARATOR,
   RESOURCE_ID_KEY,
   RESOURCE_STATE,
@@ -29,6 +37,18 @@ import {
 } from './rendering';
 import { getFieldAttributesAndConfig, saveAttributes, setAction, setRenderingContext } from './rendering.reducer';
 import { SmRefToResource } from './resource-content';
+
+const getValueFromField = (fieldId: string, att: IAttributeWithValue, value): IAttributeValue => {
+  const type = att.config.attributeType;
+
+  if (type === 'DOUBLE') {
+    const res: IDoubleValue = { attributeValueType: 'DOUBLE_VT', value };
+    return res;
+  } else if (type === 'BOOLEAN') {
+    const res: IBooleanValue = { attributeValueType: 'BOOLEAN_VT', value };
+    return res;
+  }
+};
 
 export const SmForm = props => {
   const dispatch = useAppDispatch();
@@ -71,21 +91,9 @@ export const SmForm = props => {
     }
   }, [updatedAttributeIds]);
 
-  const getValueFromField = (fieldId: string, att: IAttributeWithValue, value): IAttributeValue => {
-    const type = att.config.attributeType;
-
-    if (type === 'DOUBLE') {
-      const res: IDoubleValue = { attributeValueType: 'DOUBLE_VT', value };
-      return res;
-    } else if (type === 'BOOLEAN') {
-      const res: IBooleanValue = { attributeValueType: 'BOOLEAN_VT', value };
-      return res;
-    }
-  };
-
-  const attributeContext = props.attributeContext;
-  const fields = props.fields;
-  const formContent = props.formContent;
+  const attributeContext: FormAttributeContextParam = props[PARAMS_FORM_ATTRIBUTE_CONTEXT_KEY];
+  const fields: FormFieldParam[] = props[PARAMS_FORM_FIELDS_KEY];
+  const formContent = props[PARAMS_FORM_FORM_CONTENT_KEY];
 
   if (!attributeContext) {
     return <span>attributeContext param is mandatory in Form</span>;
@@ -123,9 +131,13 @@ export const SmForm = props => {
     if (resourceIdValue !== previousResourceIdValue || campaignIdValue !== previousCampaignIdValue) {
       // if (false) {
       const newMap = fields
-        .filter(field => field.fieldType === 'Field')
+        .filter(field => field[PARAMS_FORM_FIELDS_FIELD_TYPE_KEY] === 'Field')
         .reduce((acc, field) => {
-          acc[field.fieldId] = buildAttributeIdFormExploded(resourceIdValue, field.attributeConfigId, campaignIdValue);
+          acc[field[PARAMS_FORM_FIELDS_FIELD_ID_KEY]] = buildAttributeIdFormExploded(
+            resourceIdValue,
+            field[PARAMS_FORM_FIELDS_ATTRIBUTE_CONFIG_ID_KEY],
+            campaignIdValue,
+          );
           return acc;
         }, {});
       console.log('newMap', newMap);

@@ -122,6 +122,18 @@ export const PARAMS_INPUT_DEFAULT_VALUE_KEY = 'defaultValue';
 
 export const PARAMS_CONST_TEXT_VALUE_KEY = 'textValue';
 
+export const PARAMS_FORM_ATTRIBUTE_CONTEXT_KEY = 'attributeContext';
+export const PARAMS_FORM_ATTRIBUTE_CONTEXT_RESOURCE_ID_KEY = 'resourceId';
+export const PARAMS_FORM_ATTRIBUTE_CONTEXT_CAMPAIGN_ID_KEY = 'campaignId';
+export const PARAMS_FORM_FIELDS_KEY = 'fields';
+export const PARAMS_FORM_FIELDS_FIELD_TYPE_KEY = 'fieldType';
+export const PARAMS_FORM_FIELDS_FIELD_ID_KEY = 'fieldId';
+export const PARAMS_FORM_FIELDS_ATTRIBUTE_CONFIG_ID_KEY = 'attributeConfigId';
+export const PARAMS_FORM_FIELDS_CAMPAIGN_ID_KEY = 'campaignId';
+export const PARAMS_FORM_FIELDS_USE_CURRENT_KEY = 'useCurrent';
+
+export const PARAMS_FORM_FORM_CONTENT_KEY = 'formContent';
+
 export const RESOURCE_CONTENT_PROPERTY = 'content';
 
 export const STATE_RS_PARAMETERS_KEY = 'parameters';
@@ -193,6 +205,26 @@ export type LocalContext = { [LOCAL_CONTEXT]: ParameterDefinition[] };
 export type SiteListParams = { [PARAMS_SITE_LIST_SELECTED_SITE_KEY]: string };
 export type InputParams = { [PARAMS_INPUT_OUTPUT_KEY]: string; [PARAMS_INPUT_DEFAULT_VALUE_KEY]?: RuleDefinition };
 export type TextParams = { [PARAMS_CONST_TEXT_VALUE_KEY]: RuleDefinition };
+
+export type FormFieldParam = {
+  [PARAMS_FORM_FIELDS_FIELD_TYPE_KEY]: string;
+  [PARAMS_FORM_FIELDS_FIELD_ID_KEY]: string;
+  [PARAMS_FORM_FIELDS_ATTRIBUTE_CONFIG_ID_KEY]: string;
+  [PARAMS_FORM_FIELDS_CAMPAIGN_ID_KEY]: {
+    [PARAMS_FORM_FIELDS_USE_CURRENT_KEY]: boolean;
+  };
+};
+
+export type FormAttributeContextParam = {
+  [PARAMS_FORM_ATTRIBUTE_CONTEXT_RESOURCE_ID_KEY]: RuleDefinition;
+  [PARAMS_FORM_ATTRIBUTE_CONTEXT_CAMPAIGN_ID_KEY]: RuleDefinition;
+};
+
+export type FormParams = {
+  [PARAMS_FORM_ATTRIBUTE_CONTEXT_KEY]: FormAttributeContextParam;
+  [PARAMS_FORM_FIELDS_KEY]: FormFieldParam;
+  [PARAMS_FORM_FORM_CONTENT_KEY]: any;
+};
 export type RefToResourceParams = { [PARAMS_RESOURCE_ID_KEY]: string; [PARAMETER_DEFINITIONS]: ParameterDefinition[] };
 export type Params = RefToResourceParams | SiteListParams | TextParams | InputParams;
 

@@ -153,6 +153,27 @@ const r3 = {
           //   },
           // },
           {
+            componentType: 'SmAttRef',
+            path: 'attRefToConso',
+            col: 6,
+            params: {
+              resourceId: {
+                ruleType: 'refToLocalContext',
+                path: '/layout-content',
+                sourceParameterKey: 'sid99',
+              },
+              campaignId: {
+                ruleType: 'constant',
+                constValue: '2023',
+              },
+              attConfig: {
+                ruleType: 'constant',
+                constValue: 'toConso',
+              },
+            },
+          },
+
+          {
             componentType: 'SmRefToResource',
             path: 'ref-to-fform',
             col: 12,
@@ -208,60 +229,60 @@ const r3 = {
   },
 };
 const r4 = {
-  content: {
-    componentType: 'verticalPanel',
-    path: 'vp2',
-    border: true,
-    items: [
-      {
-        componentType: 'SmText',
-        path: 'vsm5',
-        col: 4,
-        params: {
-          input: {
-            const: '765675756',
-          },
-        },
-      },
-      {
-        componentType: 'SmText',
-        path: 'vsm6',
-        col: 3,
-        params: {
-          input: {
-            refToPath: '/vp/vsm3',
-          },
-        },
-      },
-      {
-        componentType: 'SmText',
-        path: 'vsm66',
-        params: {
-          input: {
-            refToPath: '/vp/vsm4/vp2/vsm7',
-          },
-        },
-      },
-      {
-        componentType: 'SmText',
-        path: 'vsm9',
-        params: {
-          input: {
-            refToPath: '../vsm7',
-          },
-        },
-      },
-      {
-        componentType: 'SmInput',
-        path: 'vsm7',
-        params: {
-          defaultValue: {
-            const: 'DEFEDF',
-          },
-        },
-      },
-    ],
-  },
+  //   content: {
+  //     componentType: 'verticalPanel',
+  //     path: 'vp2',
+  //     border: true,
+  //     items: [
+  //       {
+  //         componentType: 'SmText',
+  //         path: 'vsm5',
+  //         col: 4,
+  //         params: {
+  //           input: {
+  //             const: '765675756',
+  //           },
+  //         },
+  //       },
+  //       {
+  //         componentType: 'SmText',
+  //         path: 'vsm6',
+  //         col: 3,
+  //         params: {
+  //           input: {
+  //             refToPath: '/vp/vsm3',
+  //           },
+  //         },
+  //       },
+  //       {
+  //         componentType: 'SmText',
+  //         path: 'vsm66',
+  //         params: {
+  //           input: {
+  //             refToPath: '/vp/vsm4/vp2/vsm7',
+  //           },
+  //         },
+  //       },
+  //       {
+  //         componentType: 'SmText',
+  //         path: 'vsm9',
+  //         params: {
+  //           input: {
+  //             refToPath: '../vsm7',
+  //           },
+  //         },
+  //       },
+  //       {
+  //         componentType: 'SmInput',
+  //         path: 'vsm7',
+  //         params: {
+  //           defaultValue: {
+  //             const: 'DEFEDF',
+  //           },
+  //         },
+  //       },
+  //     ],
+  //   },
 };
 const r5 = {
   content: {
@@ -592,29 +613,6 @@ const rform = {
           ],
         },
       },
-      // {
-      //   componentType: 'SmAttRef',
-      //   path: 'attRefToConso',
-      //   col: 6,
-      //   params: {
-      //     resourceId: {
-      //       refToPath: {
-      //         path: '../..',
-      //         property: 'selectedResource.entity.id',
-      //       },
-      //     },
-      //     campaignId: {
-      //       const: {
-      //         constValue: '2023',
-      //       },
-      //     },
-      //     attConfig: {
-      //       const: {
-      //         constValue: 'toConso',
-      //       },
-      //     },
-      //   },
-      // },
     ],
   },
 };
@@ -647,6 +645,26 @@ const rlayout = {
         path: 'layout-menutop',
         layoutElementId: 'menuTop',
       },
+      {
+        componentType: 'SmAttRef',
+        path: 'attRefToConso',
+        col: 6,
+        params: {
+          resourceId: {
+            ruleType: 'constant',
+            constValue: 'root',
+          },
+          campaignId: {
+            ruleType: 'constant',
+            constValue: '2023',
+          },
+          attConfig: {
+            ruleType: 'constant',
+            constValue: 'toConso',
+          },
+        },
+      },
+
       {
         componentType: 'layoutElement',
         path: 'layout-content',

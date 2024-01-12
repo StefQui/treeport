@@ -657,7 +657,19 @@ export const SmSiteRef = props => {
 //   return <AttValue attValue={attValue}></AttValue>;
 // };
 
-const loadAttribute = (props, resourceIdVal, campaignIdVal, attConfigVal) =>
+const useExplodedAttVal = (resourceIdVal, campaignIdVal, attConfigVal) => {
+  const [useExploded, setUseExploded] = useState(null);
+  useEffect(() => {
+    if (resourceIdVal && campaignIdVal && attConfigVal && resourceIdVal.value && campaignIdVal.value && attConfigVal.value) {
+      const attId = buildAttributeIdFormExploded(resourceIdVal.value, attConfigVal.value, campaignIdVal.value);
+      console.log('useExplodedAttVal...', attId);
+      setUseExploded(attId);
+    }
+  }, [resourceIdVal, campaignIdVal, attConfigVal]);
+  return useExploded;
+};
+
+const loadAttribute = (props, resourceIdVal, attConfigVal, campaignIdVal) =>
   getAttribute({
     exploded: {
       siteId: resourceIdVal,
@@ -693,30 +705,40 @@ export const SmAttRef = props => {
     return aaa ? (aaa.attribute ? aaa.attribute : null) : null;
   });
 
-  const resourceIdVal = useCalculatedValueState(props, resourceId);
-  const campaignIdVal = useCalculatedValueState(props, campaignId);
-  const attConfigVal = useCalculatedValueState(props, attConfig);
+  const resourceIdVal: RESOURCE_STATE = useCalculatedValueState(props, resourceId);
+  const campaignIdVal: RESOURCE_STATE = useCalculatedValueState(props, campaignId);
+  const attConfigVal: RESOURCE_STATE = useCalculatedValueState(props, attConfig);
+
+  const explodedAttVal = useExplodedAttVal(resourceIdVal, attConfigVal, campaignIdVal);
+
+  const [previousExploded, setPreviousExploded] = useState();
 
   const [attValue, setAttValue] = useState('??');
 
   useEffect(() => {
     if (action && action.actionType === 'updateAttributes') {
-      if (resourceIdVal && campaignIdVal && attConfigVal) {
-        const attId = buildAttributeIdFormExploded(resourceIdVal, attConfigVal, campaignIdVal);
-        // console.log('action...', action, attId);
+      // if (!hasChanged()) {
+      //   // IMPLEMENT HERE COMPARAISON WITH PREVIOUS EXPLODED VALUE   ??????????
+      //   return;
+      // }
+
+      if (resourceIdVal && campaignIdVal && attConfigVal && resourceIdVal.value && campaignIdVal.value && attConfigVal.value) {
+        const attId = buildAttributeIdFormExploded(resourceIdVal.value, attConfigVal.value, campaignIdVal.value);
+        console.log('action...', action, attId);
         if (action[ENTITY_KEY][ENTITY_IDS_KEY].indexOf(attId) !== -1) {
-          dispatch(loadAttribute(props, resourceIdVal, campaignIdVal, attConfigVal));
+          dispatch(loadAttribute(props, resourceIdVal.value, attConfigVal.value, campaignIdVal.value));
         }
       }
     }
   }, [action]);
 
   useEffect(() => {
-    // console.log('useEffect111', resourceIdVal, campaignIdVal, attConfigVal);
-    if (resourceIdVal && campaignIdVal && attConfigVal) {
-      dispatch(loadAttribute(props, resourceIdVal, campaignIdVal, attConfigVal));
+    console.log('useEffect111', resourceIdVal, campaignIdVal, attConfigVal);
+    if (explodedAttVal && explodedAttVal !== previousExploded) {
+      setPreviousExploded(explodedAttVal);
+      dispatch(loadAttribute(props, resourceIdVal.value, attConfigVal.value, campaignIdVal.value));
     }
-  }, [resourceIdVal, campaignIdVal, attConfigVal]);
+  }, [explodedAttVal]);
 
   useEffect(() => {
     // console.log('useEffect222', resourceIdVal, campaignIdVal, attConfigVal);

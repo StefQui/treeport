@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntity } from 'app/entities/resource/resource.reducer';
 import { IAttribute, IAttributeValue, IAttributeWithValue, IBooleanValue, IDoubleValue } from 'app/shared/model/attribute.model';
 import React, { useEffect, useState } from 'react';
-import { FieldValues, useForm } from 'react-hook-form';
+import { FieldValues, useForm, UseFormReset } from 'react-hook-form';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Input } from 'reactstrap';
 import { DoubleValue } from '../attribute-value/attribute-value';
@@ -49,14 +49,29 @@ const getValueFromField = (fieldId: string, att: IAttributeWithValue, value): IA
     return res;
   }
 };
+const sendUpdateAttributesActionOnSave = (builtPath: string, updatedAttributeIds: string[], mapOfFields) => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    console.log('updatedAttributeIds!!!!', updatedAttributeIds);
+    if (updatedAttributeIds) {
+      dispatch(
+        setAction({
+          source: builtPath,
+          actionType: 'updateAttributes',
+          [ENTITY_KEY]: { entityType: 'ATTRIBUTES', [ENTITY_IDS_KEY]: updatedAttributeIds },
+        }),
+      );
+      fetchAttributes(dispatch, builtPath, mapOfFields);
+    }
+  }, [updatedAttributeIds]);
+};
 
 export const SmForm = props => {
   const dispatch = useAppDispatch();
-  const { register, handleSubmit, reset, unregister } = useForm({
-    defaultValues: {
-      'site:s1:toSite:period:2023': 'hhh',
-    },
-  });
+  const { register, handleSubmit, reset, unregister } = useForm({ defaultValues: {} });
+  const builtPath = buildPath(props);
+
   const onSubmit = values => {
     const fieldsIdsToSave = Object.keys(fieldAttributes).filter(fieldId => fieldAttributes[fieldId].config.isWritable);
     const toSave: IAttributeWithValue[] = fieldsIdsToSave.map(
@@ -66,7 +81,6 @@ export const SmForm = props => {
           attributeValue: getValueFromField(fieldId, fieldAttributes[fieldId], values[fieldId]),
         }) as IAttributeWithValue,
     );
-    // alert(JSON.stringify(toSave));
     dispatch(
       saveAttributes({
         attributesToSave: toSave,
@@ -76,20 +90,13 @@ export const SmForm = props => {
     );
   };
 
-  const updatedAttributeIds = useRenderingState(buildPath(props), UPDATED_ATTRIBUTE_IDS_KEY);
+  const fieldAttributes: { [key: string]: IAttributeWithValue } = useStateInSelf(builtPath, FIELDS_ATTRIBUTES_KEY);
 
-  useEffect(() => {
-    console.log('updatedAttributeIds', updatedAttributeIds);
-    if (updatedAttributeIds) {
-      dispatch(
-        setAction({
-          source: buildPath(props),
-          actionType: 'updateAttributes',
-          [ENTITY_KEY]: { entityType: 'ATTRIBUTES', [ENTITY_IDS_KEY]: updatedAttributeIds },
-        }),
-      );
-    }
-  }, [updatedAttributeIds]);
+  const updatedAttributeIds: string[] = useStateInSelf(builtPath, UPDATED_ATTRIBUTE_IDS_KEY);
+
+  const [mapOfFields, setMapOfFields] = useState({});
+
+  sendUpdateAttributesActionOnSave(builtPath, updatedAttributeIds, mapOfFields);
 
   const attributeContext: FormAttributeContextParam = props[PARAMS_FORM_ATTRIBUTE_CONTEXT_KEY];
   const fields: FormFieldParam[] = props[PARAMS_FORM_FIELDS_KEY];
@@ -114,22 +121,14 @@ export const SmForm = props => {
     return <span>missing resourceId or campaignId</span>;
   }
 
-  // const resourceId1 = useCalculatedValueState(props, resourceId);
-
   const resourceIdValue = useCalculatedValueStateIfNotNull(props, resourceId);
   const campaignIdValue = useCalculatedValueStateIfNotNull(props, campaignId);
 
   const [previousResourceIdValue, setPreviousResourceIdValue] = useState();
   const [previousCampaignIdValue, setPreviousCampaignIdValue] = useState();
 
-  // // const [attributeIdsMap, setAttributeIdsMap] = useState({});
-
-  // console.log('the form...', resourceId, campaignId);
-
   useEffect(() => {
-    console.log('useEffect...', resourceIdValue, campaignIdValue);
     if (resourceIdValue !== previousResourceIdValue || campaignIdValue !== previousCampaignIdValue) {
-      // if (false) {
       const newMap = fields
         .filter(field => field[PARAMS_FORM_FIELDS_FIELD_TYPE_KEY] === 'Field')
         .reduce((acc, field) => {
@@ -140,50 +139,28 @@ export const SmForm = props => {
           );
           return acc;
         }, {});
-      console.log('newMap', newMap);
       if (newMap) {
+        setMapOfFields(newMap);
         // eslint-disable-next-line guard-for-in
         for (const k in newMap) {
           unregister(newMap[k]);
         }
       }
-      // setAttributeIdsMap(newMap);
-      dispatch(
-        getFieldAttributesAndConfig({
-          attributeIdsMap: newMap,
-          orgaId: 'coca',
-          path: buildPath(props),
-        }),
-      );
+      fetchAttributes(dispatch, buildPath(props), newMap);
+      // dispatch(
+      //   getFieldAttributesAndConfig({
+      //     attributeIdsMap: newMap,
+      //     orgaId: 'coca',
+      //     path: buildPath(props),
+      //   }),
+      // );
 
       setPreviousResourceIdValue(resourceIdValue);
       setPreviousCampaignIdValue(campaignIdValue);
     }
   }, [resourceIdValue, campaignIdValue]);
 
-  const fieldAttributes: { [key: string]: IAttributeWithValue } = useAppSelector(state => {
-    const formFieldsMap = state.rendering.renderingState[buildPath(props)];
-
-    if (!formFieldsMap || !formFieldsMap[STATE_RS_SELF_KEY]) {
-      return null;
-    }
-    console.log('formFieldsMap', formFieldsMap[STATE_RS_SELF_KEY][FIELDS_ATTRIBUTES_KEY]);
-    return formFieldsMap[STATE_RS_SELF_KEY][FIELDS_ATTRIBUTES_KEY];
-  });
-
-  useEffect(() => {
-    if (fieldAttributes) {
-      console.log('changedAtt', fieldAttributes);
-      const keys = Object.keys(fieldAttributes);
-      const values = {};
-      keys.forEach(key => {
-        const att = fieldAttributes[key];
-        values[key] = att ? getValueFromAttribute(att) : null;
-      });
-      console.log('reseting', values);
-      reset(values);
-    }
-  }, [fieldAttributes]);
+  updateFormWithFieldAttributes(fieldAttributes, reset);
 
   return (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -198,6 +175,32 @@ export const SmForm = props => {
       <input type="submit" value="submit"></input>
     </form>
   );
+};
+
+const fetchAttributes = (dispatch, builtPath, newMap) => {
+  dispatch(
+    getFieldAttributesAndConfig({
+      attributeIdsMap: newMap,
+      orgaId: 'coca',
+      path: builtPath,
+    }),
+  );
+};
+
+const updateFormWithFieldAttributes = (fieldAttributes: { [key: string]: IAttributeWithValue }, reset) => {
+  useEffect(() => {
+    if (fieldAttributes) {
+      console.log('changedAtt', fieldAttributes);
+      const keys = Object.keys(fieldAttributes);
+      const values = {};
+      keys.forEach(key => {
+        const att = fieldAttributes[key];
+        values[key] = att ? getValueFromAttribute(att) : null;
+      });
+      console.log('reseting', values);
+      reset(values);
+    }
+  }, [fieldAttributes]);
 };
 
 const getValueFromAttribute = (att: IAttributeWithValue) => {
@@ -229,23 +232,57 @@ export const extractAttributeId = (props, params) => {
   ];
 };
 
+export const useStateInSelf = (formPath: string, key: string) => {
+  return useAppSelector(state => {
+    const self = state.rendering.renderingState[formPath];
+    // console.log('zzzzzzz', key, self);
+    if (!self || !self[STATE_RS_SELF_KEY]) {
+      return null;
+    }
+    return self[STATE_RS_SELF_KEY][key];
+  });
+};
+
+export const useStateInSelfWithKey = (formPath: string, key1: string, key2: string) => {
+  const key1State = useStateInSelf(formPath, key1);
+  const [key2State, setKey2State] = useState();
+
+  useEffect(() => {
+    // console.log('aaaaaaaa', key1, key2, key1State);
+    if (key1State) {
+      setKey2State(key1State[key2]);
+    }
+  }, [key1State]);
+
+  return key2State;
+};
+
 export const SmAttributeField = props => {
   const form = props.form;
-  console.log('SmAttributeField', props);
+  // const action = useAppSelector(state => state.rendering.action);
+  // const dispatch = useAppDispatch();
 
   if (!form) {
     return <span>form is mandatory in AttributeField</span>;
   }
 
-  const attribute = useAppSelector(state => {
-    const formFieldsMap = state.rendering.renderingState[props.form.formPath];
-    if (!formFieldsMap || !formFieldsMap[STATE_RS_SELF_KEY]) {
-      return null;
-    }
-    return formFieldsMap[STATE_RS_SELF_KEY][FIELDS_ATTRIBUTES_KEY]
-      ? formFieldsMap[STATE_RS_SELF_KEY][FIELDS_ATTRIBUTES_KEY][props.fieldId]
-      : null;
-  });
+  const attribute: IAttributeWithValue = useStateInSelfWithKey(props.form.formPath, FIELDS_ATTRIBUTES_KEY, props.fieldId);
+
+  // useEffect(() => {
+  //   if (action && action.actionType === 'updateAttributes') {
+  //     // if (!hasChanged()) {
+  //     //   // IMPLEMENT HERE COMPARAISON WITH PREVIOUS EXPLODED VALUE   ??????????
+  //     //   return;
+  //     // }
+
+  //     if (attribute && attribute.id) {
+  //       console.log('action...', action, attribute.id);
+  //       if (action[ENTITY_KEY][ENTITY_IDS_KEY].indexOf(attId) !== -1) {
+  //         dispatch(loadAttribute(props, resourceIdVal.value, attConfigVal.value, campaignIdVal.value));
+  //       }
+  //     }
+  //   }
+  // }, [action]);
 
   if (!attribute) {
     return <span>Missing attribute</span>;

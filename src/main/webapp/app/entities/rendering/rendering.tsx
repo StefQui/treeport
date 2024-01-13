@@ -15,18 +15,19 @@ import {
   useRefToLocalContext,
   useRefToLocalContextValue,
   useRefToPageContextValue,
-  ZZZResourceContent,
+  // ZZZResourceContent,
 } from './resource-content';
 import { buildAttributeIdFormExploded, SmAttributeField, SmForm } from './render-form';
 import { SmLayoutElement, SmMenu, SmPage, usePageContext } from './layout';
+import { IAttribute, IAttributeWithValue } from 'app/shared/model/attribute.model';
 
-export const TextBasic = props => {
-  const siteEntity = useAppSelector(state => state.site.entity);
-  // const rendering = useAppSelector(state => state.rendering);
-  const [value] = useState(props.text);
+// export const TextBasic = props => {
+//   const siteEntity = useAppSelector(state => state.site.entity);
+//   // const rendering = useAppSelector(state => state.rendering);
+//   const [value] = useState(props.text);
 
-  return <span>{value}</span>;
-};
+//   return <span>{value}</span>;
+// };
 
 // export const SmTextConst = props => {
 //   if (props.params.input.const) {
@@ -228,6 +229,28 @@ export type FormParams = {
 export type RefToResourceParams = { [PARAMS_RESOURCE_ID_KEY]: string; [PARAMETER_DEFINITIONS]: ParameterDefinition[] };
 export type Params = RefToResourceParams | SiteListParams | TextParams | InputParams;
 
+export type Parameters = { [path: string]: RESOURCE_STATE };
+export type RenderingState = {
+  [path: string]: { self?: any; parameters?: Parameters; paginationState?: any; listState?: any; attribute?: IAttributeWithValue };
+};
+export type PageContextState = { [path: string]: any };
+export type PageResourcesState = { [path: string]: any };
+export type CurrentPageIdState = string | null;
+export type ActionState = {
+  source: string;
+  actionType: 'selectSite' | 'updateAttribute';
+  entity: { entityType: 'SITE' | 'RESOURCE' | 'ATTRIBUTES'; entity?: any; entityIds?: any };
+} | null;
+export type RenderingSt = {
+  renderingState: RenderingState;
+  pageContext: PageContextState;
+  pageResources: PageResourcesState;
+  currentPageId: CurrentPageIdState;
+  action: ActionState;
+};
+export type Rendering = {
+  rendering: RenderingSt;
+};
 export const emptyValue: RESOURCE_STATE = {
   loading: false,
 };
@@ -291,7 +314,7 @@ export const SmText = (props: { params: TextParams; depth: string; currentPath: 
     );
   }
 
-  const calculatedValue = useCalculatedValueState(props, textValue);
+  const calculatedValue: RESOURCE_STATE = useCalculatedValueState(props, textValue);
   // console.log('SmText', textValue, calculatedValue);
 
   if (calculatedValue) {
@@ -381,83 +404,83 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
     };
   }
 };
-export const useCalculatedValueStateOld = (props, elem) => {
-  if (!elem) {
-    return null;
-  }
-  if (elem[REF_TO_PATH_KEY]) {
-    const builtPath = buildPath(props);
-    const refToPath = elem[REF_TO_PATH_KEY];
-    const calculatedPath = applyPath(builtPath, refToPath.path);
-    return useAppSelector(state => {
-      const aaa = state.rendering.renderingState[calculatedPath];
-      return aaa ? getValueForPathInObject(aaa, refToPath.property ?? OUTPUT_KEY) : null;
-    });
-    // const [aaa, setAaa] = useState();
+// export const useCalculatedValueStateOld = (props, elem) => {
+//   if (!elem) {
+//     return null;
+//   }
+//   if (elem[REF_TO_PATH_KEY]) {
+//     const builtPath = buildPath(props);
+//     const refToPath = elem[REF_TO_PATH_KEY];
+//     const calculatedPath = applyPath(builtPath, refToPath.path);
+//     return useAppSelector(state => {
+//       const aaa = state.rendering.renderingState[calculatedPath];
+//       return aaa ? getValueForPathInObject(aaa, refToPath.property ?? OUTPUT_KEY) : null;
+//     });
+//     // const [aaa, setAaa] = useState();
 
-    // useEffect(() => {
-    //   console.log('SmAttributeField has changed');
-    //   setAaa(getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY));
-    // }, [referencedValue]);
-    // return aaa;
-  } else if (elem[REF_TO_PAGE_CONTEXT_KEY]) {
-    const refToContext = elem[REF_TO_PAGE_CONTEXT_KEY];
+//     // useEffect(() => {
+//     //   console.log('SmAttributeField has changed');
+//     //   setAaa(getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY));
+//     // }, [referencedValue]);
+//     // return aaa;
+//   } else if (elem[REF_TO_PAGE_CONTEXT_KEY]) {
+//     const refToContext = elem[REF_TO_PAGE_CONTEXT_KEY];
 
-    return useAppSelector(state => getValueForPathInObject(state.rendering.context, refToContext.property));
-  } else if (elem[REF_TO_LC_KEY]) {
-    const refToLocalContext = elem[REF_TO_LC_KEY];
-    const ParameterKey = refToLocalContext[REF_TO_LC_PARAMETER_KEY_KEY];
-    const property = refToLocalContext[REF_TO_LC_PROPERTY_KEY];
+//     return useAppSelector(state => getValueForPathInObject(state.rendering.context, refToContext.property));
+//   } else if (elem[REF_TO_LC_KEY]) {
+//     const refToLocalContext = elem[REF_TO_LC_KEY];
+//     const ParameterKey = refToLocalContext[REF_TO_LC_PARAMETER_KEY_KEY];
+//     const property = refToLocalContext[REF_TO_LC_PROPERTY_KEY];
 
-    // console.log('REF_TO_LC_KEY ========> TO INVESTIGATE HERE on rpage1');
+//     // console.log('REF_TO_LC_KEY ========> TO INVESTIGATE HERE on rpage1');
 
-    return useAppSelector(state => {
-      const aaa = state.rendering.renderingState[props.localContextPath];
-      if (!aaa) {
-        return null;
-      }
-      // console.log('useAppSelector', props.localContextPath, aaa);
-      const localContext = aaa[STATE_RS_PARAMETERS_KEY];
-      if (!localContext) {
-        return null;
-      }
-      const value: RESOURCE_STATE = localContext[ParameterKey];
-      if (value && value.value) {
-        return getValueForPathInObject(value.value, property);
-      }
-      if (value && value.loading) {
-        return 'Text is loading...';
-      }
-    });
-    // return useRenderingContextState(refToContext.property);
-    // const [aaa, setAaa] = useState();
+//     return useAppSelector(state => {
+//       const aaa = state.rendering.renderingState[props.localContextPath];
+//       if (!aaa) {
+//         return null;
+//       }
+//       // console.log('useAppSelector', props.localContextPath, aaa);
+//       const localContext = aaa[STATE_RS_PARAMETERS_KEY];
+//       if (!localContext) {
+//         return null;
+//       }
+//       const value: RESOURCE_STATE = localContext[ParameterKey];
+//       if (value && value.value) {
+//         return getValueForPathInObject(value.value, property);
+//       }
+//       if (value && value.loading) {
+//         return 'Text is loading...';
+//       }
+//     });
+//     // return useRenderingContextState(refToContext.property);
+//     // const [aaa, setAaa] = useState();
 
-    // useEffect(() => {
-    //   console.log('SmAttributeField has changed');
-    //   setAaa(getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY));
-    // }, [referencedValue]);
-    // return aaa;
-  } else if (elem[CONST_KEY]) {
-    console.log('isConst', elem);
+//     // useEffect(() => {
+//     //   console.log('SmAttributeField has changed');
+//     //   setAaa(getValueForPathInObject(referencedValue, refToPath.property ?? OUTPUT_KEY));
+//     // }, [referencedValue]);
+//     // return aaa;
+//   } else if (elem[CONST_KEY]) {
+//     console.log('isConst', elem);
 
-    return elem[CONST_KEY][CONST_VALUE_KEY];
-  }
-  return null;
-};
+//     return elem[CONST_KEY][CONST_VALUE_KEY];
+//   }
+//   return null;
+// };
 
-export function useRenderingState(renderingPath, path1?) {
-  if (path1) {
-    return useAppSelector(state => {
-      const a = state.rendering.renderingState[renderingPath];
-      return a ? a[path1] : null;
-    });
-  }
-  return useAppSelector(state => state.rendering.renderingState[renderingPath]);
-}
+// export function useRenderingState(renderingPath, path1?) {
+//   if (path1) {
+//     return useAppSelector(state => {
+//       const a = state.rendering.renderingState[renderingPath];
+//       return a ? a[path1] : null;
+//     });
+//   }
+//   return useAppSelector(state => state.rendering.renderingState[renderingPath]);
+// }
 
-export function useRenderingContextState(property) {
-  return useAppSelector(state => getValueForPathInObject(state.rendering.context, property));
-}
+// export function useRenderingContextState(property) {
+//   return useAppSelector(state => getValueForPathInObject(state.rendering.context, property));
+// }
 
 // export function updateRenderingStatezzz(dispatch, path: string, value) {
 //   dispatch(
@@ -542,69 +565,69 @@ export const TheSiteList = props => {
   return <SiteList {...props}></SiteList>;
 };
 
-export const TextRef = (props: { refTo: string | number; col: any }) => {
-  const siteEntity = useAppSelector(state => state.site.entity);
-  const action = useAppSelector(state => state.rendering.action);
+// export const TextRef = (props: { refTo: string | number; col: any }) => {
+//   const siteEntity = useAppSelector(state => state.site.entity);
+//   const action = useAppSelector(state => state.rendering.action);
 
-  const [value, setValue] = useState('?');
+//   const [value, setValue] = useState('?');
 
-  useEffect(() => {
-    if (!action || action.source !== props.refTo) {
-      return;
-    }
-    if (action.actionType === 'textChanged') {
-      setValue(action.value);
-    } else {
-      setValue('----');
-    }
-  }, [action]);
+//   useEffect(() => {
+//     if (!action || action.source !== props.refTo) {
+//       return;
+//     }
+//     if (action.actionType === 'textChanged') {
+//       setValue(action.value);
+//     } else {
+//       setValue('----');
+//     }
+//   }, [action]);
 
-  return <span>{value}</span>;
-};
+//   return <span>{value}</span>;
+// };
 
-export const SiteRef = (props: { refTo: string; col: any }) => {
-  const action = useAppSelector(state => state.rendering.action);
-  // console.log('in app selector', state.rendering.renderingState, ddd);
-  // return ddd;
-  // });
-  const [value, setValue] = useState('?');
+// export const SiteRef = (props: { refTo: string; col: any }) => {
+//   const action = useAppSelector(state => state.rendering.action);
+//   // console.log('in app selector', state.rendering.renderingState, ddd);
+//   // return ddd;
+//   // });
+//   const [value, setValue] = useState('?');
 
-  useEffect(() => {
-    if (!action || action.source !== props.refTo) {
-      return;
-    }
-    if (action.actionType === 'selectSite') {
-      setValue(action.entity[ENTITY_KEY].id + ' - ' + action.entity[ENTITY_KEY].name);
-    } else {
-      setValue('----');
-    }
-  }, [action]);
+//   useEffect(() => {
+//     if (!action || action.source !== props.refTo) {
+//       return;
+//     }
+//     if (action.actionType === 'selectSite') {
+//       setValue(action.entity[ENTITY_KEY].id + ' - ' + action.entity[ENTITY_KEY].name);
+//     } else {
+//       setValue('----');
+//     }
+//   }, [action]);
 
-  return <span>{value}</span>;
-};
+//   return <span>{value}</span>;
+// };
 
-export const SmSiteRef = props => {
-  const builtPath = buildPath(props);
-  const siteValue = props.params[SITE_VALUE_KEY];
-  if (!siteValue) {
-    return <span>Missing param {SITE_VALUE_KEY} in SmSiteRef</span>;
-  }
+// export const SmSiteRef = props => {
+//   const builtPath = buildPath(props);
+//   const siteValue = props.params[SITE_VALUE_KEY];
+//   if (!siteValue) {
+//     return <span>Missing param {SITE_VALUE_KEY} in SmSiteRef</span>;
+//   }
 
-  const calculatedValue = useCalculatedValueState(props, siteValue);
-  if (calculatedValue) {
-    return (
-      <span>
-        <u>Site:</u> {calculatedValue[ENTITY_KEY][RESOURCE_NAME_KEY]}
-      </span>
-    );
-  }
+//   const calculatedValue = useCalculatedValueState(props, siteValue);
+//   if (calculatedValue) {
+//     return (
+//       <span>
+//         <u>Site:</u> {calculatedValue[ENTITY_KEY][RESOURCE_NAME_KEY]}
+//       </span>
+//     );
+//   }
 
-  return (
-    <span>
-      <i>No site for SmSiteRef</i>
-    </span>
-  );
-};
+//   return (
+//     <span>
+//       <i>No site for SmSiteRef</i>
+//     </span>
+//   );
+// };
 
 // export const ZZZZZZZZZAttRef = (props: { refTo: string; attributeKey: string; campaignId: string; path: string; col: any }) => {
 //   const action = useAppSelector(state => state.rendering.action);
@@ -657,7 +680,7 @@ export const SmSiteRef = props => {
 //   return <AttValue attValue={attValue}></AttValue>;
 // };
 
-const useExplodedAttVal = (resourceIdVal, campaignIdVal, attConfigVal) => {
+const useExplodedAttVal = (resourceIdVal, campaignIdVal, attConfigVal): string | null => {
   const [useExploded, setUseExploded] = useState(null);
   useEffect(() => {
     if (resourceIdVal && campaignIdVal && attConfigVal && resourceIdVal.value && campaignIdVal.value && attConfigVal.value) {
@@ -681,7 +704,7 @@ const loadAttribute = (props, resourceIdVal, attConfigVal, campaignIdVal) =>
 
 export const SmAttRef = props => {
   const dispatch = useAppDispatch();
-  const action = useAppSelector(state => state.rendering.action);
+  const action: ActionState = useAppSelector((state: Rendering) => state.rendering.action);
 
   if (!props.params) {
     return (
@@ -700,8 +723,9 @@ export const SmAttRef = props => {
   }
 
   const builtPath = buildPath(props);
-  const attribute = useAppSelector(state => {
+  const attribute = useAppSelector((state: Rendering) => {
     const aaa = state.rendering.renderingState[builtPath];
+    console.log('aaa...', aaa);
     return aaa ? (aaa.attribute ? aaa.attribute : null) : null;
   });
 
@@ -709,14 +733,14 @@ export const SmAttRef = props => {
   const campaignIdVal: RESOURCE_STATE = useCalculatedValueState(props, campaignId);
   const attConfigVal: RESOURCE_STATE = useCalculatedValueState(props, attConfig);
 
-  const explodedAttVal = useExplodedAttVal(resourceIdVal, attConfigVal, campaignIdVal);
+  const explodedAttVal: string | null = useExplodedAttVal(resourceIdVal, attConfigVal, campaignIdVal);
 
-  const [previousExploded, setPreviousExploded] = useState();
+  const [previousExploded, setPreviousExploded] = useState(null);
 
-  const [attValue, setAttValue] = useState('??');
+  const [attValue, setAttValue] = useState(null);
 
   useEffect(() => {
-    if (action && action.actionType === 'updateAttributes') {
+    if (action && action.actionType === 'updateAttribute') {
       // if (!hasChanged()) {
       //   // IMPLEMENT HERE COMPARAISON WITH PREVIOUS EXPLODED VALUE   ??????????
       //   return;
@@ -725,7 +749,7 @@ export const SmAttRef = props => {
       if (resourceIdVal && campaignIdVal && attConfigVal && resourceIdVal.value && campaignIdVal.value && attConfigVal.value) {
         const attId = buildAttributeIdFormExploded(resourceIdVal.value, attConfigVal.value, campaignIdVal.value);
         console.log('action...', action, attId);
-        if (action[ENTITY_KEY][ENTITY_IDS_KEY].indexOf(attId) !== -1) {
+        if (action.entity.entityIds.indexOf(attId) !== -1) {
           dispatch(loadAttribute(props, resourceIdVal.value, attConfigVal.value, campaignIdVal.value));
         }
       }
@@ -839,20 +863,20 @@ export const MyElem = props => {
   // console.log('MyElem', props);
   const renderSwitch = params => {
     switch (params.componentType) {
-      case 'textBasic':
-        return <TextBasic {...params}></TextBasic>;
+      // case 'textBasic':
+      //   return <TextBasic {...params}></TextBasic>;
       case 'SmText':
         return <SmText {...params}></SmText>;
       case 'SmInput':
         return <SmInput {...params}></SmInput>;
       case ELEM_REF_TO_RESOURCE_ELEMENT:
         return <SmRefToResource {...params}></SmRefToResource>;
-      case 'textRef':
-        return <TextRef {...params}></TextRef>;
-      case 'siteRef':
-        return <SiteRef {...params}></SiteRef>;
-      case 'SmSiteRef':
-        return <SmSiteRef {...params}></SmSiteRef>;
+      // case 'textRef':
+      //   return <TextRef {...params}></TextRef>;
+      // case 'siteRef':
+      //   return <SiteRef {...params}></SiteRef>;
+      // case 'SmSiteRef':
+      //   return <SmSiteRef {...params}></SmSiteRef>;
       // case 'attRef':
       //   return <ZZZZZZZZZAttRef {...params}></ZZZZZZZZZAttRef>;
       case 'SmAttRef':
@@ -871,8 +895,8 @@ export const MyElem = props => {
         return <SmMenu {...params}></SmMenu>;
       case ELEM_LAYOUT_ELEMENT:
         return <SmLayoutElement {...params}></SmLayoutElement>;
-      case 'resourceContent':
-        return <ZZZResourceContent {...params}></ZZZResourceContent>;
+      // case 'resourceContent':
+      //   return <ZZZResourceContent {...params}></ZZZResourceContent>;
       case 'verticalPanel':
         return <MyVerticalPanel {...params}></MyVerticalPanel>;
       default:

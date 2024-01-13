@@ -8,6 +8,7 @@ import { Input } from 'reactstrap';
 import { DoubleValue } from '../attribute-value/attribute-value';
 import { existsAndHasAValue } from './render-resource-page';
 import {
+  ActionState,
   ATT_CONFIG_KEY,
   buildPath,
   CAMPAIGN_ID_KEY,
@@ -26,6 +27,8 @@ import {
   PARAMS_FORM_FIELDS_KEY,
   PARAMS_FORM_FORM_CONTENT_KEY,
   PATH_SEPARATOR,
+  Rendering,
+  RenderingState,
   RESOURCE_ID_KEY,
   RESOURCE_STATE,
   ROOT_PATH_SEPARATOR,
@@ -33,9 +36,9 @@ import {
   UPDATED_ATTRIBUTE_IDS_KEY,
   useCalculatedValueState,
   useCalculatedValueStateIfNotNull,
-  useRenderingState,
+  // useRenderingState,
 } from './rendering';
-import { getFieldAttributesAndConfig, saveAttributes, setAction, setRenderingContext } from './rendering.reducer';
+import { getFieldAttributesAndConfig, saveAttributes, setAction } from './rendering.reducer';
 import { SmRefToResource } from './resource-content';
 
 const getValueFromField = (fieldId: string, att: IAttributeWithValue, value): IAttributeValue => {
@@ -55,13 +58,12 @@ const sendUpdateAttributesActionOnSave = (builtPath: string, updatedAttributeIds
   useEffect(() => {
     console.log('updatedAttributeIds!!!!', updatedAttributeIds);
     if (updatedAttributeIds) {
-      dispatch(
-        setAction({
-          source: builtPath,
-          actionType: 'updateAttributes',
-          [ENTITY_KEY]: { entityType: 'ATTRIBUTES', [ENTITY_IDS_KEY]: updatedAttributeIds },
-        }),
-      );
+      const action: ActionState = {
+        source: builtPath,
+        actionType: 'updateAttribute',
+        [ENTITY_KEY]: { entityType: 'ATTRIBUTES', entityIds: updatedAttributeIds },
+      };
+      dispatch(setAction(action));
       fetchAttributes(dispatch, builtPath, mapOfFields);
     }
   }, [updatedAttributeIds]);
@@ -233,13 +235,13 @@ export const extractAttributeId = (props, params) => {
 };
 
 export const useStateInSelf = (formPath: string, key: string) => {
-  return useAppSelector(state => {
-    const self = state.rendering.renderingState[formPath];
-    // console.log('zzzzzzz', key, self);
-    if (!self || !self[STATE_RS_SELF_KEY]) {
+  return useAppSelector((state: Rendering) => {
+    const rs = state.rendering.renderingState[formPath];
+    // console.log('zzzzzzz',  key, self);
+    if (!rs || !rs.self) {
       return null;
     }
-    return self[STATE_RS_SELF_KEY][key];
+    return rs.self[key];
   });
 };
 
@@ -309,6 +311,6 @@ const renderFormAttributeField = (props, attribute: IAttributeWithValue) => {
   return <span>Not implemented yet : {attribute.config.attributeType}</span>;
 };
 
-export const buildAttributeIdFormExploded = (resourceIdVal, attConfigVal, campaignIdVal) => {
+export const buildAttributeIdFormExploded = (resourceIdVal, attConfigVal, campaignIdVal): string => {
   return `site:${resourceIdVal}:${attConfigVal}:period:${campaignIdVal}`;
 };

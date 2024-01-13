@@ -22,6 +22,7 @@ import {
   PARAMETER,
   ParameterDefinition,
   ParameterDefinitions,
+  Parameters,
   PARAMETERS_TYPE,
   PARAMETER_DEFINITIONS,
   PARAMETER_KEY,
@@ -32,6 +33,7 @@ import {
   RefToContextRuleDefinition,
   RefToResourceParams,
   RefToSiteDefinition,
+  Rendering,
   RENDERING_CONTEXT,
   RENDERING_SLICE_KEY,
   RESOURCE_CONTENT_KEY,
@@ -50,52 +52,52 @@ import {
   STATE_RENDERING_STATE_KEY,
   STATE_RS_PARAMETERS_KEY,
   useCalculatedValueState,
-  useRenderingState,
+  // useRenderingState,
 } from './rendering';
 import { getResourceForPageResources, getSiteForRenderingStateParameters, setInRenderingStateParameters } from './rendering.reducer';
 
-export const ZZZResourceContent = props => {
-  const dispatch = useAppDispatch();
-  const siteEntity = useAppSelector(state => state.site.entity);
-  // const rendering = useAppSelector(state => state.rendering);
-  const [value] = useState('mmmmmm');
-  const initialState = {
-    resource: null,
-  };
-  const [resourceContent, setResourceContent] = useState();
+// export const ZZZResourceContent = props => {
+//   const dispatch = useAppDispatch();
+//   const siteEntity = useAppSelector((state => state.site.entity);
+//   // const rendering = useAppSelector(state => state.rendering);
+//   const [value] = useState('mmmmmm');
+//   const initialState = {
+//     resource: null,
+//   };
+//   const [resourceContent, setResourceContent] = useState();
 
-  const resource = useAppSelector(state => {
-    const aaa = state.rendering.renderingState[props.path];
-    return aaa ? (aaa.resource ? aaa.resource : null) : null;
-  });
+//   const resource = useAppSelector(state => {
+//     const aaa = state.rendering.renderingState[props.path];
+//     return aaa ? (aaa.resource ? aaa.resource : null) : null;
+//   });
 
-  useEffect(() => {
-    if (props.refTo) {
-      dispatch(
-        getResourceForPageResources({
-          resourceId: props.refTo,
-        }),
-      );
-    }
-  }, []);
+//   useEffect(() => {
+//     if (props.refTo) {
+//       dispatch(
+//         getResourceForPageResources({
+//           resourceId: props.refTo,
+//         }),
+//       );
+//     }
+//   }, []);
 
-  useEffect(() => {
-    if (resource) {
-      setResourceContent(resource.content);
-    } else {
-      setResourceContent(null);
-    }
-  }, [resource]);
+//   useEffect(() => {
+//     if (resource) {
+//       setResourceContent(resource.content);
+//     } else {
+//       setResourceContent(null);
+//     }
+//   }, [resource]);
 
-  if (resourceContent) {
-    return <MyRend content={resourceContent} params={props.params}></MyRend>;
-  }
-  return (
-    <div>
-      <span>no val</span>
-    </div>
-  );
-};
+//   if (resourceContent) {
+//     return <MyRend content={resourceContent} params={props.params}></MyRend>;
+//   }
+//   return (
+//     <div>
+//       <span>no val</span>
+//     </div>
+//   );
+// };
 
 export const updateLocalContext = (resourceParameters, pageContext, localContext, builtPath) => {
   const dispatch = useAppDispatch();
@@ -285,14 +287,14 @@ const useLocalContextDefinitions = (
 };
 
 export const useRefToLocalContextValue = (currentLocalContextPath, localContextPath, parameterKey, parameterProperty): RESOURCE_STATE => {
-  return useAppSelector(state => {
-    const contextForLocalContextPath = state[RENDERING_SLICE_KEY][STATE_RENDERING_STATE_KEY]
-      ? state[RENDERING_SLICE_KEY][STATE_RENDERING_STATE_KEY][applyPath(currentLocalContextPath, localContextPath)]
+  return useAppSelector((state: Rendering) => {
+    const contextForLocalContextPath = state.rendering.renderingState
+      ? state.rendering.renderingState[applyPath(currentLocalContextPath, localContextPath)]
       : null;
     if (!contextForLocalContextPath) {
       return null;
     }
-    const contextForLocalContextPathParameters = contextForLocalContextPath[STATE_RS_PARAMETERS_KEY];
+    const contextForLocalContextPathParameters = contextForLocalContextPath.parameters;
     if (!contextForLocalContextPathParameters) {
       return null;
     }
@@ -310,16 +312,16 @@ export const useRefToLocalContextValue = (currentLocalContextPath, localContextP
   });
 };
 
-export const useRefToLocalContext = (currentLocalContextPath, localContextPath): RESOURCE_STATE => {
-  return useAppSelector(state => {
+export const useRefToLocalContext = (currentLocalContextPath, localContextPath): Parameters => {
+  return useAppSelector((state: Rendering) => {
     // console.log('useRefToLocalContext--------------------', localContextPath, state[RENDERING_SLICE_KEY][STATE_RENDERING_STATE_KEY]);
-    const contextForLocalContextPath = state[RENDERING_SLICE_KEY][STATE_RENDERING_STATE_KEY]
-      ? state[RENDERING_SLICE_KEY][STATE_RENDERING_STATE_KEY][applyPath(currentLocalContextPath, localContextPath)]
+    const contextForLocalContextPath = state.rendering.renderingState
+      ? state.rendering.renderingState[applyPath(currentLocalContextPath, localContextPath)]
       : null;
     if (!contextForLocalContextPath) {
       return null;
     }
-    return contextForLocalContextPath[STATE_RS_PARAMETERS_KEY];
+    return contextForLocalContextPath.parameters;
   });
 };
 
@@ -522,11 +524,11 @@ const initLocalContext = (parameterDefinitions: ParameterDefinition[], props, bu
   // }, [Object.values(ParameterMapValues)]);
 };
 
-const useResourceParametersFromState = builtPath =>
-  useAppSelector(state => {
-    const aaa = state.rendering.renderingState[builtPath];
-    return aaa ? aaa[STATE_RS_PARAMETERS_KEY] : null;
-  });
+// const useResourceParametersFromState = builtPath =>
+//   useAppSelector((state: Rendering) => {
+//     const aaa = state.rendering.renderingState[builtPath];
+//     return aaa ? aaa[STATE_RS_PARAMETERS_KEY] : null;
+//   });
 
 export const calculateLocalContextPath = props => {
   if (!props.localContextPath && !props.path) {

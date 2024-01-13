@@ -25,12 +25,12 @@ import {
   STATE_PAGE_RESOURCES_KEY,
   STATE_PAGE_RESOURCE_KEY,
   STATE_RS_OUTPUTS_KEY,
-  useRenderingState,
+  // useRenderingState,
 } from './rendering';
 import {
   getResourceForPageResources,
   setInRenderingStateParameters,
-  setRenderingContext,
+  // setRenderingContext,
   setRenderingCurrentPageId,
   setRenderingPageContext,
 } from './rendering.reducer';

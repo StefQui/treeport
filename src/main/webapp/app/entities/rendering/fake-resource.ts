@@ -589,9 +589,10 @@ const rform = {
               path: 'resName',
               params: {
                 textValue: {
-                  refToLocalContext: {
-                    property: 'selectedResource.entity.name',
-                  },
+                  ruleType: 'refToLocalContext',
+                  path: '..',
+                  sourceParameterKey: 'thesiteFromTheList',
+                  sourceParameterProperty: 'name',
                 },
               },
             },

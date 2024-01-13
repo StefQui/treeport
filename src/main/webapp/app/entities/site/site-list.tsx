@@ -21,7 +21,7 @@ import {
   buildPath,
   ENTITY_KEY,
   PARAMS_SITE_LIST_SELECTED_SITE_KEY,
-  Rendering,
+  RenderingSliceState,
   SiteListParams,
   STATE_RS_OUTPUTS_KEY,
   STATE_RS_SELF_KEY,
@@ -56,25 +56,27 @@ export const SiteList = (props: { params: SiteListParams; depth: string; current
   //   return state.rendering.renderingState[props.path] ? state.rendering.renderingState[props.path].listState : null;
   // });
   const builtPath = buildPath(props);
-  const paginationState = useAppSelector((state: Rendering) => {
-    return state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_SELF_KEY].paginationState : null;
+  const paginationState = useAppSelector((state: RenderingSliceState) => {
+    return state.rendering.componentsState[builtPath]
+      ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].paginationState
+      : null;
   });
 
-  const siteList = useAppSelector((state: Rendering) =>
-    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_SELF_KEY].listState.entities : null,
+  const siteList = useAppSelector((state: RenderingSliceState) =>
+    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.entities : null,
   );
 
-  const loading = useAppSelector((state: Rendering) =>
-    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_SELF_KEY].listState.loading : false,
+  const loading = useAppSelector((state: RenderingSliceState) =>
+    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.loading : false,
   );
 
-  const totalItems = useAppSelector((state: Rendering) =>
-    state.rendering.renderingState[builtPath] ? state.rendering.renderingState[builtPath][STATE_RS_SELF_KEY].listState.totalItems : null,
+  const totalItems = useAppSelector((state: RenderingSliceState) =>
+    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.totalItems : null,
   );
 
-  const activePage = useAppSelector((state: Rendering) =>
-    state.rendering.renderingState[builtPath]
-      ? state.rendering.renderingState[builtPath][STATE_RS_SELF_KEY].paginationState.activePage
+  const activePage = useAppSelector((state: RenderingSliceState) =>
+    state.rendering.componentsState[builtPath]
+      ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].paginationState.activePage
       : null,
   );
 

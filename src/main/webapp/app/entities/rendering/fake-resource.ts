@@ -1,4 +1,6 @@
-const r3 = {
+import { ComponentResource, LayoutElementResourceContent } from './rendering';
+
+const r3: ComponentResource = {
   content: {
     componentType: 'verticalPanel',
     path: 'vp-r3',
@@ -19,16 +21,14 @@ const r3 = {
         path: 'ref-to-selected-entity-name',
         params: {
           textValue: {
-            refToPath: {
-              path: '/layout-content',
-              sourceParameterKey: 'sid99',
-            },
+            ruleType: 'constant',
+            constValue: 'This is a constant',
           },
         },
       },
       {
         componentType: 'SmText',
-        path: 'ref-to-constant',
+        path: 'ref-to-selected-entity-name',
         params: {
           textValue: {
             ruleType: 'refToLocalContext',
@@ -90,68 +90,69 @@ const r3 = {
         col: 4,
         border: true,
         items: [
-          // {
-          //   componentType: 'SmRefToResource',
-          //   path: 'ref-to-r5',
-          //   col: 12,
-          //   params: {
-          //     resourceId: 'r5',
-          //     parameterDefinitions: [
-          //       {
-          //         parameterKey: 'const1',
-          //         definition: {
-          //           ruleType: 'constant',
-          //           constValue: 'aaa1',
-          //         },
-          //       },
-          //       {
-          //         parameterKey: 'site2',
-          //         definition: {
-          //           ruleType: 'refToPageContext',
-          //           sourceParameterKey: 'sid',
-          //         },
-          //       },
-          //       {
-          //         parameterKey: 'siteIdFromSiteList',
-          //         definition: {
-          //           ruleType: 'refToLocalContext',
-          //           path: '/layout-content',
-          //           sourceParameterKey: 'sid99',
-          //         },
-          //       },
-          //       {
-          //         parameterKey: 'theoutputFromInput',
-          //         definition: {
-          //           ruleType: 'refToLocalContext',
-          //           path: '/layout-content',
-          //           sourceParameterKey: 'theoutput',
-          //         },
-          //       },
-          //       {
-          //         parameterKey: 'thesite',
-          //         definition: {
-          //           ruleType: 'refToSite',
-          //           sourceSiteId: {
-          //             ruleType: 'refToLocalContext',
-          //             path: '/layout-content',
-          //             sourceParameterKey: 'theoutput',
-          //           },
-          //         },
-          //       },
-          //       {
-          //         parameterKey: 'thesiteFromTheList',
-          //         definition: {
-          //           ruleType: 'refToSite',
-          //           sourceSiteId: {
-          //             ruleType: 'refToLocalContext',
-          //             path: '/layout-content',
-          //             sourceParameterKey: 'sid99',
-          //           },
-          //         },
-          //       },
-          //     ],
-          //   },
-          // },
+          {
+            componentType: 'SmRefToResource',
+            path: 'ref-to-r5',
+            col: 12,
+            params: {
+              resourceId: 'r5',
+              parameterDefinitions: [
+                {
+                  parameterKey: 'const1',
+                  definition: {
+                    ruleType: 'constant',
+                    constValue: 'aaa1',
+                  },
+                },
+                {
+                  parameterKey: 'site2',
+                  definition: {
+                    ruleType: 'refToPageContext',
+                    path: '/layout-content',
+                    sourceParameterKey: 'sid',
+                  },
+                },
+                {
+                  parameterKey: 'siteIdFromSiteList',
+                  definition: {
+                    ruleType: 'refToLocalContext',
+                    path: '/layout-content',
+                    sourceParameterKey: 'sid99',
+                  },
+                },
+                {
+                  parameterKey: 'theoutputFromInput',
+                  definition: {
+                    ruleType: 'refToLocalContext',
+                    path: '/layout-content',
+                    sourceParameterKey: 'theoutput',
+                  },
+                },
+                {
+                  parameterKey: 'thesite',
+                  definition: {
+                    ruleType: 'refToSite',
+                    sourceSiteId: {
+                      ruleType: 'refToLocalContext',
+                      path: '/layout-content',
+                      sourceParameterKey: 'theoutput',
+                    },
+                  },
+                },
+                {
+                  parameterKey: 'thesiteFromTheList',
+                  definition: {
+                    ruleType: 'refToSite',
+                    sourceSiteId: {
+                      ruleType: 'refToLocalContext',
+                      path: '/layout-content',
+                      sourceParameterKey: 'sid99',
+                    },
+                  },
+                },
+              ],
+            },
+          },
           {
             componentType: 'SmAttRef',
             path: 'attRefToConso',
@@ -284,7 +285,7 @@ const r4 = {
   //     ],
   //   },
 };
-const r5 = {
+const r5: ComponentResource = {
   content: {
     componentType: 'verticalPanel',
     path: 'vp-r5',
@@ -510,7 +511,7 @@ const r5 = {
       // },
     ],
   },
-  localContext: [
+  parameters: [
     {
       parameterKey: 'myConst',
       definition: {
@@ -521,7 +522,7 @@ const r5 = {
   ],
 };
 
-const rform = {
+const rform: ComponentResource = {
   content: {
     componentType: 'verticalPanel',
     path: 'vp12',
@@ -618,7 +619,7 @@ const rform = {
   },
 };
 
-const rmenuTop = {
+const rmenuTop: ComponentResource = {
   content: {
     componentType: 'menu',
     path: 'menu',
@@ -636,7 +637,7 @@ const rmenuTop = {
     ],
   },
 };
-const rlayout = {
+const rlayout: ComponentResource = {
   content: {
     componentType: 'verticalPanel',
     path: 'vp-layout',
@@ -675,7 +676,7 @@ const rlayout = {
   },
 };
 
-const rpage1 = {
+const rpage1: ComponentResource = {
   content: {
     componentType: 'page',
     path: 'pag-1',
@@ -703,7 +704,7 @@ const rpage1 = {
   ],
 };
 
-const rpage2 = {
+const rpage2: ComponentResource = {
   content: {
     componentType: 'page',
     path: 'page-2',

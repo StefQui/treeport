@@ -9,7 +9,7 @@ import {
   LAYOUT_RESOURCE_ID_KEY,
   MyElem,
   PATH_SEPARATOR,
-  Rendering,
+  RenderingSliceState,
   RESOURCE_CONTENT_KEY,
   RESOURCE_FROM_REF_KEY,
   RESOURCE_PARAMETERS_KEY,
@@ -35,7 +35,7 @@ export const SmPage = props => {
 
   const layoutId = props[LAYOUT_RESOURCE_ID_KEY];
   const builtPath = buildPath(props);
-  const currentPageId = useAppSelector((state: Rendering) => state.rendering[STATE_CURRENT_PAGE_ID_KEY]);
+  const currentPageId = useAppSelector((state: RenderingSliceState) => state.rendering[STATE_CURRENT_PAGE_ID_KEY]);
 
   if (!layoutId) {
     return <span>Missing {LAYOUT_RESOURCE_ID_KEY} in Page</span>;
@@ -100,19 +100,19 @@ export const SmPage = props => {
 // };
 
 export const usePageResource = () => {
-  return useAppSelector((state: Rendering) => state.rendering[STATE_PAGE_RESOURCE_KEY][RESOURCE_FROM_REF_KEY]);
+  return useAppSelector((state: RenderingSliceState) => state.rendering[STATE_PAGE_RESOURCE_KEY][RESOURCE_FROM_REF_KEY]);
 };
 
 export const useResourceStateFromPageResources = resourceId => {
-  return useAppSelector((state: Rendering) => state.rendering[STATE_PAGE_RESOURCES_KEY][resourceId]);
+  return useAppSelector((state: RenderingSliceState) => state.rendering[STATE_PAGE_RESOURCES_KEY][resourceId]);
 };
 
 export const usePageContext = () => {
-  return useAppSelector((state: Rendering) => state.rendering[STATE_PAGE_CONTEXT_KEY]);
+  return useAppSelector((state: RenderingSliceState) => state.rendering[STATE_PAGE_CONTEXT_KEY]);
 };
 
 export const useLocalContext = builtPath => {
-  return useAppSelector((state: Rendering) => state.rendering[STATE_PAGE_CONTEXT_KEY]);
+  return useAppSelector((state: RenderingSliceState) => state.rendering[STATE_PAGE_CONTEXT_KEY]);
 };
 
 // const useLayoutElementId = layoutElementId => {
@@ -242,7 +242,7 @@ export const SmLayoutElement = props => {
   // const layout = usePageResourceContentFromResourceId(layoutId);
   // const layoutElementId = useLayoutElementId2(currentPage);
   // const layoutElementResourceId = useLayoutResource(currentPage, layoutElementId);
-  const currentPageId = useAppSelector((state: Rendering) => state.rendering[STATE_CURRENT_PAGE_ID_KEY]);
+  const currentPageId = useAppSelector((state: RenderingSliceState) => state.rendering[STATE_CURRENT_PAGE_ID_KEY]);
 
   const layoutElementResource = useLayoutElementResource(currentPageId, layoutElementId);
   const layoutElementResourceContent = useResourceWithKey(layoutElementResource, RESOURCE_CONTENT_KEY);

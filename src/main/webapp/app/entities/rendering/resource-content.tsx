@@ -18,7 +18,7 @@ import {
   increment,
   LOCAL_CONTEXT,
   MyElem,
-  OUTPUT_KEY,
+  // OUTPUT_KEY,
   PARAMETER,
   ParameterDefinition,
   ParameterDefinitions,
@@ -33,7 +33,7 @@ import {
   RefToContextRuleDefinition,
   RefToResourceParams,
   RefToSiteDefinition,
-  Rendering,
+  RenderingSliceState,
   RENDERING_CONTEXT,
   RENDERING_SLICE_KEY,
   RESOURCE_CONTENT_KEY,
@@ -44,17 +44,22 @@ import {
   RESOURCE_PARAMETER_SOURCE_KEY,
   RESOURCE_PARAMETER_SOURCE_PARAMETER_KEY_KEY,
   RESOURCE_PARAMETER_TYPE_KEY,
-  RESOURCE_STATE,
+  ValueInState,
   ROOT_PATH_SEPARATOR,
   RuleDefinition,
   RULE_SOURCE_SITE_ID_VALUE,
   RULE_TYPE,
-  STATE_RENDERING_STATE_KEY,
   STATE_RS_PARAMETERS_KEY,
   useCalculatedValueState,
+  SmRefToResourceProps,
   // useRenderingState,
 } from './rendering';
-import { getResourceForPageResources, getSiteForRenderingStateParameters, setInRenderingStateParameters } from './rendering.reducer';
+import {
+  getResourceForPageResources,
+  getSiteForRenderingStateParameters,
+  setInLocalState,
+  // setInRenderingStateParameters,
+} from './rendering.reducer';
 
 // export const ZZZResourceContent = props => {
 //   const dispatch = useAppDispatch();
@@ -99,61 +104,61 @@ import { getResourceForPageResources, getSiteForRenderingStateParameters, setInR
 //   );
 // };
 
-export const updateLocalContext = (resourceParameters, pageContext, localContext, builtPath) => {
-  const dispatch = useAppDispatch();
-  const resourcesToFetch = useResourceToFetch(resourceParameters, pageContext, builtPath);
+// export const updateLocalContext = (resourceParameters, pageContext, localContext, builtPath) => {
+//   const dispatch = useAppDispatch();
+//   const resourcesToFetch = useResourceToFetch(resourceParameters, pageContext, builtPath);
 
-  // useEffect(() => {
-  //   if (resourcesToFetch) {
-  //     resourcesToFetch.forEach(element => {
-  //       // console.log('resourcesToFetch', element);
-  //       dispatch(
-  //         getSiteForRenderingStateParameters({
-  //           siteId: element.siteId,
-  //           destinationSiteKey: element.parameterKey,
-  //           ...{ path: builtPath },
-  //         }),
-  //       );
+//   // useEffect(() => {
+//   //   if (resourcesToFetch) {
+//   //     resourcesToFetch.forEach(element => {
+//   //       // console.log('resourcesToFetch', element);
+//   //       dispatch(
+//   //         getSiteForRenderingStateParameters({
+//   //           siteId: element.siteId,
+//   //           destinationSiteKey: element.parameterKey,
+//   //           ...{ path: builtPath },
+//   //         }),
+//   //       );
 
-  //       // const aaa = useRenderingResourceContentFromResourceId(element.siteId, builtPath);
-  //     });
-  //   }
-  // }, [resourcesToFetch]);
-};
+//   //       // const aaa = useRenderingResourceContentFromResourceId(element.siteId, builtPath);
+//   //     });
+//   //   }
+//   // }, [resourcesToFetch]);
+// };
 
-export const useResourceToFetch = (resourceParameters, pageContext, builtPath) => {
-  const dispatch = useAppDispatch();
-  const [resourcesToFetch, setResourcesToFetch] = useState([]);
+// export const useResourceToFetch = (resourceParameters, pageContext, builtPath) => {
+//   const dispatch = useAppDispatch();
+//   const [resourcesToFetch, setResourcesToFetch] = useState([]);
 
-  useEffect(() => {
-    if (resourceParameters && pageContext) {
-      const resourcesToFetchArray = [];
-      (resourceParameters as Array<any>).forEach(({ parameterKey, parameterSource, parameterType, useAs }) => {
-        // console.log('resourceParameter', parameterKey);
-        parameterSource.forEach((source: PARAMETER_SOURCE_TYPE) => {
-          if (source === 'pageContext') {
-            const existing = pageContext[parameterKey];
-            if (existing) {
-              dispatch(setInRenderingStateParameters({ path: builtPath, value: existing }));
-              if (useAs && 'siteId' === parameterType) {
-                resourcesToFetchArray.push({
-                  type: 'site',
-                  parameterKey: useAs,
-                  siteId: existing,
-                });
-              }
-            }
-          }
-        });
-      });
-      if (resourcesToFetchArray) {
-        setResourcesToFetch(resourcesToFetchArray);
-      }
-    }
-  }, [resourceParameters, pageContext]);
+//   useEffect(() => {
+//     if (resourceParameters && pageContext) {
+//       const resourcesToFetchArray = [];
+//       (resourceParameters as Array<any>).forEach(({ parameterKey, parameterSource, parameterType, useAs }) => {
+//         // console.log('resourceParameter', parameterKey);
+//         parameterSource.forEach((source: PARAMETER_SOURCE_TYPE) => {
+//           if (source === 'pageContext') {
+//             const existing = pageContext[parameterKey];
+//             if (existing) {
+//               dispatch(setInRenderingStateParameters({ path: builtPath, value: existing }));
+//               if (useAs && 'siteId' === parameterType) {
+//                 resourcesToFetchArray.push({
+//                   type: 'site',
+//                   parameterKey: useAs,
+//                   siteId: existing,
+//                 });
+//               }
+//             }
+//           }
+//         });
+//       });
+//       if (resourcesToFetchArray) {
+//         setResourcesToFetch(resourcesToFetchArray);
+//       }
+//     }
+//   }, [resourceParameters, pageContext]);
 
-  return resourcesToFetch;
-};
+//   return resourcesToFetch;
+// };
 
 // export const useParamsIdsToFetch = (resourceParameters: PARAMETERS_TYPE, builtPath) => {
 //   const pageContext: RENDERING_CONTEXT = usePageContext();
@@ -286,10 +291,10 @@ const useLocalContextDefinitions = (
   return localContextDefinitions;
 };
 
-export const useRefToLocalContextValue = (currentLocalContextPath, localContextPath, parameterKey, parameterProperty): RESOURCE_STATE => {
-  return useAppSelector((state: Rendering) => {
-    const contextForLocalContextPath = state.rendering.renderingState
-      ? state.rendering.renderingState[applyPath(currentLocalContextPath, localContextPath)]
+export const useRefToLocalContextValue = (currentLocalContextPath, localContextPath, parameterKey, parameterProperty): ValueInState => {
+  return useAppSelector((state: RenderingSliceState) => {
+    const contextForLocalContextPath = state.rendering.localContextsState
+      ? state.rendering.localContextsState[applyPath(currentLocalContextPath, localContextPath)]
       : null;
     if (!contextForLocalContextPath) {
       return null;
@@ -313,10 +318,10 @@ export const useRefToLocalContextValue = (currentLocalContextPath, localContextP
 };
 
 export const useRefToLocalContext = (currentLocalContextPath, localContextPath): Parameters => {
-  return useAppSelector((state: Rendering) => {
+  return useAppSelector((state: RenderingSliceState) => {
     // console.log('useRefToLocalContext--------------------', localContextPath, state[RENDERING_SLICE_KEY][STATE_RENDERING_STATE_KEY]);
-    const contextForLocalContextPath = state.rendering.renderingState
-      ? state.rendering.renderingState[applyPath(currentLocalContextPath, localContextPath)]
+    const contextForLocalContextPath = state.rendering.localContextsState
+      ? state.rendering.localContextsState[applyPath(currentLocalContextPath, localContextPath)]
       : null;
     if (!contextForLocalContextPath) {
       return null;
@@ -325,7 +330,7 @@ export const useRefToLocalContext = (currentLocalContextPath, localContextPath):
   });
 };
 
-export const useRefToPageContextValue = (props, ruleDefinition: RefToContextRuleDefinition): RESOURCE_STATE => {
+export const useRefToPageContextValue = (props, ruleDefinition: RefToContextRuleDefinition): ValueInState => {
   const [contextValue, setContextValue] = useState({ loading: false });
 
   // console.log('useRefToPageContextValu--------', definition);
@@ -339,7 +344,7 @@ export const useRefToPageContextValue = (props, ruleDefinition: RefToContextRule
   // return { loading: false, value: 'tatassss' };
 };
 
-export const useConstantValue = (props, definition: ConstantRuleDefinition): RESOURCE_STATE => {
+export const useConstantValue = (props, definition: ConstantRuleDefinition): ValueInState => {
   return { loading: false, value: definition[CONST_VALUE] };
 };
 
@@ -459,11 +464,10 @@ const initLocalContext = (parameterDefinitions: ParameterDefinition[], props, bu
           if (result) {
             // pkeys.forEach(paramKey => {
             dispatch(
-              setInRenderingStateParameters({
-                path: localContextPath,
-                value: {
-                  [pdef[PARAMETER_KEY]]: result,
-                },
+              setInLocalState({
+                localContextPath,
+                parameterKey: pdef[PARAMETER_KEY],
+                value: result,
               }),
             );
             // });
@@ -539,15 +543,7 @@ export const calculateLocalContextPath = props => {
   return props.localContextPath + PATH_SEPARATOR + props.path;
 };
 
-export const SmRefToResource = (props: {
-  params: RefToResourceParams;
-  depth: string;
-  currentPath: string;
-  path: string;
-  localContextPath: string;
-}) => {
-  const dispatch = useAppDispatch();
-
+export const SmRefToResource = (props: SmRefToResourceProps) => {
   console.log('TheSmRefToResource', props);
 
   const params: RefToResourceParams = props.params;
@@ -555,13 +551,13 @@ export const SmRefToResource = (props: {
   if (!params || !params.resourceId) {
     return <span>resourceId param is mandatory</span>;
   }
-  const resourceId = params.resourceId;
+  const { resourceId } = params;
 
   const builtPath = buildPath(props);
   const resource = usePageResourceContentFromResourceId(resourceId);
   const resourceContent = useResourceWithKey(resource, RESOURCE_CONTENT_KEY);
   // const targetParameterDefinitions = useResourceWithKey(resource, LOCAL_CONTEXT);
-  const callingParameterDefinitions = params[PARAMETER_DEFINITIONS];
+  const callingParameterDefinitions = params.parameterDefinitions;
 
   // const resource = useRenderingState(builtPath, RESOURCE_FROM_REF_KEY);
   // console.log('SmRefToResource', resourceParameters);
@@ -634,12 +630,10 @@ export const SmRefToResource = (props: {
         localContextPath={calculateLocalContextPath(props)}
       ></MyElem>
     );
-
-    // return <MyRend content={resourceContent} params={props.params} currentPath={builtPath} localContextPath={builtPath}></MyRend>;
   }
   return (
     <div>
-      <span>no val</span>
+      <span>no val for SmRefToResource</span>
     </div>
   );
 };

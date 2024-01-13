@@ -9,9 +9,9 @@ import { DoubleValue } from '../attribute-value/attribute-value';
 import { existsAndHasAValue } from './render-resource-page';
 import {
   ActionState,
-  ATT_CONFIG_KEY,
+  // ATT_CONFIG_KEY,
   buildPath,
-  CAMPAIGN_ID_KEY,
+  // CAMPAIGN_ID_KEY,
   displayWarning,
   ENTITY_IDS_KEY,
   ENTITY_KEY,
@@ -27,10 +27,9 @@ import {
   PARAMS_FORM_FIELDS_KEY,
   PARAMS_FORM_FORM_CONTENT_KEY,
   PATH_SEPARATOR,
-  Rendering,
-  RenderingState,
-  RESOURCE_ID_KEY,
-  RESOURCE_STATE,
+  RenderingSliceState,
+  // RESOURCE_ID_KEY,
+  ValueInState,
   ROOT_PATH_SEPARATOR,
   STATE_RS_SELF_KEY,
   UPDATED_ATTRIBUTE_IDS_KEY,
@@ -116,8 +115,8 @@ export const SmForm = props => {
     return <span>fields param is mandatory in Form</span>;
   }
 
-  const resourceId = attributeContext[RESOURCE_ID_KEY];
-  const campaignId = attributeContext[CAMPAIGN_ID_KEY];
+  const resourceId = attributeContext.resourceId;
+  const campaignId = attributeContext.campaignId;
 
   if (!resourceId || !campaignId) {
     return <span>missing resourceId or campaignId</span>;
@@ -219,9 +218,7 @@ const getValueFromAttribute = (att: IAttributeWithValue) => {
 };
 
 export const extractAttributeId = (props, params) => {
-  const resourceId = params[RESOURCE_ID_KEY];
-  const campaignId = params[CAMPAIGN_ID_KEY];
-  const attConfig = params[ATT_CONFIG_KEY];
+  const { resourceId, campaignId, attConfig } = params;
 
   if (!resourceId || !campaignId || !attConfig) {
     return null;
@@ -235,8 +232,8 @@ export const extractAttributeId = (props, params) => {
 };
 
 export const useStateInSelf = (formPath: string, key: string) => {
-  return useAppSelector((state: Rendering) => {
-    const rs = state.rendering.renderingState[formPath];
+  return useAppSelector((state: RenderingSliceState) => {
+    const rs = state.rendering.componentsState[formPath];
     // console.log('zzzzzzz',  key, self);
     if (!rs || !rs.self) {
       return null;
@@ -297,6 +294,7 @@ const renderFormAttributeField = (props, attribute: IAttributeWithValue) => {
     return (
       <label>
         {attribute.config.isWritable ? <span>{attribute.config.label}</span> : <i>{attribute.config.label}</i>}
+        &nbsp;&nbsp;
         <input readOnly={!attribute.config.isWritable} {...props.form.register(props.fieldId)}></input>
       </label>
     );
@@ -304,6 +302,7 @@ const renderFormAttributeField = (props, attribute: IAttributeWithValue) => {
     return (
       <label>
         {attribute.config.isWritable ? <span>{attribute.config.label}</span> : <i>{attribute.config.label}</i>}
+        &nbsp;&nbsp;
         <input readOnly={!attribute.config.isWritable} type="checkbox" {...props.form.register(props.fieldId)}></input>
       </label>
     );

@@ -12,7 +12,7 @@ import {
   PARAMETER_DEFINITIONS,
   PARAMS_KEY,
   PARAMS_RESOURCE_ID_KEY,
-  PATH_KEY,
+  // PATH_KEY,
   PATH_SEPARATOR,
   RENDERING_CONTEXT,
   RESOURCE_CONTENT_KEY,
@@ -20,39 +20,42 @@ import {
   RESOURCE_FROM_REF_KEY,
   RESOURCE_PARAMETERS_KEY,
   RESOURCE_PARAMETER_KEY,
-  RESOURCE_STATE,
+  ValueInState,
   ROOT_PATH_SEPARATOR,
   STATE_PAGE_RESOURCES_KEY,
   STATE_PAGE_RESOURCE_KEY,
   STATE_RS_OUTPUTS_KEY,
+  ComponentResource,
+  ComponentResourceContent,
   // useRenderingState,
 } from './rendering';
 import {
   getResourceForPageResources,
-  setInRenderingStateParameters,
+  setInLocalState,
+  // setInRenderingStateParameters,
   // setRenderingContext,
   setRenderingCurrentPageId,
   setRenderingPageContext,
 } from './rendering.reducer';
 import { SmRefToResource } from './resource-content';
 
-export const existsAndHasAValue = (resourceState: RESOURCE_STATE) => {
+export const existsAndHasAValue = (resourceState: ValueInState) => {
   return !!(resourceState && resourceState.value);
 };
 
-export const doesntExist = (resourceState: RESOURCE_STATE) => {
+export const doesntExist = (resourceState: ValueInState) => {
   return !resourceState || (!resourceState.loading && !resourceState.value);
 };
 
-export const isLoading = (resourceState: RESOURCE_STATE) => {
+export const isLoading = (resourceState: ValueInState) => {
   return resourceState && resourceState.loading;
 };
 
-export const isError = (resourceState: RESOURCE_STATE) => {
+export const isError = (resourceState: ValueInState) => {
   return resourceState && resourceState.error;
 };
 
-export const useResourceFromPageResources = (resourceId, fetchedResourceState: RESOURCE_STATE) => {
+export const useResourceFromPageResources = (resourceId, fetchedResourceState: ValueInState) => {
   const [resource, setResource] = useState();
   const dispatch = useAppDispatch();
 
@@ -175,6 +178,13 @@ export const fillPageContext = pageParameters => {
           value: queryParams.get(param[RESOURCE_PARAMETER_KEY]),
           loading: false,
         };
+        dispatch(
+          setInLocalState({
+            localContextPath: getRootPath(),
+            parameterKey: param[RESOURCE_PARAMETER_KEY],
+            value: c[param[RESOURCE_PARAMETER_KEY]],
+          }),
+        );
         // s;
       });
       // if (pageContext) {
@@ -184,12 +194,12 @@ export const fillPageContext = pageParameters => {
       //   }
       // }
       dispatch(setRenderingPageContext(c));
-      dispatch(
-        setInRenderingStateParameters({
-          path: getRootPath(),
-          value: c,
-        }),
-      );
+      // dispatch(
+      //   setInRenderingStateParameters({
+      //     path: getRootPath(),
+      //     value: c,
+      //   }),
+      // );
     }
   }, [locationSearch, pageParameters]);
 };
@@ -228,14 +238,14 @@ export const RenderResourcePage = () => {
   // console.log('pageParameters', pageParameters);
   // console.log('pageContent', pageContent);
 
-  const toRender = {
-    [COMPONENT_TYPE]: 'SmRefToResource',
-    [PARAMS_KEY]: {
-      [PARAMS_RESOURCE_ID_KEY]: resourceId,
-    },
-  };
+  // const toRender: ComponentResourceContent = {
+  //   [COMPONENT_TYPE]: 'SmRefToResource',
+  //   [PARAMS_KEY]: {
+  //     [PARAMS_RESOURCE_ID_KEY]: resourceId,
+  //   },
+  // };
 
-  console.log('toRender', toRender);
+  // console.log('toRender', toRender);
 
   return (
     <div>

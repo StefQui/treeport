@@ -9,9 +9,7 @@ import { DoubleValue } from '../attribute-value/attribute-value';
 import { existsAndHasAValue } from './render-resource-page';
 import {
   ActionState,
-  // ATT_CONFIG_KEY,
   buildPath,
-  // CAMPAIGN_ID_KEY,
   displayWarning,
   ENTITY_IDS_KEY,
   ENTITY_KEY,
@@ -28,14 +26,12 @@ import {
   PARAMS_FORM_FORM_CONTENT_KEY,
   PATH_SEPARATOR,
   RenderingSliceState,
-  // RESOURCE_ID_KEY,
   ValueInState,
   ROOT_PATH_SEPARATOR,
   STATE_RS_SELF_KEY,
   UPDATED_ATTRIBUTE_IDS_KEY,
   useCalculatedValueState,
   useCalculatedValueStateIfNotNull,
-  // useRenderingState,
 } from './rendering';
 import { getFieldAttributesAndConfig, saveAttributes, setAction } from './rendering.reducer';
 import { SmRefToResource } from './resource-content';
@@ -148,13 +144,6 @@ export const SmForm = props => {
         }
       }
       fetchAttributes(dispatch, buildPath(props), newMap);
-      // dispatch(
-      //   getFieldAttributesAndConfig({
-      //     attributeIdsMap: newMap,
-      //     orgaId: 'coca',
-      //     path: buildPath(props),
-      //   }),
-      // );
 
       setPreviousResourceIdValue(resourceIdValue);
       setPreviousCampaignIdValue(campaignIdValue);
@@ -266,22 +255,6 @@ export const SmAttributeField = props => {
   }
 
   const attribute: IAttributeWithValue = useStateInSelfWithKey(props.form.formPath, FIELDS_ATTRIBUTES_KEY, props.fieldId);
-
-  // useEffect(() => {
-  //   if (action && action.actionType === 'updateAttributes') {
-  //     // if (!hasChanged()) {
-  //     //   // IMPLEMENT HERE COMPARAISON WITH PREVIOUS EXPLODED VALUE   ??????????
-  //     //   return;
-  //     // }
-
-  //     if (attribute && attribute.id) {
-  //       console.log('action...', action, attribute.id);
-  //       if (action[ENTITY_KEY][ENTITY_IDS_KEY].indexOf(attId) !== -1) {
-  //         dispatch(loadAttribute(props, resourceIdVal.value, attConfigVal.value, campaignIdVal.value));
-  //       }
-  //     }
-  //   }
-  // }, [action]);
 
   if (!attribute) {
     return <span>Missing attribute</span>;

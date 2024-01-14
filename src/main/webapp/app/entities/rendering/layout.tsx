@@ -19,7 +19,7 @@ import {
   STATE_PAGE_RESOURCE_KEY,
   // useRenderingState,
 } from './rendering';
-import { calculateLocalContextPath, enrichLocalContext, MyRend } from './resource-content';
+import { calculateLocalContextPath, MyRend } from './resource-content';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
@@ -60,24 +60,6 @@ export const SmPage = props => {
 
   const layoutContent = useResourceWithKey(layout, RESOURCE_CONTENT_KEY);
 
-  // console.log('layoutContent', layoutContent);
-
-  // useEffect(() => {
-  //   console.log('layoutElements', layoutElements, currentPageId);
-  //   if (currentPage && currentPage[RESOURCE_CONTENT_KEY]) {
-  //     dispatch(setRenderingLayoutElements(currentPage[RESOURCE_CONTENT_KEY][LAYOUT_ELEMENTS_KEY]));
-  //   }
-  // }, [currentPage]);
-
-  // useEffect(() => {
-  //   if (layout) {
-  //     const content = JSON.parse(layout.content);
-  //     console.log('SmPage layoutElements2', content);
-  //     dispatch(setRenderingLayout(layoutElements));
-  //     setLayoutContent(content);
-  //   }
-  // }, [layout]);
-
   if (!layoutContent) {
     return <span>Cannot display layout content in Page</span>;
   }
@@ -91,13 +73,7 @@ export const SmPage = props => {
       localContextPath={props.localContextPath}
     ></MyElem>
   );
-
-  // return <MyRend content={layoutContent} params={props.params} currentPath={builtPath} localContextPath={builtPath}></MyRend>;
 };
-
-// const useLayoutElements = () => {
-//   return useAppSelector(state => state.rendering[STATE_LAYOUT_ELEMENTS_KEY]);
-// };
 
 export const usePageResource = () => {
   return useAppSelector((state: RenderingSliceState) => state.rendering[STATE_PAGE_RESOURCE_KEY][RESOURCE_FROM_REF_KEY]);
@@ -115,35 +91,7 @@ export const useLocalContext = builtPath => {
   return useAppSelector((state: RenderingSliceState) => state.rendering[STATE_PAGE_CONTEXT_KEY]);
 };
 
-// const useLayoutElementId = layoutElementId => {
-//   const layoutElements = useLayoutElements();
-//   const [elementId, setElementId] = useState();
-
-//   useEffect(() => {
-//     if (layoutElements && layoutElementId) {
-//       console.log('useLayoutElementId', layoutElements, layoutElementId);
-//       setElementId(layoutElements.find(le => le[LAYOUT_ELEMENT_ID] === layoutElementId)[LAYOUT_ELEMENT_RESOURCE_ID]);
-//     }
-//   }, [layoutElements, layoutElementId]);
-
-//   return elementId;
-// };
-
-// const useLayoutElement = (layoutElementId, props) => {
-//   const elementId = useLayoutElementId(layoutElementId);
-
-//   return usePageResourceContentFromResourceId(elementId);
-// };
-
-// const useCurrentPage = (currentPageId, props) => {
-//   const elementId = useLayoutElementId(layoutElementId);
-
-//   return usePageResourceContentFromResourceId(currentPageId);
-// };
-
 const useLayoutElementResourceId = (layoutElements, layoutElementId) => {
-  // const [layoutElementContent, setLayoutElementContent] = useState();
-  // const layoutElement = useLayoutElement(layoutElementId, props);
   const [layoutElementResourceId, setLayoutElementResourceId] = useState();
 
   useEffect(() => {
@@ -162,19 +110,6 @@ const useLayoutElementResource = (currentPageId, layoutElementId) => {
   const layoutElements = useLayoutElements(currentPageId);
   const layoutElementResourceId = useLayoutElementResourceId(layoutElements, layoutElementId);
   return usePageResourceContentFromResourceId(layoutElementResourceId);
-  // const [layoutElementResource, setLayoutElementResource] = useState();
-
-  // useEffect(() => {
-  //   if (layoutElementResourceId) {
-
-  //     console.log('layoutElement222', layoutElement, layoutElementId);
-  //     setLayoutElementResource(layoutElements.find(le => le[LAYOUT_ELEMENT_ID] === layoutElementId)[LAYOUT_ELEMENT_RESOURCE_ID]);
-
-  //     // setLayoutElementContent(layoutElement[RESOURCE_CONTENT_KEY]);
-  //   }
-  // }, [layoutElementResourceId]);
-
-  // return layoutElementResourceId;
 };
 
 const useLayoutElementResourceContent = (layoutElements, layoutElementId) => {
@@ -234,65 +169,15 @@ export const SmLayoutElement = props => {
   const dispatch = useAppDispatch();
   const layoutElementId = props[LAYOUT_ELEMENT_ID];
   const builtPath = buildPath(props);
-  // const currentPffffageId = useAppSelector(state => state.rendering[STATE_CURRENT_PAGE_ID_KEY]);
-  // const layoutElement = useRenderingState(builtPath, RESOURCE_FROM_REF_KEY);
-  // const [layoutElementContent, setLayoutElementContent] = useState();
-  // const currentPage = usePageResourceContentFromResourceId(currentPageId);
-  // const layoutId = useLayoutId(currentPage);
-  // const layout = usePageResourceContentFromResourceId(layoutId);
-  // const layoutElementId = useLayoutElementId2(currentPage);
-  // const layoutElementResourceId = useLayoutResource(currentPage, layoutElementId);
   const currentPageId = useAppSelector((state: RenderingSliceState) => state.rendering[STATE_CURRENT_PAGE_ID_KEY]);
 
   const layoutElementResource = useLayoutElementResource(currentPageId, layoutElementId);
   const layoutElementResourceContent = useResourceWithKey(layoutElementResource, RESOURCE_CONTENT_KEY);
   const layoutElementResourceParameters = useResourceWithKey(layoutElementResource, RESOURCE_PARAMETERS_KEY);
-  // console.log('SmLayoutElement', layoutElementResourceParameters);
-
-  enrichLocalContext(builtPath);
-
-  // const pageContext = usePageContext();
-  // useEffect(() => {
-  // }, [pageContext]);
-  // const pageContext = usePageContext();
-  // const localContext = useResourceParametersFromState(builtPath);
-
-  // const layoutElementResourceContent = useLayoutElementResourceContent(layoutElements, layoutElementId);
-
-  // const resource = usePageResourceContentFromResourceId(resourceId);
-  // const resourceContent = useResourceWithKey(resource, RESOURCE_CONTENT_KEY);
-  // const resourceParameters = useResourceWithKey(resource, RESOURCE_PARAMETERS_KEY);
-  // const pageContext = usePageContext();
-  // const localContext = useResourceParametersFromState(builtPath);
-
-  // if (!layoutElements) {
-  //   return <span>Missing layout elements in layout Element</span>;
-  // }
 
   if (!layoutElementId) {
     return <span>Missing layoutElementId in layout Element</span>;
   }
-
-  // useEffect(() => {
-  //   console.log('SmLayoutElement layoutElement1', layoutElements);
-  //   if (!layoutElements || layoutElements.length === 0) {
-  //     return;
-  //   }
-  //   console.log('layoutelem...............', layoutElements.find(le => le.layoutElementId === layoutElementId).resourceId);
-  //   dispatch(
-  //     getResource({
-  //       resourceId: layoutElements.find(le => le.layoutElementId === layoutElementId).resourceId,
-  //       path: builtPath,
-  //     }),
-  //   );
-  // }, [layoutElements]);
-
-  // useEffect(() => {
-  //   console.log('SmLayoutElement layoutElement2', layoutElement);
-  //   if (layoutElement) {
-  //     setLayoutElementContent(layoutElement.content);
-  //   }
-  // }, [layoutElement]);
 
   console.log('layoutElementResourceContent', layoutElementResourceContent, props.path, props.currentPath);
 

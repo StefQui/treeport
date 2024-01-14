@@ -19,7 +19,7 @@ import {
 } from 'app/entities/rendering/rendering.reducer';
 import {
   buildPath,
-  ENTITY_KEY,
+  // ENTITY_KEY,
   PARAMS_SITE_LIST_SELECTED_SITE_KEY,
   RenderingSliceState,
   SiteListParams,
@@ -183,7 +183,7 @@ export const SiteList = (props: { params: SiteListParams; depth: string; current
         value: { value: selected.id, loading: false },
       }),
     );
-    dispatch(setAction({ source: builtPath, actionType: 'selectSite', entity: { entityType: 'SITE', [ENTITY_KEY]: selected } }));
+    dispatch(setAction({ source: builtPath, actionType: 'selectSite', entity: { entityType: 'SITE', entity: selected } }));
   };
 
   const handlePagination = currentPage => {
@@ -207,6 +207,17 @@ export const SiteList = (props: { params: SiteListParams; depth: string; current
     sortEntities();
   };
 
+  const handleCancelSelection = () => {
+    dispatch(
+      setInLocalState({
+        localContextPath: props.localContextPath,
+        parameterKey: props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY],
+        value: { value: null, loading: false },
+      }),
+    );
+    // dispatch(setAction({ source: builtPath, actionType: 'selectSite', entity: { entityType: 'SITE', entity: selected } }));
+  };
+
   const getSortIconByFieldName = (fieldName: string) => {
     // const renderingState = getRenderingStateForPath(rendering, props.path);
     const sortFieldName = paginationState.sort;
@@ -225,6 +236,9 @@ export const SiteList = (props: { params: SiteListParams; depth: string; current
           <h2 id="site-heading" data-cy="SiteHeading">
             <Translate contentKey="treeportApp.site.home.title">Sites</Translate>
             <div className="d-flex justify-content-end">
+              <Button className="me-2" color="info" onClick={handleCancelSelection} disabled={loading}>
+                <FontAwesomeIcon icon="sync" spin={loading} /> Cancel selection
+              </Button>
               <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
                 <FontAwesomeIcon icon="sync" spin={loading} />{' '}
                 <Translate contentKey="treeportApp.site.home.refreshListLabel">Refresh List</Translate>

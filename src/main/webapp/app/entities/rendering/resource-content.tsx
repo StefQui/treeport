@@ -13,7 +13,6 @@ import {
   emptyValue,
   getRootPath,
   getValueForPathInObject,
-  increment,
   MyElem,
   ParameterDefinition,
   Parameters,
@@ -30,6 +29,7 @@ import {
   RULE_TYPE,
   useCalculatedValueState,
   SmRefToResourceProps,
+  increment,
 } from './rendering';
 import { getSiteForRenderingStateParameters, setInLocalState } from './rendering.reducer';
 

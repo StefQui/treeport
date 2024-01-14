@@ -1,11 +1,15 @@
 import { useAppDispatch } from 'app/config/store';
+import { IResource } from 'app/shared/model/resource.model';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { usePageContext, useResourceStateFromPageResources } from './layout';
 import {
+  ComponentResource,
+  ComponentResourceProperties,
   COMPONENT_TYPE,
   getRootPath,
   getValueForPathInObject,
+  PageResourceContent,
   PARAMETER_DEFINITIONS,
   RENDERING_CONTEXT,
   RESOURCE_CONTENT_KEY,
@@ -32,7 +36,7 @@ export const isError = (resourceState: ValueInState) => {
   return resourceState && resourceState.error;
 };
 
-export const useResourceFromPageResources = (resourceId, fetchedResourceState: ValueInState) => {
+export const useResourceFromPageResources = (resourceId: string, fetchedResourceState: ValueInState): IResource | null => {
   const [resource, setResource] = useState();
   const dispatch = useAppDispatch();
 
@@ -60,26 +64,26 @@ export const useResourceFromPageResources = (resourceId, fetchedResourceState: V
   return resource;
 };
 
-export const useResourceFromPageResourcesState = resourceId => {
-  const fetchedResourceState = useResourceStateFromPageResources(resourceId);
+export const useResourceFromPageResourcesState = (resourceId: string): IResource | null => {
+  const fetchedResourceState: ValueInState = useResourceStateFromPageResources(resourceId);
 
   return useResourceFromPageResources(resourceId, fetchedResourceState);
 };
 
-export const useResourceContentFromResource = resource => {
-  const [resourceContentAsJson, setResourceContentAsJson] = useState({});
+export const useResourceContentFromResource = (resource: IResource): ComponentResource | null => {
+  const [resourceContentAsJson, setResourceContentAsJson] = useState(null);
 
   useEffect(() => {
     if (resource) {
       try {
         // console.log('resource', resource);
-        const contentAsJson = JSON.parse(resource[RESOURCE_CONTENT_PROPERTY]);
+        const contentAsJson = JSON.parse(resource.content);
         // console.log('resourceAfter', contentAsJson);
         setResourceContentAsJson(contentAsJson);
       } catch (ex) {
         setResourceContentAsJson({
-          [RESOURCE_CONTENT_KEY]: {
-            [COMPONENT_TYPE]: 'ERROR:Cannot parse json',
+          content: {
+            componentType: 'ERROR:Cannot parse json',
           },
         });
       }
@@ -89,13 +93,13 @@ export const useResourceContentFromResource = resource => {
   return resourceContentAsJson;
 };
 
-export const usePageResourceContentFromResourceId = resourceId => {
-  const resource = useResourceFromPageResourcesState(resourceId);
+export const usePageResourceContentFromResourceId = (resourceId): ComponentResource | null => {
+  const resource: IResource | null = useResourceFromPageResourcesState(resourceId);
   return useResourceContentFromResource(resource);
 };
 
-export const useResourceWithKey = (resource, resourceKey) => {
-  const [resourceValueForKey, setResourceValueForKey] = useState();
+export const useResourceWithKey = (resource: ComponentResource, resourceKey: ComponentResourceProperties) => {
+  const [resourceValueForKey, setResourceValueForKey] = useState(null);
   useEffect(() => {
     if (resource) {
       setResourceValueForKey(getValueForPathInObject(resource, resourceKey));

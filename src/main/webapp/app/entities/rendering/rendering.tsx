@@ -40,7 +40,7 @@ import { IAttribute, IAttributeWithValue } from 'app/shared/model/attribute.mode
 //   return <span>const is required in SmText</span>;
 // };
 
-export function buildPath(props) {
+export function buildPath(props): string {
   const path = props.path;
   if (!path) {
     return props.currentPath;
@@ -86,22 +86,22 @@ export const applyPath = (path, pathToApply) => {
 // export const ATT_CONFIG_KEY = 'attConfig';
 // export const CAMPAIGN_ID_KEY = 'campaignId';
 // export const REF_TO_PATH_KEY = 'refToPath';
-export const REF_TO_PAGE_CONTEXT_KEY = 'refToPageContext';
-export const REF_TO_LC_KEY = 'refToLocalContext';
-export const REF_TO_LC_PARAMETER_KEY_KEY = 'parameterKey';
-export const REF_TO_LC_PROPERTY_KEY = 'property';
-export const CONST_KEY = 'const';
-export const CONST_VALUE_KEY = 'constValue';
-export const SITE_VALUE_KEY = 'siteValue';
-export const ENTITY_KEY = 'entity';
-export const ENTITY_IDS_KEY = 'entityIds';
-export const RESOURCE_NAME_KEY = 'name';
-export const FIELDS_ATTRIBUTES_KEY = 'fieldsAttributes';
-export const UPDATED_ATTRIBUTE_IDS_KEY = 'updatedAttributeIds';
-export const LAYOUT_RESOURCE_ID_KEY = 'layoutResourceId';
-export const LAYOUT_ELEMENTS_KEY = 'layoutElements';
-export const LAYOUT_ELEMENT_ID = 'layoutElementId';
-export const LAYOUT_ELEMENT_RESOURCE_ID = 'resourceId';
+// export const REF_TO_PAGE_CONTEXT_KEY = 'refToPageContext';
+// export const REF_TO_LC_KEY = 'refToLocalContext';
+// export const REF_TO_LC_PARAMETER_KEY_KEY = 'parameterKey';
+// export const REF_TO_LC_PROPERTY_KEY = 'property';
+// export const CONST_KEY = 'const';
+// export const CONST_VALUE_KEY = 'constValue';
+// export const SITE_VALUE_KEY = 'siteValue';
+// export const ENTITY_KEY = 'entity';
+// export const ENTITY_IDS_KEY = 'entityIds';
+// export const RESOURCE_NAME_KEY = 'name';
+// export const FIELDS_ATTRIBUTES_KEY = 'fieldsAttributes';
+// export const UPDATED_ATTRIBUTE_IDS_KEY = 'updatedAttributeIds';
+// export const LAYOUT_RESOURCE_ID_KEY = 'layoutResourceId';
+// export const LAYOUT_ELEMENTS_KEY = 'layoutElements';
+// export const LAYOUT_ELEMENT_ID = 'layoutElementId';
+// export const LAYOUT_ELEMENT_RESOURCE_ID = 'resourceId';
 export const RESOURCE_FROM_REF_KEY = 'resource';
 export const SITE_FROM_REF_KEY = 'site';
 export const RESOURCE_CONTENT_KEY = 'content';
@@ -167,6 +167,16 @@ export type SmInputParams = {
   outputParameterKey: string;
   defaultValue: RuleDefinition;
 };
+
+export type PageResourceParams = {
+  layoutResourceId: string;
+  layoutElements: PageLayoutElement[];
+};
+
+export type SmLayoutElementParams = {
+  layoutElementId: string;
+};
+
 export type PageLayoutElement = {
   layoutElementId: string;
   resourceId: string;
@@ -176,15 +186,28 @@ export type MenuItem = {
   path: string;
   pageId: string;
 };
+export type Display = {
+  valueExists?: RuleDefinition;
+  valueDoesNotExist?: RuleDefinition;
+};
 export type CommonContent = {
   path: string;
   col?: number;
+  display?: Display;
   border?: boolean;
 };
 
 export type SmTextResourceContent = CommonContent & {
   componentType: 'SmText';
   params: TextParams;
+};
+
+export type SmDisplayerResourceContent = CommonContent & {
+  componentType: 'displayer';
+  params: {
+    display: Display;
+  };
+  wrapped: ComponentResourceContent;
 };
 
 export type SmInputResourceContent = CommonContent & {
@@ -216,8 +239,7 @@ export type SiteListResourceContent = CommonContent & {
 
 export type PageResourceContent = CommonContent & {
   componentType: 'page';
-  layoutResourceId: string;
-  layoutElements: PageLayoutElement[];
+  params: PageResourceParams;
 };
 
 export type MenuResourceContent = CommonContent & {
@@ -227,7 +249,7 @@ export type MenuResourceContent = CommonContent & {
 
 export type LayoutElementResourceContent = CommonContent & {
   componentType: 'layoutElement';
-  layoutElementId: string;
+  params: SmLayoutElementParams;
 };
 
 export type VerticalPanelResourceElement = CommonContent & {
@@ -237,6 +259,7 @@ export type VerticalPanelResourceElement = CommonContent & {
 
 export type ComponentResourceContent =
   | SmTextResourceContent
+  | SmDisplayerResourceContent
   | SmInputResourceContent
   | SmRefToResourceResourceContent
   | FormResourceContent
@@ -249,8 +272,20 @@ export type ComponentResourceContent =
 
 export type ComponentResourceParameters = {};
 
+export type LayoutElementComponentResource = {
+  content: LayoutElementResourceContent;
+  parameters?: ComponentResourceParameters;
+};
+
+export type ComponentResourceProperties = 'content' | 'parameters';
+
 export type ComponentResource = {
   content: ComponentResourceContent;
+  parameters?: ComponentResourceParameters;
+};
+
+export type PageComponentResource = {
+  content: PageResourceContent;
   parameters?: ComponentResourceParameters;
 };
 
@@ -324,11 +359,15 @@ export type CommonProps = {
   depth: string;
   currentPath: string;
   path: string;
+  display?: Display;
+
   localContextPath: string;
 };
 export type SmTextProps = CommonProps & { params: TextParams };
 export type AttRefProps = CommonProps & { params: AttRefParams };
 export type SmRefToResourceProps = CommonProps & { params: RefToResourceParams };
+export type SmPageProps = CommonProps & { params: PageResourceParams };
+export type SmLayoutElementProps = CommonProps & { params: SmLayoutElementParams };
 
 export type Parameters = { [path: string]: ValueInState };
 export type ComponentsState = {
@@ -402,6 +441,11 @@ export const getValueForPathInObject = (obj, path?) => {
 
 export const SmText = (props: SmTextProps) => {
   // console.log('SmText', props);
+  // if (props.input && display) {
+  //   console.log('SmText', props);
+  // }
+  // const shouldDisplay = useShouldDisplay(props);
+
   if (!props.params) {
     return (
       <span>
@@ -421,6 +465,7 @@ export const SmText = (props: SmTextProps) => {
 
   const calculatedValue: ValueInState = useCalculatedValueState(props, textValue);
   // console.log('SmText', textValue, calculatedValue);
+  // if (!shouldDisplay) return hidden();
 
   if (calculatedValue) {
     if (calculatedValue.loading) {
@@ -828,7 +873,6 @@ export const SmAttRef = (props: AttRefProps) => {
   const builtPath = buildPath(props);
   const attribute = useAppSelector((state: RenderingSliceState) => {
     const aaa = state.rendering.componentsState[builtPath];
-    console.log('aaa...', aaa);
     return aaa ? (aaa.attribute ? aaa.attribute : null) : null;
   });
 
@@ -904,8 +948,12 @@ export const displayWarning = (resourceId, campaignId, attConfig) => {
 export const PATH_SEPARATOR = '/';
 export const ROOT_PATH_SEPARATOR = '/';
 
+export const hidden = () => {
+  return <span>Hidden...</span>;
+};
 export const MyVerticalPanel = props => {
-  // console.log('MyVerticalPanel', props);
+  // const shouldDisplay = useShouldDisplay(props);
+  // if (!shouldDisplay) return hidden();
 
   const renderItems = items =>
     items.map((item, index) => (
@@ -920,6 +968,34 @@ export const MyVerticalPanel = props => {
     ));
 
   return <Row className="border-blue padding-4">{renderItems(props.items)}</Row>;
+};
+export const SmDisplayer = props => {
+  console.log('SmDisplayer', props.params);
+  const shouldDisplay = useShouldDisplay(props.params);
+
+  if (!shouldDisplay) return hidden();
+
+  // const renderItems = items =>
+  //   items.map((item, index) => (
+  //     <MyElem
+  //       key={index}
+  //       depth={increment(props.depth)}
+  //       input={{ ...item }}
+  //       currentPath={props.currentPath + PATH_SEPARATOR + props.path}
+  //       form={props.form}
+  //       localContextPath={props.localContextPath}
+  //     ></MyElem>
+  //   ));
+
+  return (
+    <MyElem
+      depth={increment(props.depth)}
+      input={{ ...props.wrapped }}
+      currentPath={props.currentPath + PATH_SEPARATOR + props.path}
+      form={props.form}
+      localContextPath={props.localContextPath}
+    ></MyElem>
+  );
 };
 
 // export const MyInput = props => {
@@ -963,8 +1039,19 @@ export const MyVerticalPanel = props => {
 // };
 
 export const MyElem = props => {
-  // console.log('MyElem', props);
+  if (props.input && props.input.display) {
+    console.log('MyElem ----Display', props.input);
+  }
+  // const shouldDisplay = useShouldDisplay(props.input);
+
   const renderSwitch = params => {
+    // if (!shouldDisplay) {
+    //   return;
+    //   // <MyWrapper {...{ ...props.input, currentPath: props.currentPath, depth: props.depth, localContextPath: props.localContextPath }}>
+    //   <Col md={props.col ?? 12}>Hidden</Col>;
+    //   // </MyWrapper>;
+    // }
+
     switch (params.componentType) {
       // case 'textBasic':
       //   return <TextBasic {...params}></TextBasic>;
@@ -996,6 +1083,8 @@ export const MyElem = props => {
         return <SmPage {...params}></SmPage>;
       case 'menu':
         return <SmMenu {...params}></SmMenu>;
+      case 'displayer':
+        return <SmDisplayer {...params}></SmDisplayer>;
       case ELEM_LAYOUT_ELEMENT:
         return <SmLayoutElement {...params}></SmLayoutElement>;
       // case 'resourceContent':
@@ -1006,6 +1095,11 @@ export const MyElem = props => {
         return <p>Not implemented...{params.componentType}</p>;
     }
   };
+  if (props.input && props.input.display) {
+    const shouldDisplay = useShouldDisplay(props.input);
+
+    if (!shouldDisplay) return;
+  }
 
   return (
     <MyWrapper {...{ ...props.input, currentPath: props.currentPath, depth: props.depth, localContextPath: props.localContextPath }}>
@@ -1035,8 +1129,15 @@ export const MyWrapper = ({ children, ...props }) => {
   const lc = useRefToLocalContext(props.localContextPath, calculateLocalContextPath(props));
 
   const displayPath = false;
+  // const shouldDisplay = useShouldDisplay(props);
+  // if (!shouldDisplay) {
+  //   console.log('evaluateShouldDisplay-----------', props.componentType, shouldDisplay);
+  // } else {
+  //   console.log('evaluateShouldDisplay', props.componentType, shouldDisplay);
+  // }
+
   if (displayPath) {
-    <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>;
+    // <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>;
 
     return (
       <Col md={props.col ?? 12} className={cn}>
@@ -1058,9 +1159,82 @@ export const MyWrapper = ({ children, ...props }) => {
       </Col>
     );
   }
+  // if (!shouldDisplay) {
+  //   return (
+  //     <Col md={props.col ?? 12} className={cn}>
+  //       Hidden
+  //     </Col>
+  //   );
+  // }
+
   return (
     <Col md={props.col ?? 12} className={cn}>
       {children}
     </Col>
   );
+};
+
+const hasChanged = (previous?: ValueInState, next?: ValueInState) => {
+  if (!previous) {
+    return !!next;
+  }
+  if (!next) {
+    return true;
+  }
+  return (
+    previous.error !== next.error || previous.loading !== next.loading || previous.value !== next.value || previous.usedId !== next.usedId
+  );
+};
+
+const useShouldDisplay = (props): boolean => {
+  const display = props.display;
+  const [previous, setPrevious] = useState(null);
+  if (display && display.valueExists) {
+    const valueExists: ValueInState = useCalculatedValueState(props, display.valueExists);
+    const [shouldDisplay, setShouldDisplay] = useState(null);
+    useEffect(() => {
+      if (valueExists && hasChanged(previous, valueExists)) {
+        setShouldDisplay(evaluateValueExistsShouldDisplay(valueExists));
+        setPrevious(valueExists);
+      }
+    }, [valueExists]);
+    return shouldDisplay;
+  } else if (display && display.valueDoesNotExist) {
+    const valueDoesNotExist: ValueInState = useCalculatedValueState(props, display.valueDoesNotExist);
+    const [shouldDisplay, setShouldDisplay] = useState(null);
+    useEffect(() => {
+      if (valueDoesNotExist && hasChanged(previous, valueDoesNotExist)) {
+        setShouldDisplay(evaluateValueDoesNotExistShouldDisplay(valueDoesNotExist));
+        setPrevious(valueDoesNotExist);
+      }
+    }, [valueDoesNotExist]);
+    return shouldDisplay;
+  }
+};
+
+const evaluateValueExistsShouldDisplay = valueExists => {
+  if (valueExists) {
+    if (valueExists.loading) {
+      return false;
+    } else if (valueExists.error) {
+      return false;
+    } else {
+      return !!valueExists.value;
+    }
+  }
+  return true;
+};
+const evaluateValueDoesNotExistShouldDisplay = valueDoesNotExist => {
+  if (valueDoesNotExist) {
+    if (valueDoesNotExist) {
+      if (valueDoesNotExist.loading) {
+        return false;
+      } else if (valueDoesNotExist.error) {
+        return false;
+      } else {
+        return !valueDoesNotExist.value;
+      }
+    }
+  }
+  return true;
 };

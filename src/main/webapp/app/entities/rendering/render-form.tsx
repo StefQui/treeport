@@ -11,9 +11,9 @@ import {
   ActionState,
   buildPath,
   displayWarning,
-  ENTITY_IDS_KEY,
-  ENTITY_KEY,
-  FIELDS_ATTRIBUTES_KEY,
+  // ENTITY_IDS_KEY,
+  // ENTITY_KEY,
+  // FIELDS_ATTRIBUTES_KEY,
   FormAttributeContextParam,
   FormFieldParam,
   increment,
@@ -29,7 +29,7 @@ import {
   ValueInState,
   ROOT_PATH_SEPARATOR,
   STATE_RS_SELF_KEY,
-  UPDATED_ATTRIBUTE_IDS_KEY,
+  // UPDATED_ATTRIBUTE_IDS_KEY,
   useCalculatedValueState,
   useCalculatedValueStateIfNotNull,
 } from './rendering';
@@ -56,7 +56,7 @@ const sendUpdateAttributesActionOnSave = (builtPath: string, updatedAttributeIds
       const action: ActionState = {
         source: builtPath,
         actionType: 'updateAttribute',
-        [ENTITY_KEY]: { entityType: 'ATTRIBUTES', entityIds: updatedAttributeIds },
+        entity: { entityType: 'ATTRIBUTES', entityIds: updatedAttributeIds },
       };
       dispatch(setAction(action));
       fetchAttributes(dispatch, builtPath, mapOfFields);
@@ -87,9 +87,9 @@ export const SmForm = props => {
     );
   };
 
-  const fieldAttributes: { [key: string]: IAttributeWithValue } = useStateInSelf(builtPath, FIELDS_ATTRIBUTES_KEY);
+  const fieldAttributes: { [key: string]: IAttributeWithValue } = useStateInSelf(builtPath, 'fieldAttributes');
 
-  const updatedAttributeIds: string[] = useStateInSelf(builtPath, UPDATED_ATTRIBUTE_IDS_KEY);
+  const updatedAttributeIds: string[] = useStateInSelf(builtPath, 'updatedAttributeIds');
 
   const [mapOfFields, setMapOfFields] = useState({});
 
@@ -254,7 +254,7 @@ export const SmAttributeField = props => {
     return <span>form is mandatory in AttributeField</span>;
   }
 
-  const attribute: IAttributeWithValue = useStateInSelfWithKey(props.form.formPath, FIELDS_ATTRIBUTES_KEY, props.fieldId);
+  const attribute: IAttributeWithValue = useStateInSelfWithKey(props.form.formPath, 'fieldAttributes', props.fieldId);
 
   if (!attribute) {
     return <span>Missing attribute</span>;

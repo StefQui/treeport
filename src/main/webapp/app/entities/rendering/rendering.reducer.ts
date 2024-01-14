@@ -7,11 +7,11 @@ import { IAttribute, IAttributeWithValue } from 'app/shared/model/attribute.mode
 import { IAttributeIdExploded } from 'app/shared/model/attribute-id-exploded';
 import { IResource } from 'app/shared/model/resource.model';
 import {
-  FIELDS_ATTRIBUTES_KEY,
+  // FIELDS_ATTRIBUTES_KEY,
   STATE_PAGE_CONTEXT_KEY,
   STATE_RS_SELF_KEY,
   STATE_RS_OUTPUTS_KEY,
-  UPDATED_ATTRIBUTE_IDS_KEY,
+  // UPDATED_ATTRIBUTE_IDS_KEY,
   RENDERING_CONTEXT,
   ValueInState,
   RENDERING_SLICE_KEY,
@@ -239,11 +239,11 @@ export const RenderingSlice = createSlice({
         }
       })
       .addMatcher(isFulfilled(getFieldAttributesAndConfig), (state: RenderingState, action): RenderingState => {
-        return putInRenderingStateSelf(state, action.meta.arg.path, { [FIELDS_ATTRIBUTES_KEY]: action.payload.data });
+        return putInRenderingStateSelf(state, action.meta.arg.path, { fieldAttributes: action.payload.data });
         // return putInRenderingStateOutputs(state, action.meta.arg.path, { [FIELDS_ATTRIBUTES_KEY]: action.payload.data });
       })
       .addMatcher(isFulfilled(saveAttributes), (state: RenderingState, action): RenderingState => {
-        return putInRenderingStateSelf(state, action.meta.arg.path, { [UPDATED_ATTRIBUTE_IDS_KEY]: action.payload.data });
+        return putInRenderingStateSelf(state, action.meta.arg.path, { updatedAttributeIds: action.payload.data });
       });
   },
 });

@@ -88,6 +88,14 @@ const r3: ComponentResource = {
         componentType: 'verticalPanel',
         path: 'vp12',
         col: 4,
+        display: {
+          valueExists: {
+            ruleType: 'refToLocalContext',
+            path: '/layout-content',
+            sourceParameterKey: 'sid99',
+          },
+        },
+
         border: true,
         items: [
           {
@@ -178,6 +186,7 @@ const r3: ComponentResource = {
             componentType: 'SmRefToResource',
             path: 'ref-to-fform',
             col: 12,
+
             params: {
               resourceId: 'rform',
               parameterDefinitions: [
@@ -204,6 +213,24 @@ const r3: ComponentResource = {
             },
           },
         ],
+      },
+      {
+        componentType: 'SmText',
+        path: 'vp13',
+        col: 4,
+        display: {
+          valueDoesNotExist: {
+            ruleType: 'refToLocalContext',
+            path: '/layout-content',
+            sourceParameterKey: 'sid99',
+          },
+        },
+        params: {
+          textValue: {
+            ruleType: 'constant',
+            constValue: 'Select a site...',
+          },
+        },
       },
 
       // {
@@ -347,6 +374,38 @@ const r5: ComponentResource = {
       //     },
       //   },
       // },
+      {
+        componentType: 'SmText',
+        path: 't1-valueExists',
+        display: {
+          valueExists: {
+            ruleType: 'constant',
+            constValue: 'a',
+          },
+        },
+        params: {
+          textValue: {
+            ruleType: 'constant',
+            constValue: 'Displayed if valueExists',
+          },
+        },
+      },
+      {
+        componentType: 'SmText',
+        path: 't2-valueDoesNotExist',
+        display: {
+          valueDoesNotExist: {
+            ruleType: 'constant',
+            constValue: 'a',
+          },
+        },
+        params: {
+          textValue: {
+            ruleType: 'constant',
+            constValue: 'Displayed if valueDoesNotExist',
+          },
+        },
+      },
       {
         componentType: 'SmText',
         path: 'ref-to-theoutputFromInput',
@@ -645,7 +704,9 @@ const rlayout: ComponentResource = {
       {
         componentType: 'layoutElement',
         path: 'layout-menutop',
-        layoutElementId: 'menuTop',
+        params: {
+          layoutElementId: 'menuTop',
+        },
       },
       {
         componentType: 'SmAttRef',
@@ -670,7 +731,9 @@ const rlayout: ComponentResource = {
       {
         componentType: 'layoutElement',
         path: 'layout-content',
-        layoutElementId: 'theContent',
+        params: {
+          layoutElementId: 'theContent',
+        },
       },
     ],
   },
@@ -680,21 +743,23 @@ const rpage1: ComponentResource = {
   content: {
     componentType: 'page',
     path: 'pag-1',
-    layoutResourceId: 'rlayout',
-    layoutElements: [
-      {
-        layoutElementId: 'menuTop',
-        resourceId: 'rmenuTop',
-      },
-      {
-        layoutElementId: 'theContent',
-        resourceId: 'r3',
-      },
-    ],
+    params: {
+      layoutResourceId: 'rlayout',
+      layoutElements: [
+        {
+          layoutElementId: 'menuTop',
+          resourceId: 'rmenuTop',
+        },
+        {
+          layoutElementId: 'theContent',
+          resourceId: 'r3',
+        },
+      ],
+    },
   },
   parameters: [
     {
-      parameterKey: 'sid',
+      parameterKey: 'sid-notused',
       parameterType: 'string',
     },
     {
@@ -708,17 +773,19 @@ const rpage2: ComponentResource = {
   content: {
     componentType: 'page',
     path: 'page-2',
-    layoutResourceId: 'rlayout',
-    layoutElements: [
-      {
-        layoutElementId: 'menuTop',
-        resourceId: 'rmenuTop',
-      },
-      {
-        layoutElementId: 'theContent',
-        resourceId: 'r5',
-      },
-    ],
+    params: {
+      layoutResourceId: 'rlayout',
+      layoutElements: [
+        {
+          layoutElementId: 'menuTop',
+          resourceId: 'rmenuTop',
+        },
+        {
+          layoutElementId: 'theContent',
+          resourceId: 'r5',
+        },
+      ],
+    },
   },
   parameters: [
     {

@@ -2,21 +2,30 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import React, { useEffect, useState } from 'react';
 import {
   buildPath,
+  ComponentResource,
   increment,
-  LAYOUT_ELEMENTS_KEY,
-  LAYOUT_ELEMENT_ID,
-  LAYOUT_ELEMENT_RESOURCE_ID,
-  LAYOUT_RESOURCE_ID_KEY,
+  LayoutElementComponentResource,
+  LayoutElementResourceContent,
+  // LAYOUT_ELEMENTS_KEY,
+  // LAYOUT_ELEMENT_ID,
+  // LAYOUT_ELEMENT_RESOURCE_ID,
+  // LAYOUT_RESOURCE_ID_KEY,
   MyElem,
+  PageComponentResource,
+  PageLayoutElement,
+  PageResourceContent,
   PATH_SEPARATOR,
   RenderingSliceState,
   RESOURCE_CONTENT_KEY,
   RESOURCE_FROM_REF_KEY,
   RESOURCE_PARAMETERS_KEY,
+  SmLayoutElementProps,
+  SmPageProps,
   STATE_CURRENT_PAGE_ID_KEY,
   STATE_PAGE_CONTEXT_KEY,
   STATE_PAGE_RESOURCES_KEY,
   STATE_PAGE_RESOURCE_KEY,
+  ValueInState,
   // useRenderingState,
 } from './rendering';
 import { calculateLocalContextPath, MyRend } from './resource-content';
@@ -29,21 +38,21 @@ import { BrowserRouter, Link, NavLink, Router } from 'react-router-dom';
 import { fillPageContext, usePageResourceContentFromResourceId, useResourceWithKey } from './render-resource-page';
 // import { setRenderingLayoutElements } from './rendering.reducer';
 
-export const SmPage = props => {
+export const SmPage = (props: SmPageProps) => {
   // console.log('SmPage', props);
   const dispatch = useAppDispatch();
 
-  const layoutId = props[LAYOUT_RESOURCE_ID_KEY];
+  const layoutId = props.params.layoutResourceId;
   const builtPath = buildPath(props);
   const currentPageId = useAppSelector((state: RenderingSliceState) => state.rendering[STATE_CURRENT_PAGE_ID_KEY]);
 
   if (!layoutId) {
-    return <span>Missing {LAYOUT_RESOURCE_ID_KEY} in Page</span>;
+    return <span>Missing layoutResourceId in Page</span>;
   }
 
   const layout = usePageResourceContentFromResourceId(layoutId);
   const currentPage = usePageResourceContentFromResourceId(currentPageId);
-  const currentPageParameters = useResourceWithKey(currentPage, RESOURCE_PARAMETERS_KEY);
+  const currentPageParameters = useResourceWithKey(currentPage, 'parameters');
 
   // const layoutElements = useAppSelector(state => state.rendering[STATE_LAYOUT_ELEMENTS_KEY]);
   // console.log('props.depth', props.depth);
@@ -53,12 +62,11 @@ export const SmPage = props => {
   }
 
   // console.log('layout', layout);
+  const layoutContent = useResourceWithKey(layout, 'content');
 
   if (!layout) {
     return <span>Cannot fing layout for {layoutId} in Page</span>;
   }
-
-  const layoutContent = useResourceWithKey(layout, RESOURCE_CONTENT_KEY);
 
   if (!layoutContent) {
     return <span>Cannot display layout content in Page</span>;
@@ -68,7 +76,7 @@ export const SmPage = props => {
     <MyElem
       input={layoutContent}
       depth={increment(props.depth)}
-      params={props.params ? props.params.params : null}
+      // params={props.params ? props.params.params : null}
       currentPath={builtPath}
       localContextPath={props.localContextPath}
     ></MyElem>
@@ -79,25 +87,28 @@ export const usePageResource = () => {
   return useAppSelector((state: RenderingSliceState) => state.rendering[STATE_PAGE_RESOURCE_KEY][RESOURCE_FROM_REF_KEY]);
 };
 
-export const useResourceStateFromPageResources = resourceId => {
-  return useAppSelector((state: RenderingSliceState) => state.rendering[STATE_PAGE_RESOURCES_KEY][resourceId]);
+export const useResourceStateFromPageResources = (resourceId): ValueInState => {
+  return useAppSelector((state: RenderingSliceState) => state.rendering.pageResources[resourceId]);
 };
 
 export const usePageContext = () => {
-  return useAppSelector((state: RenderingSliceState) => state.rendering[STATE_PAGE_CONTEXT_KEY]);
+  return useAppSelector((state: RenderingSliceState) => state.rendering.pageContext);
 };
 
-export const useLocalContext = builtPath => {
-  return useAppSelector((state: RenderingSliceState) => state.rendering[STATE_PAGE_CONTEXT_KEY]);
-};
+// export const useLocalContext = builtPath => {
+//   return useAppSelector((state: RenderingSliceState) => state.rendering[STATE_PAGE_CONTEXT_KEY]);
+// };
 
-const useLayoutElementResourceId = (layoutElements, layoutElementId) => {
-  const [layoutElementResourceId, setLayoutElementResourceId] = useState();
+const useLayoutElementResourceId = (layoutElements: PageLayoutElement[], layoutElementId: string) => {
+  const [layoutElementResourceId, setLayoutElementResourceId] = useState(null);
 
   useEffect(() => {
     if (layoutElements) {
       // console.log('layoutElement222', layoutElement, layoutElementId);
-      setLayoutElementResourceId(layoutElements.find(le => le[LAYOUT_ELEMENT_ID] === layoutElementId)[LAYOUT_ELEMENT_RESOURCE_ID]);
+      const layoutElement = layoutElements.find(le => le.layoutElementId === layoutElementId);
+      if (layoutElement) {
+        setLayoutElementResourceId(layoutElement.resourceId);
+      }
 
       // setLayoutElementContent(layoutElement[RESOURCE_CONTENT_KEY]);
     }
@@ -106,74 +117,74 @@ const useLayoutElementResourceId = (layoutElements, layoutElementId) => {
   return layoutElementResourceId;
 };
 
-const useLayoutElementResource = (currentPageId, layoutElementId) => {
-  const layoutElements = useLayoutElements(currentPageId);
-  const layoutElementResourceId = useLayoutElementResourceId(layoutElements, layoutElementId);
-  return usePageResourceContentFromResourceId(layoutElementResourceId);
+const useLayoutElementResource = (currentPageId, layoutElementId): LayoutElementComponentResource => {
+  const layoutElements: PageLayoutElement[] = useLayoutElements(currentPageId);
+  const layoutElementResourceId: string = useLayoutElementResourceId(layoutElements, layoutElementId);
+  return usePageResourceContentFromResourceId(layoutElementResourceId) as LayoutElementComponentResource;
 };
 
-const useLayoutElementResourceContent = (layoutElements, layoutElementId) => {
-  const layoutElementResource = useLayoutElementResource(layoutElements, layoutElementId);
-  // return usePageResourceContentFromResourceId(layoutElementResourceId);
-  const [layoutElementResourceContent, setLayoutElementResourceContent] = useState();
+// const useLayoutElementResourceContent = (layoutElements, layoutElementId) => {
+//   const layoutElementResource = useLayoutElementResource(layoutElements, layoutElementId);
+//   // return usePageResourceContentFromResourceId(layoutElementResourceId);
+//   const [layoutElementResourceContent, setLayoutElementResourceContent] = useState();
 
+//   useEffect(() => {
+//     if (layoutElementResource) {
+//       // console.log('layoutElement222', layoutElementId);
+//       setLayoutElementResourceContent(layoutElementResource[RESOURCE_CONTENT_KEY]);
+
+//       // setLayoutElementContent(layoutElement[RESOURCE_CONTENT_KEY]);
+//     }
+//   }, [layoutElementResource]);
+
+//   return layoutElementResourceContent;
+// };
+
+// export const useLayoutElementId2 = currentPage => {
+//   const [layoutElementId, setLayoutElementId] = useState();
+//   useEffect(() => {
+//     if (currentPage && currentPage[RESOURCE_CONTENT_KEY]) {
+//       // console.log('layoutElement333', currentPage);
+//       setLayoutElementId(currentPage[RESOURCE_CONTENT_KEY][LAYOUT_RESOURCE_ID_KEY]);
+//     }
+//   }, [currentPage]);
+
+//   return layoutElementId;
+// };
+
+// export const useLayoutId = currentPage => {
+//   const [layoutId, setLayoutId] = useState();
+//   useEffect(() => {
+//     if (currentPage && currentPage[RESOURCE_CONTENT_KEY]) {
+//       // console.log('layoutElement333', currentPage);
+//       setLayoutId(currentPage[RESOURCE_CONTENT_KEY][LAYOUT_RESOURCE_ID_KEY]);
+//     }
+//   }, [currentPage]);
+
+//   return layoutId;
+// };
+
+const useLayoutElements = (currentPageId): PageLayoutElement[] => {
+  const [layoutElements, setLayoutElements] = useState([]);
+  const currentPage: PageComponentResource = usePageResourceContentFromResourceId(currentPageId) as PageComponentResource;
   useEffect(() => {
-    if (layoutElementResource) {
-      // console.log('layoutElement222', layoutElementId);
-      setLayoutElementResourceContent(layoutElementResource[RESOURCE_CONTENT_KEY]);
-
-      // setLayoutElementContent(layoutElement[RESOURCE_CONTENT_KEY]);
-    }
-  }, [layoutElementResource]);
-
-  return layoutElementResourceContent;
-};
-
-export const useLayoutElementId2 = currentPage => {
-  const [layoutElementId, setLayoutElementId] = useState();
-  useEffect(() => {
-    if (currentPage && currentPage[RESOURCE_CONTENT_KEY]) {
-      // console.log('layoutElement333', currentPage);
-      setLayoutElementId(currentPage[RESOURCE_CONTENT_KEY][LAYOUT_RESOURCE_ID_KEY]);
-    }
-  }, [currentPage]);
-
-  return layoutElementId;
-};
-
-export const useLayoutId = currentPage => {
-  const [layoutId, setLayoutId] = useState();
-  useEffect(() => {
-    if (currentPage && currentPage[RESOURCE_CONTENT_KEY]) {
-      // console.log('layoutElement333', currentPage);
-      setLayoutId(currentPage[RESOURCE_CONTENT_KEY][LAYOUT_RESOURCE_ID_KEY]);
-    }
-  }, [currentPage]);
-
-  return layoutId;
-};
-
-const useLayoutElements = currentPageId => {
-  const [layoutElements, setLayoutElements] = useState();
-  const currentPage = usePageResourceContentFromResourceId(currentPageId);
-  useEffect(() => {
-    if (currentPage && currentPage[RESOURCE_CONTENT_KEY]) {
-      setLayoutElements(currentPage[RESOURCE_CONTENT_KEY][LAYOUT_ELEMENTS_KEY]);
+    if (currentPage && currentPage.content && currentPage.content.params) {
+      setLayoutElements(currentPage.content.params.layoutElements);
     }
   }, [currentPage]);
   return layoutElements;
 };
 
-export const SmLayoutElement = props => {
+export const SmLayoutElement = (props: SmLayoutElementProps) => {
   // console.log('SmLayoutElement', props);
   const dispatch = useAppDispatch();
-  const layoutElementId = props[LAYOUT_ELEMENT_ID];
+  const layoutElementId = props.params.layoutElementId;
   const builtPath = buildPath(props);
-  const currentPageId = useAppSelector((state: RenderingSliceState) => state.rendering[STATE_CURRENT_PAGE_ID_KEY]);
+  const currentPageId: string = useAppSelector((state: RenderingSliceState) => state.rendering[STATE_CURRENT_PAGE_ID_KEY]);
 
-  const layoutElementResource = useLayoutElementResource(currentPageId, layoutElementId);
-  const layoutElementResourceContent = useResourceWithKey(layoutElementResource, RESOURCE_CONTENT_KEY);
-  const layoutElementResourceParameters = useResourceWithKey(layoutElementResource, RESOURCE_PARAMETERS_KEY);
+  const layoutElementResource: LayoutElementComponentResource = useLayoutElementResource(currentPageId, layoutElementId);
+  const layoutElementResourceContent = useResourceWithKey(layoutElementResource, 'content');
+  const layoutElementResourceParameters = useResourceWithKey(layoutElementResource, 'parameters');
 
   if (!layoutElementId) {
     return <span>Missing layoutElementId in layout Element</span>;
@@ -188,7 +199,7 @@ export const SmLayoutElement = props => {
     <MyElem
       input={layoutElementResourceContent}
       depth={props.depth}
-      params={props.params ? props.params.params : null}
+      // params={props.params ? props.params.params : null}
       currentPath={props.currentPath + PATH_SEPARATOR + props.path}
       localContextPath={calculateLocalContextPath(props)}
     ></MyElem>

@@ -17,6 +17,7 @@ import {
   RENDERING_SLICE_KEY,
   ActionState,
   RenderingState,
+  ResourceSearchModel,
 } from './rendering';
 import { stubbedResources } from './fake-resource';
 
@@ -40,6 +41,14 @@ export const getSites = createAsyncThunk(`rendering/fetch_site_list`, async ({ p
   const requestUrl = `${siteApiUrl}?type=SITE&${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
   return axios.get<ISite[]>(requestUrl);
 });
+
+export const searchResources = createAsyncThunk(
+  `rendering/search`,
+  async ({ searchModel, orgaId }: { searchModel: ResourceSearchModel; orgaId: string; path: string }) => {
+    const requestUrl = `${resourceApiUrl}/${orgaId}/search`;
+    return axios.post<IResource[]>(requestUrl, searchModel);
+  },
+);
 
 export const getResourceForPageResources = createAsyncThunk(`rendering/fetch_resource`, async ({ resourceId }: { resourceId: string }) => {
   const requestUrl = `${resourceApiUrl}/${resourceId}`;
@@ -138,6 +147,35 @@ export const RenderingSlice = createSlice({
   },
   extraReducers(builder) {
     builder
+      .addMatcher(isFulfilled(searchResources), (state: RenderingState, action): RenderingState => {
+        const { data, headers } = action.payload;
+        const { searchModel, orgaId, path } = action.meta.arg;
+
+        return putInRenderingStateSelf(state, path, {
+          paginationState: {
+            ...state.componentsState[path][STATE_RS_SELF_KEY].paginationState,
+          },
+          listState: {
+            loading: false,
+            entities: data,
+            totalItems: parseInt(headers['x-total-count'], 10),
+          },
+        });
+      })
+      .addMatcher(isPending(searchResources), (state: RenderingState, action): RenderingState => {
+        const { path } = action.meta.arg;
+
+        return putInRenderingStateSelf(state, path, {
+          paginationState: {
+            ...state.componentsState[path][STATE_RS_SELF_KEY].paginationState,
+          },
+          listState: {
+            errorMessage: null,
+            updateSuccess: false,
+            loading: true,
+          },
+        });
+      })
       .addMatcher(isFulfilled(getSites), (state: RenderingState, action): RenderingState => {
         const { data, headers } = action.payload;
         const { path } = action.meta.arg;

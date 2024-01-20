@@ -20,6 +20,7 @@ import {
 import { buildAttributeIdFormExploded, SmAttributeField, SmForm } from './render-form';
 import { SmLayoutElement, SmMenu, SmPage, usePageContext } from './layout';
 import { IAttribute, IAttributeWithValue } from 'app/shared/model/attribute.model';
+import { DataSet } from './dataset';
 
 // export const TextBasic = props => {
 //   const siteEntity = useAppSelector(state => state.site.entity);
@@ -202,12 +203,9 @@ export type SmTextResourceContent = CommonContent & {
   params: TextParams;
 };
 
-export type SmDisplayerResourceContent = CommonContent & {
-  componentType: 'displayer';
-  params: {
-    display: Display;
-  };
-  wrapped: ComponentResourceContent;
+export type DataSetResourceContent = CommonContent & {
+  componentType: 'dataSet';
+  params: DataSetParams;
 };
 
 export type SmInputResourceContent = CommonContent & {
@@ -259,7 +257,7 @@ export type VerticalPanelResourceElement = CommonContent & {
 
 export type ComponentResourceContent =
   | SmTextResourceContent
-  | SmDisplayerResourceContent
+  | DataSetResourceContent
   | SmInputResourceContent
   | SmRefToResourceResourceContent
   | FormResourceContent
@@ -331,6 +329,41 @@ export type LocalContext = { [LOCAL_CONTEXT]: ParameterDefinition[] };
 export type SiteListParams = { [PARAMS_SITE_LIST_SELECTED_SITE_KEY]: string };
 export type InputParams = { [PARAMS_INPUT_OUTPUT_KEY]: string; [PARAMS_INPUT_DEFAULT_VALUE_KEY]?: RuleDefinition };
 export type TextParams = { [PARAMS_CONST_TEXT_VALUE_KEY]: RuleDefinition };
+export type ColumnDefinitions = {
+  columnType: 'ID' | 'NAME' | 'ATTRIBUTE' | 'BUTTON';
+};
+export type IdColumnDefinition = {
+  columnType: 'ID';
+};
+export type NameColumnDefinition = {
+  columnType: 'NAME';
+};
+export type AttributeColumnDefinition = {
+  columnType: 'ATTRIBUTE';
+  attributeConfigId: string;
+  campaignId: string;
+};
+export type ButtonColumnDefinition = {
+  columnType: 'BUTTON';
+  action: 'select' | 'edit';
+};
+export type ColumnDefinition = IdColumnDefinition | NameColumnDefinition | AttributeColumnDefinition | ButtonColumnDefinition;
+export type DataSetParams = { columnDefinitions: ColumnDefinition[] };
+
+export type AndFilter = { filterType: 'AND'; items: ResourceFilter[] };
+export type OrFilter = { filterType: 'OR'; items: ResourceFilter[] };
+export type SearchFilter = { filterType: 'SEARCH_NAME'; textSearch: string };
+export type ResourceFilter = AndFilter | OrFilter | SearchFilter;
+export type ResourceSearchModel = {
+  resourceType: 'SITE' | 'RESOURCE';
+  columnDefinitions: ColumnDefinition[];
+  filter?: ResourceFilter;
+  page?: number;
+  size?: number;
+  sort?: string;
+  path?: string;
+};
+
 export type AttRefParams = { resourceId: RuleDefinition; campaignId: RuleDefinition; attConfig: RuleDefinition };
 
 export type FormFieldParam = {
@@ -1075,6 +1108,8 @@ export const MyElem = props => {
       //   return <MyInput {...params}></MyInput>;
       case 'siteList':
         return <TheSiteList {...params}></TheSiteList>;
+      case 'dataSet':
+        return <DataSet {...params}></DataSet>;
       case 'Form':
         return <SmForm {...params}></SmForm>;
       case 'AttributeField':

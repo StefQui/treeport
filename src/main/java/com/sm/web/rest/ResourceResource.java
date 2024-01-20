@@ -4,6 +4,8 @@ import com.sm.domain.Resource;
 import com.sm.repository.ResourceRepository;
 import com.sm.service.ResourceService;
 import com.sm.service.dto.ResourceDTO;
+import com.sm.service.dto.filter.ResourceSearchDTO;
+import com.sm.service.dto.filter.ResourceSearchResultDTO;
 import com.sm.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -185,5 +187,25 @@ public class ResourceResource {
         log.debug("REST request to delete Resource : {}", id);
         resourceService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
+    }
+
+    @PostMapping("/{orgaId}/search")
+    public ResponseEntity<ResourceSearchResultDTO> search(
+        @PathVariable(value = "orgaId") final String orgaId,
+        @RequestBody ResourceSearchDTO resourceSearch
+    ) throws URISyntaxException {
+        log.debug("REST search resource : {}", resourceSearch.toString());
+
+        /*
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.readValue(resourceSearch.toString(), ResourceSearchDTO.class);
+        } catch (Exception e) {
+            log.error("Error...", e);
+
+        }
+*/
+        //        Optional<List<String>> map = computeService.saveAttributes(orgaId, attributesToSave);
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(ResourceSearchResultDTO.builder().build()));
     }
 }

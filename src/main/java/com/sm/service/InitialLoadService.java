@@ -34,6 +34,8 @@ public class InitialLoadService {
     public static final String R_3 = "r3";
     public static final String R_4 = "r4";
     public static final String R_5 = "r5";
+    public static final String R_DS = "rds";
+    public static final String R_PAGEDS = "rpageDs";
     public static final String R_FORM = "rform";
     public static final String R_LAYOUT = "rlayout";
     public static final String R_PAGE1 = "rpage1";
@@ -70,6 +72,12 @@ public class InitialLoadService {
 
     @Value("classpath:json/r5.json")
     org.springframework.core.io.Resource r5SourceFile;
+
+    @Value("classpath:json/rds.json")
+    org.springframework.core.io.Resource rdsSourceFile;
+
+    @Value("classpath:json/rpageDs.json")
+    org.springframework.core.io.Resource rpageDsSourceFile;
 
     @Value("classpath:json/rform.json")
     org.springframework.core.io.Resource rFormSourceFile;
@@ -210,6 +218,28 @@ public class InitialLoadService {
                 .type(RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r5SourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_DS)
+                .name("Resource rds")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rdsSourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_PAGEDS)
+                .name("Resource rpageDs")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rpageDsSourceFile))
                 .childrenIds(List.of())
                 .build()
         );

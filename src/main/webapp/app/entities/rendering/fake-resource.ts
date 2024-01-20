@@ -581,6 +581,40 @@ const r5: ComponentResource = {
   ],
 };
 
+const rds: ComponentResource = {
+  content: {
+    componentType: 'verticalPanel',
+    path: 'vp-rds',
+    border: true,
+    items: [
+      {
+        componentType: 'SmText',
+        path: 'dataset',
+        params: {
+          textValue: {
+            ruleType: 'constant',
+            constValue: 'The dataset',
+          },
+        },
+      },
+      {
+        componentType: 'dataSet',
+        path: 'dataset2',
+        params: {
+          columnDefinitions: [
+            { columnType: 'ID' },
+            { columnType: 'NAME' },
+            { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+            { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+            { columnType: 'BUTTON', action: 'select' },
+          ],
+        },
+      },
+    ],
+  },
+  parameters: [],
+};
+
 const rform: ComponentResource = {
   content: {
     componentType: 'verticalPanel',
@@ -799,6 +833,27 @@ const rpage2: ComponentResource = {
   ],
 };
 
+const rpageDs: ComponentResource = {
+  content: {
+    componentType: 'page',
+    path: 'page-ds',
+    params: {
+      layoutResourceId: 'rlayout',
+      layoutElements: [
+        {
+          layoutElementId: 'menuTop',
+          resourceId: 'rmenuTop',
+        },
+        {
+          layoutElementId: 'theContent',
+          resourceId: 'rds',
+        },
+      ],
+    },
+  },
+  parameters: [],
+};
+
 export const stubbedResources = {
   r3,
   r4,
@@ -808,4 +863,6 @@ export const stubbedResources = {
   rpage1,
   rpage2,
   rform,
+  rds,
+  rpageDs,
 };

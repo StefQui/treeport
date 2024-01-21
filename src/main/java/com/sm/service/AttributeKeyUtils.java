@@ -68,21 +68,15 @@ public class AttributeKeyUtils {
             "$concat",
             List.of(
                 "$$item.configId",
-                new Document("$literal", "_"),
+                new Document("$literal", ATTRIBUTE_SEPARATOR),
                 CampaignType.period.toString(),
-                new Document("$literal", "_"),
+                new Document("$literal", ATTRIBUTE_SEPARATOR),
                 "$$item.campaignId"
             )
         );
     }
 
     public static String generatePartial(String attributeConfigId, String campaignId) {
-        return format(
-            "%s_%s_%s",
-            //            PARTIAL_ATTRIBUTE_PATTERN,
-            attributeConfigId,
-            CampaignType.period,
-            campaignId
-        );
+        return format(PARTIAL_ATTRIBUTE_PATTERN, attributeConfigId, CampaignType.period, campaignId);
     }
 }

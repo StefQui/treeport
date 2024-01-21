@@ -152,8 +152,8 @@ public class SiteService {
         return siteRepository.findAll();
     }
 
-    public Page<SiteWithValuesDTO> search(ResourceSearchDTO search) {
-        AggregationResults<SiteWithValues> output = mongoTemplate.aggregate(getPipeline(search), "site", SiteWithValues.class);
+    public Page<SiteWithValuesDTO> search(ResourceSearchDTO search, String orgaId) {
+        AggregationResults<SiteWithValues> output = mongoTemplate.aggregate(getPipeline(search, orgaId), "site", SiteWithValues.class);
 
         /*
         Bson doc = null;
@@ -166,7 +166,7 @@ public class SiteService {
         return new PageImpl(output.getMappedResults().stream().map(siteMapper::toDtoWithValues).collect(Collectors.toList()));
     }
 
-    private Aggregation getPipeline(ResourceSearchDTO search) {
+    private Aggregation getPipeline(ResourceSearchDTO search, String orgaId) {
         List<ColumnDefinitionDTO> cols = search.getColumnDefinitions();
         ResourceFilterDTO filter = search.getFilter();
 
@@ -178,13 +178,13 @@ public class SiteService {
             .stream()
             .filter(col -> ATTRIBUTE.equals(col.getColumnType()))
             .map(col -> ((AttributeColumnDTO) col))
-            .map(attCol -> generateDocument(attCol.getAttributeConfigId(), attCol.getCampaignId()))
+            .map(attCol -> generateDocument(attCol.getAttributeConfigId(), attCol.getCampaignId(), orgaId))
             .collect(Collectors.toList());
 
         lookupCrits.addAll(
             targets
                 .stream()
-                .map(target -> generateDocument(target.getAttributeConfigId(), target.getCampaignId()))
+                .map(target -> generateDocument(target.getAttributeConfigId(), target.getCampaignId(), orgaId))
                 .collect(Collectors.toList())
         );
 
@@ -273,10 +273,11 @@ public class SiteService {
         return new Document(property, new Document(op, compareValue));
     }
 
-    private Document generateDocument(String attributeConfigId, String campaignId) {
+    private Document generateDocument(String attributeConfigId, String campaignId, String orgaId) {
         return new Document(
             "$and",
             Arrays.asList(
+                new Document("$eq", List.of("$orgaId", orgaId)),
                 new Document("$eq", List.of("$configId", attributeConfigId)),
                 new Document("$eq", List.of("$campaignId", campaignId)),
                 new Document("$eq", List.of("$siteId", "$$theSiteId"))

@@ -210,7 +210,7 @@ public class ResourceResource {
         ResourceType type = resourceSearch.getResourceType();
         Page page;
         if (ResourceType.SITE.equals(type)) {
-            page = siteService.search(resourceSearch);
+            page = siteService.search(resourceSearch, orgaId);
         } else {
             throw new RuntimeException("to implement...");
         }

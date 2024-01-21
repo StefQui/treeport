@@ -350,10 +350,64 @@ export type ButtonColumnDefinition = {
 export type ColumnDefinition = IdColumnDefinition | NameColumnDefinition | AttributeColumnDefinition | ButtonColumnDefinition;
 export type DataSetParams = { columnDefinitions: ColumnDefinition[] };
 
+export type ResourcePropertyFilterTarget = {
+  filterPropertyType: 'RESOURCE_PROPERTY';
+  property: string;
+};
+export type AttributePropertyFilterTarget = {
+  filterPropertyType: 'RESOURCE_ATTRIBUTE';
+  attributeConfigId: string;
+  campaignId: string;
+};
+export type PropertyFilterTarget = ResourcePropertyFilterTarget | AttributePropertyFilterTarget;
+
+export type TextContainsFilterRule = {
+  filterRuleType: 'TEXT_CONTAINS';
+  terms: string;
+};
+
+export type TextEqualsFilterRule = {
+  filterRuleType: 'TEXT_EQUALS';
+  terms: string;
+};
+
+export type NumberGtFilterRule = {
+  filterRuleType: 'NUMBER_GT';
+  compareValue: number;
+};
+
+export type NumberGteFilterRule = {
+  filterRuleType: 'NUMBER_GTE';
+  compareValue: number;
+};
+
+export type NumberLtFilterRule = {
+  filterRuleType: 'NUMBER_LT';
+  compareValue: number;
+};
+
+export type NumberLteFilterRule = {
+  filterRuleType: 'NUMBER_LTE';
+  compareValue: number;
+};
+
+export type FilterRule =
+  | TextContainsFilterRule
+  | TextEqualsFilterRule
+  | NumberGtFilterRule
+  | NumberGteFilterRule
+  | NumberLtFilterRule
+  | NumberLteFilterRule;
+
 export type AndFilter = { filterType: 'AND'; items: ResourceFilter[] };
 export type OrFilter = { filterType: 'OR'; items: ResourceFilter[] };
-export type SearchFilter = { filterType: 'SEARCH_NAME'; textSearch: string };
-export type ResourceFilter = AndFilter | OrFilter | SearchFilter;
+
+export type PropertyFilter = {
+  filterType: 'PROPERTY_FILTER';
+  property: PropertyFilterTarget;
+  filterRule: FilterRule;
+};
+export type ResourceFilter = AndFilter | OrFilter | PropertyFilter;
 export type ResourceSearchModel = {
   resourceType: 'SITE' | 'RESOURCE';
   columnDefinitions: ColumnDefinition[];

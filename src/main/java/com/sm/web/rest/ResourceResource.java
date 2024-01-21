@@ -3,9 +3,10 @@ package com.sm.web.rest;
 import com.sm.domain.Resource;
 import com.sm.repository.ResourceRepository;
 import com.sm.service.ResourceService;
+import com.sm.service.SiteService;
 import com.sm.service.dto.ResourceDTO;
 import com.sm.service.dto.filter.ResourceSearchDTO;
-import com.sm.service.dto.filter.ResourceSearchResultDTO;
+import com.sm.service.dto.filter.ResourceType;
 import com.sm.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,14 +36,16 @@ public class ResourceResource {
     private static final String ENTITY_NAME = "resource";
     private final Logger log = LoggerFactory.getLogger(ResourceResource.class);
     private final ResourceService resourceService;
+    private final SiteService siteService;
     private final ResourceRepository resourceRepository;
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    public ResourceResource(ResourceService resourceService, ResourceRepository resourceRepository) {
+    public ResourceResource(ResourceService resourceService, SiteService siteService, ResourceRepository resourceRepository) {
         this.resourceService = resourceService;
         this.resourceRepository = resourceRepository;
+        this.siteService = siteService;
     }
 
     /**
@@ -190,10 +193,8 @@ public class ResourceResource {
     }
 
     @PostMapping("/{orgaId}/search")
-    public ResponseEntity<ResourceSearchResultDTO> search(
-        @PathVariable(value = "orgaId") final String orgaId,
-        @RequestBody ResourceSearchDTO resourceSearch
-    ) throws URISyntaxException {
+    public ResponseEntity<List> search(@PathVariable(value = "orgaId") final String orgaId, @RequestBody ResourceSearchDTO resourceSearch)
+        throws URISyntaxException {
         log.debug("REST search resource : {}", resourceSearch.toString());
 
         /*
@@ -206,6 +207,14 @@ public class ResourceResource {
         }
 */
         //        Optional<List<String>> map = computeService.saveAttributes(orgaId, attributesToSave);
-        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(ResourceSearchResultDTO.builder().build()));
+        ResourceType type = resourceSearch.getResourceType();
+        Page page;
+        if (ResourceType.SITE.equals(type)) {
+            page = siteService.search(resourceSearch);
+        } else {
+            throw new RuntimeException("to implement...");
+        }
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 }

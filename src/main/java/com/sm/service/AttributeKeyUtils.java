@@ -3,6 +3,9 @@ package com.sm.service;
 import static com.sm.domain.attribute.Attribute.*;
 import static java.lang.String.format;
 
+import java.util.List;
+import org.bson.Document;
+
 public class AttributeKeyUtils {
 
     public static String extractAssetType(String id) {
@@ -17,8 +20,9 @@ public class AttributeKeyUtils {
         return extractFragment(id, ATTRIBUTE_ID_FRAGMENT_POSITION);
     }
 
-    public static String extractCampaignType(String id) {
-        return extractFragment(id, CAMPAIGN_TYPE_FRAGMENT_POSITION);
+    public static CampaignType extractCampaignType(String id) {
+        String ct = extractFragment(id, CAMPAIGN_TYPE_FRAGMENT_POSITION);
+        return CampaignType.fromValue(ct);
     }
 
     public static String extractCampaign(String id) {
@@ -56,6 +60,29 @@ public class AttributeKeyUtils {
             obj.getAttributeId(),
             obj.getCampaignType(),
             obj.getCampaign()
+        );
+    }
+
+    public static Document generatePartialId() {
+        return new Document(
+            "$concat",
+            List.of(
+                "$$item.configId",
+                new Document("$literal", "_"),
+                CampaignType.period.toString(),
+                new Document("$literal", "_"),
+                "$$item.campaignId"
+            )
+        );
+    }
+
+    public static String generatePartial(String attributeConfigId, String campaignId) {
+        return format(
+            "%s_%s_%s",
+            //            PARTIAL_ATTRIBUTE_PATTERN,
+            attributeConfigId,
+            CampaignType.period,
+            campaignId
         );
     }
 }

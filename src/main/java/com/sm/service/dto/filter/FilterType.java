@@ -3,7 +3,7 @@ package com.sm.service.dto.filter;
 public enum FilterType {
     AND("AND"),
     OR("OR"),
-    SEARCH_NAME("SEARCH_NAME");
+    PROPERTY_FILTER("PROPERTY_FILTER");
 
     private String name;
 
@@ -15,7 +15,7 @@ public enum FilterType {
         return switch (type) {
             case "AND" -> AND;
             case "OR" -> OR;
-            case "SEARCH_NAME" -> SEARCH_NAME;
+            case "PROPERTY_FILTER" -> PROPERTY_FILTER;
             default -> throw new RuntimeException("pb ici3 for type " + type);
         };
     }

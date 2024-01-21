@@ -3,6 +3,8 @@ package com.sm.service.mapper;
 import com.sm.domain.AttributeConfig;
 import com.sm.domain.attribute.Attribute;
 import com.sm.service.dto.attribute.AttributeDTO;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +30,7 @@ public class AttributeMapper {
             .siteId(aDTO.getSite().getId())
             .configError(aDTO.getConfigError())
             .configId(aDTO.getConfig().getId())
+            .campaignId(aDTO.getCampaignId())
             .hasConfigError(aDTO.getHasConfigError())
             .attributeValue(attributeValueMapper.toEntity(aDTO.getAttributeValue()))
             .aggInfo(aDTO.getAggInfo())
@@ -40,6 +43,7 @@ public class AttributeMapper {
             .builder()
             .id(a.getId())
             .config(attributeConfigMapper.toBasicDto(a.getConfigId()))
+            .campaignId(a.getCampaignId())
             .configError(a.getConfigError())
             .hasConfigError(a.getHasConfigError())
             .orga(organisationMapper.toBasicDto(a.getOrgaId()))
@@ -57,5 +61,9 @@ public class AttributeMapper {
 
     public void partialUpdate(Attribute existing, AttributeDTO attributeDTO) {
         existing.setConfigError(attributeDTO.getConfigError());
+    }
+
+    public List<AttributeDTO> toDtos(List<Attribute> attributes) {
+        return attributes.stream().map(attribute -> toDto(attribute)).collect(Collectors.toList());
     }
 }

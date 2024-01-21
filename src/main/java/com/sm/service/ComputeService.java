@@ -168,6 +168,7 @@ public class ComputeService {
             }
             addImpacters(attribute, config, site, campaign, orgaId);
             attribute.setConfigId(config.getId());
+            attribute.setCampaignId(campaign.getId());
             if (config.getIsConsolidable()) {
                 attribute.setIsAgg(true);
                 attribute.setAggInfo(AggInfo.builder().build());
@@ -1011,7 +1012,7 @@ public class ComputeService {
             impacterAssetId = op.getFixedSite();
         }
 
-        String impacterCampaignType = attributeKeyAsObj.getCampaignType();
+        CampaignType impacterCampaignType = attributeKeyAsObj.getCampaignType();
         String impacterCampaign = null;
         if (op.getDateOffset() != null) {
             impacterCampaign = applyOffSet(attributeKeyAsObj.getCampaign(), op.getDateOffset());

@@ -11,10 +11,10 @@ import lombok.extern.jackson.Jacksonized;
 @SuperBuilder(toBuilder = true)
 @Jacksonized
 @SuppressWarnings("common-java:DuplicatedBlocks")
-public class SearchNameFilterDTO extends ResourceFilterDTO {
+public class NumberLteFilterRuleDTO extends FilterRuleDTO {
 
     @Builder.Default
-    private FilterType filterType = FilterType.SEARCH_NAME;
+    private FilterRuleType filterRuleType = FilterRuleType.NUMBER_LTE;
 
-    private String textSearch;
+    private Double compareValue;
 }

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-public class ResourceFilterIdResolver extends TypeIdResolverBase {
+public class PropertyFilterTargetIdResolver extends TypeIdResolverBase {
 
     private JavaType javaType;
 
@@ -33,19 +33,18 @@ public class ResourceFilterIdResolver extends TypeIdResolverBase {
     @Override
     public String idFromValueAndType(final Object obj, final Class clazz) {
         if (obj == null) {
-            throw new RuntimeException("pb ici 7777");
+            throw new RuntimeException("pb ici 8888");
         }
-        final ResourceFilterDTO base = (ResourceFilterDTO) obj;
-        return base.getFilterType().toDTO();
+        final PropertyFilterTargetDTO base = (PropertyFilterTargetDTO) obj;
+        return base.getFilterPropertyType().toDTO();
     }
 
     @Override
     public JavaType typeFromId(final DatabindContext ctx, final String type) {
         final Class<?> clazz =
-            switch (FilterType.fromString(type)) {
-                case AND -> AndFilterDTO.class;
-                case OR -> OrFilterDTO.class;
-                case PROPERTY_FILTER -> PropertyFilterDTO.class;
+            switch (FilterPropertyType.fromString(type)) {
+                case RESOURCE_PROPERTY -> ResourcePropertyFilterTargetDTO.class;
+                case RESOURCE_ATTRIBUTE -> AttributePropertyFilterTargetDTO.class;
             };
 
         return TypeFactory.defaultInstance().constructSpecializedType(javaType, clazz);

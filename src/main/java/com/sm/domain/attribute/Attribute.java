@@ -26,7 +26,9 @@ public class Attribute implements Serializable {
 
     public static final String SITE_FRAG = "site";
     public static final String PERIOD_FRAG = "period";
-    public static final String ATTRIBUTE_PATTERN = "%s:%s:%s:%s:%s";
+    public static final String ATTRIBUTE_SEPARATOR = ":";
+    public static final String PARTIAL_ATTRIBUTE_PATTERN = "%s" + ATTRIBUTE_SEPARATOR + "%s" + ATTRIBUTE_SEPARATOR + "%s";
+    public static final String ATTRIBUTE_PATTERN = "%s" + ATTRIBUTE_SEPARATOR + "%s" + ATTRIBUTE_SEPARATOR + PARTIAL_ATTRIBUTE_PATTERN;
     public static final int ASSET_TYPE_FRAGMENT_POSITION = 0;
     public static final int ASSET_ID_FRAGMENT_POSITION = 1;
     public static final int ATTRIBUTE_ID_FRAGMENT_POSITION = 2;
@@ -64,6 +66,9 @@ public class Attribute implements Serializable {
 
     @Field("configId")
     private String configId;
+
+    @Field("campaignId")
+    private String campaignId;
 
     @Field("impacterIds")
     private Set<String> impacterIds;

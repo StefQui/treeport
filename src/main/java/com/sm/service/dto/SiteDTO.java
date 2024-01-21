@@ -6,14 +6,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 /**
  * A DTO for the {@link com.sm.domain.Asset} entity.
  */
-@Value
-@Builder(toBuilder = true)
+@Data
+@SuperBuilder(toBuilder = true)
 @Jacksonized
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class SiteDTO implements Serializable {

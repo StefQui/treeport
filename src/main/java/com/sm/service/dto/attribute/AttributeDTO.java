@@ -36,6 +36,8 @@ public class AttributeDTO implements Serializable {
 
     private AttributeConfigDTO config;
 
+    private String campaignId;
+
     private AttributeValueDTO attributeValue;
 
     private AggInfo aggInfo;

@@ -1,7 +1,9 @@
 package com.sm.service.mapper;
 
 import com.sm.domain.Site;
+import com.sm.domain.SiteWithValues;
 import com.sm.service.dto.SiteDTO;
+import com.sm.service.dto.SiteWithValuesDTO;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +20,7 @@ public class SiteMapper {
 
     private OrganisationMapper organisationMapper;
     private TagMapper tagMapper;
+    private AttributeValueMapper attributeValueMapper;
 
     public SiteDTO toDto(Site a) {
         return SiteDTO
@@ -69,5 +72,26 @@ public class SiteMapper {
 
     private List<String> toBasicEntitys(List<SiteDTO> children) {
         return children.stream().map(SiteDTO::getId).collect(Collectors.toList());
+    }
+
+    public List<SiteWithValuesDTO> toDtosWithValues(List<SiteWithValues> siteWithValues) {
+        return siteWithValues.stream().map(siteWithValue -> toDtoWithValues(siteWithValue)).collect(Collectors.toList());
+    }
+
+    public SiteWithValuesDTO toDtoWithValues(SiteWithValues siteWithValues) {
+        SiteDTO siteDTO = toDto(siteWithValues);
+        SiteWithValuesDTO result = SiteWithValuesDTO
+            .builder()
+            .id(siteDTO.getId())
+            .name(siteDTO.getName())
+            .attributeValues(
+                siteWithValues
+                    .getAttributeValues()
+                    .entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(e -> e.getKey(), e -> attributeValueMapper.toDto(e.getValue())))
+            )
+            .build();
+        return result;
     }
 }

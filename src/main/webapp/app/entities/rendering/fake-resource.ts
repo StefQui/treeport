@@ -35,13 +35,27 @@ const r3: ComponentResource = {
             path: '/layout-content',
             sourceParameterKey: 'sid99',
           },
+          parameterDefinitions: [
+            {
+              parameterKey: 'ridInPageContext',
+              target: {
+                targetType: 'specificLocalContextPath',
+                targetPath: '/layout-menutop',
+              },
+              definition: {
+                ruleType: 'refToLocalContext',
+                path: '/layout-content',
+                sourceParameterKey: 'sid99',
+              },
+            },
+          ],
         },
       },
       {
         componentType: 'SmInput',
         path: 'vsm3',
         params: {
-          outputParameterKey: 'theoutput',
+          outputParameterKey: 'myInputContent',
           defaultValue: {
             ruleType: 'constant',
             constValue: 'aaa1',
@@ -107,21 +121,27 @@ const r3: ComponentResource = {
               parameterDefinitions: [
                 {
                   parameterKey: 'const1',
+                  target: {
+                    targetType: 'currentLocalContextPath',
+                  },
                   definition: {
                     ruleType: 'constant',
-                    constValue: 'aaa1',
+                    constValue: 'aaa111',
                   },
                 },
-                {
-                  parameterKey: 'site2',
-                  definition: {
-                    ruleType: 'refToPageContext',
-                    path: '/layout-content',
-                    sourceParameterKey: 'sid',
-                  },
-                },
+                // {
+                //   parameterKey: 'site2',
+                //   definition: {
+                //     ruleType: 'refToPageContext',
+                //     path: '/layout-content',
+                //     sourceParameterKey: 'sid',
+                //   },
+                // },
                 {
                   parameterKey: 'siteIdFromSiteList',
+                  target: {
+                    targetType: 'currentLocalContextPath',
+                  },
                   definition: {
                     ruleType: 'refToLocalContext',
                     path: '/layout-content',
@@ -130,25 +150,34 @@ const r3: ComponentResource = {
                 },
                 {
                   parameterKey: 'theoutputFromInput',
+                  target: {
+                    targetType: 'currentLocalContextPath',
+                  },
                   definition: {
                     ruleType: 'refToLocalContext',
                     path: '/layout-content',
-                    sourceParameterKey: 'theoutput',
+                    sourceParameterKey: 'myInputContent',
                   },
                 },
                 {
-                  parameterKey: 'thesite',
+                  parameterKey: 'thesite44',
+                  target: {
+                    targetType: 'currentLocalContextPath',
+                  },
                   definition: {
                     ruleType: 'refToSite',
                     sourceSiteId: {
                       ruleType: 'refToLocalContext',
                       path: '/layout-content',
-                      sourceParameterKey: 'theoutput',
+                      sourceParameterKey: 'myInputContent',
                     },
                   },
                 },
                 {
                   parameterKey: 'thesiteFromTheList',
+                  target: {
+                    targetType: 'currentLocalContextPath',
+                  },
                   definition: {
                     ruleType: 'refToSite',
                     sourceSiteId: {
@@ -192,6 +221,9 @@ const r3: ComponentResource = {
               parameterDefinitions: [
                 {
                   parameterKey: 'siteIdFromSiteList',
+                  target: {
+                    targetType: 'currentLocalContextPath',
+                  },
                   definition: {
                     ruleType: 'refToLocalContext',
                     path: '/layout-content',
@@ -200,6 +232,9 @@ const r3: ComponentResource = {
                 },
                 {
                   parameterKey: 'thesiteFromTheList',
+                  target: {
+                    targetType: 'childLocalContextPath',
+                  },
                   definition: {
                     ruleType: 'refToSite',
                     sourceSiteId: {
@@ -419,24 +454,13 @@ const r5: ComponentResource = {
       },
       {
         componentType: 'SmText',
-        path: 'ref-to-thesite',
+        path: 'ref-to-thesite44',
         params: {
           textValue: {
             ruleType: 'refToLocalContext',
             path: '..',
-            sourceParameterKey: 'thesite',
+            sourceParameterKey: 'thesite44',
             sourceParameterProperty: 'parent.id',
-          },
-        },
-      },
-      {
-        componentType: 'SmText',
-        path: 'ref-to-theoutputFromInput',
-        params: {
-          textValue: {
-            ruleType: 'refToLocalContext',
-            path: '/layout-content/ref-to-r5',
-            sourceParameterKey: 'siteIdFromSiteList',
           },
         },
       },
@@ -575,7 +599,7 @@ const r5: ComponentResource = {
       parameterKey: 'myConst',
       definition: {
         ruleType: 'constant',
-        constValue: 'aaa',
+        constValue: 'bbbccc',
       },
     },
   ],
@@ -595,6 +619,77 @@ const rds: ComponentResource = {
             ruleType: 'constant',
             constValue: 'The dataset',
           },
+          parameterDefinitions: [
+            {
+              parameterKey: 'theFilter',
+              target: {
+                targetType: 'currentLocalContextPath',
+              },
+              definition: {
+                ruleType: 'constantDatasetFilter',
+                constFilter: {
+                  filterType: 'AND',
+                  items: [
+                    // {
+                    //   filterType: 'PROPERTY_FILTER',
+                    //   property: {
+                    //     filterPropertyType: 'RESOURCE_PROPERTY',
+                    //     property: 'name',
+                    //   },
+                    //   filterRule: {
+                    //     filterRuleType: 'TEXT_EQUALS',
+                    //     terms: 'Site S1',
+                    //   },
+                    // },
+                    {
+                      filterType: 'PROPERTY_FILTER',
+                      property: {
+                        filterPropertyType: 'RESOURCE_PROPERTY',
+                        property: 'name',
+                      },
+                      filterRule: {
+                        filterRuleType: 'TEXT_CONTAINS',
+                        terms: '1',
+                      },
+                    },
+                    {
+                      filterType: 'PROPERTY_FILTER',
+                      property: {
+                        filterPropertyType: 'RESOURCE_ATTRIBUTE',
+                        attributeConfigId: 'toSite',
+                        campaignId: '2023',
+                      },
+                      filterRule: {
+                        filterRuleType: 'NUMBER_GT',
+                        compareValue: 30,
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              parameterKey: 'myds',
+              target: {
+                targetType: 'currentLocalContextPath',
+              },
+              definition: {
+                ruleType: 'dataset',
+                columnDefinitions: [
+                  { columnType: 'ID' },
+                  { columnType: 'NAME' },
+                  { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+                  { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+                  { columnType: 'BUTTON', action: 'select' },
+                ],
+                filter: {
+                  ruleType: 'refToLocalContext',
+                  path: '',
+                  sourceParameterKey: 'theFilter',
+                },
+              },
+            },
+          ],
         },
       },
       {
@@ -791,16 +886,16 @@ const rpage1: ComponentResource = {
       ],
     },
   },
-  parameters: [
-    {
-      parameterKey: 'sid-notused',
-      parameterType: 'string',
-    },
-    {
-      parameterKey: 'category',
-      parameterType: 'string',
-    },
-  ],
+  // parameters: [
+  //   {
+  //     parameterKey: 'sid-notused',
+  //     parameterType: 'string',
+  //   },
+  //   {
+  //     parameterKey: 'category',
+  //     parameterType: 'string',
+  //   },
+  // ],
 };
 
 const rpage2: ComponentResource = {
@@ -819,18 +914,32 @@ const rpage2: ComponentResource = {
           resourceId: 'r5',
         },
       ],
+      parameterDefinitions: [
+        {
+          parameterKey: 'mmmiii',
+          target: {
+            targetType: 'specificLocalContextPath',
+            targetPath: '/layout-menutop',
+          },
+          definition: {
+            ruleType: 'refToLocalContext',
+            path: '/layout-content',
+            sourceParameterKey: 'sid99',
+          },
+        },
+      ],
     },
   },
-  parameters: [
-    {
-      parameterKey: 'sid',
-      parameterType: 'string',
-    },
-    {
-      parameterKey: 'category',
-      parameterType: 'string',
-    },
-  ],
+  // parameters: [
+  //   {
+  //     parameterKey: 'sid',
+  //     parameterType: 'string',
+  //   },
+  //   {
+  //     parameterKey: 'category',
+  //     parameterType: 'string',
+  //   },
+  // ],
 };
 
 const rpageDs: ComponentResource = {

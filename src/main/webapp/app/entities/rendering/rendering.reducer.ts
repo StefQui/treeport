@@ -18,6 +18,9 @@ import {
   ActionState,
   RenderingState,
   ResourceSearchModel,
+  ParameterTarget,
+  applyPath,
+  TargetInfo,
 } from './rendering';
 import { stubbedResources } from './fake-resource';
 
@@ -44,7 +47,7 @@ export const getSites = createAsyncThunk(`rendering/fetch_site_list`, async ({ p
 
 export const searchResources = createAsyncThunk(
   `rendering/search`,
-  async ({ searchModel, orgaId }: { searchModel: ResourceSearchModel; orgaId: string; path: string }) => {
+  async ({ searchModel, orgaId }: { searchModel: ResourceSearchModel; orgaId: string } & TargetInfo) => {
     const requestUrl = `${resourceApiUrl}/${orgaId}/search`;
     return axios.post<IResource[]>(requestUrl, searchModel);
   },
@@ -57,7 +60,7 @@ export const getResourceForPageResources = createAsyncThunk(`rendering/fetch_res
 
 export const getSiteForRenderingStateParameters = createAsyncThunk(
   `rendering/fetch_site`,
-  async ({ siteId }: { siteId: string; destinationKey: string; localContextPath: string; inPageContext?: boolean }) => {
+  async ({ siteId }: { siteId: string } & TargetInfo) => {
     const requestUrl = `${siteApiUrl}/${siteId}`;
     return axios.get<ISite[]>(requestUrl);
   },
@@ -119,6 +122,22 @@ export const RenderingSlice = createSlice({
     setInRenderingStateSelf(state: RenderingState, action): RenderingState {
       return setInComponentsState(state, action.payload.path, action.payload.value, STATE_RS_SELF_KEY);
     },
+    setInCorrectState(
+      state: RenderingState,
+      action: {
+        payload: { destinationKey: string; localContextPath: string; target: ParameterTarget; childPath?: string; value: ValueInState };
+      },
+    ): RenderingState {
+      return sendDataTo(
+        state,
+        action.payload.localContextPath,
+        action.payload.destinationKey,
+        action.payload.target,
+        action.payload.childPath,
+        action.payload.value,
+      );
+      // return setInLocalContextState(state, action.payload.localContextPath, action.payload.parameterKey, action.payload.value);
+    },
     setInLocalState(
       state: RenderingState,
       action: { payload: { localContextPath: string; parameterKey: string; value: ValueInState } },
@@ -149,32 +168,87 @@ export const RenderingSlice = createSlice({
     builder
       .addMatcher(isFulfilled(searchResources), (state: RenderingState, action): RenderingState => {
         const { data, headers } = action.payload;
-        const { searchModel, orgaId, path } = action.meta.arg;
+        const { searchModel, orgaId, target, childPath } = action.meta.arg;
 
-        return putInRenderingStateSelf(state, path, {
-          paginationState: {
-            ...state.componentsState[path][STATE_RS_SELF_KEY].paginationState,
-          },
-          listState: {
+        return sendDataTo(
+          state,
+          action.meta.arg.localContextPath,
+          action.meta.arg.destinationKey,
+          target,
+          childPath,
+          {
             loading: false,
             entities: data,
             totalItems: parseInt(headers['x-total-count'], 10),
           },
-        });
+          'listState',
+        );
+
+        // return putInRenderingStateSelf(state, path, {
+        //   paginationState: {
+        //     ...state.componentsState[path][STATE_RS_SELF_KEY].paginationState,
+        //   },
+        //   listState: {
+        //     loading: false,
+        //     entities: data,
+        //     totalItems: parseInt(headers['x-total-count'], 10),
+        //   },
+        // });
       })
       .addMatcher(isPending(searchResources), (state: RenderingState, action): RenderingState => {
-        const { path } = action.meta.arg;
+        const { target, childPath } = action.meta.arg;
 
-        return putInRenderingStateSelf(state, path, {
-          paginationState: {
-            ...state.componentsState[path][STATE_RS_SELF_KEY].paginationState,
-          },
-          listState: {
+        return sendDataTo(
+          state,
+          action.meta.arg.localContextPath,
+          action.meta.arg.destinationKey,
+          target,
+          childPath,
+          {
             errorMessage: null,
             updateSuccess: false,
             loading: true,
           },
-        });
+          'listState',
+        );
+
+        // return putInRenderingStateSelf(state, path, {
+        //   paginationState: {
+        //     ...state.componentsState[path][STATE_RS_SELF_KEY].paginationState,
+        //   },
+        //   listState: {
+        //     errorMessage: null,
+        //     updateSuccess: false,
+        //     loading: true,
+        //   },
+        // });
+      })
+      .addMatcher(isRejected(searchResources), (state: RenderingState, action): RenderingState => {
+        const { target, childPath } = action.meta.arg;
+
+        return sendDataTo(
+          state,
+          action.meta.arg.localContextPath,
+          action.meta.arg.destinationKey,
+          target,
+          childPath,
+          {
+            errorMessage: 'Cannot get the search result',
+            loading: false,
+          },
+          'listState',
+        );
+
+        // return putInRenderingStateSelf(state, path, {
+        //   paginationState: {
+        //     ...state.componentsState[path][STATE_RS_SELF_KEY].paginationState,
+        //   },
+        //   listState: {
+        //     errorMessage: null,
+        //     updateSuccess: false,
+        //     loading: true,
+        //   },
+        // });
       })
       .addMatcher(isFulfilled(getSites), (state: RenderingState, action): RenderingState => {
         const { data, headers } = action.payload;
@@ -240,41 +314,24 @@ export const RenderingSlice = createSlice({
         });
       })
       .addMatcher(isFulfilled(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
-        if (action.meta.arg.localContextPath) {
-          return setInLocalContextState(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, {
-            value: action.payload.data,
-            loading: false,
-          });
-        } else if (action.meta.arg.inPageContext) {
-          return setInPageContextState(state, action.meta.arg.destinationKey, {
-            value: action.payload.data,
-            loading: false,
-          });
-        }
+        const { target, childPath } = action.meta.arg;
+        return sendDataTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
+          value: action.payload.data,
+          loading: false,
+        });
       })
       .addMatcher(isPending(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
-        if (action.meta.arg.localContextPath) {
-          return setInLocalContextState(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, {
-            loading: true,
-          });
-        } else if (action.meta.arg.inPageContext) {
-          return setInPageContextState(state, action.meta.arg.destinationKey, {
-            loading: true,
-          });
-        }
+        const { target, childPath } = action.meta.arg;
+        return sendDataTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
+          loading: true,
+        });
       })
       .addMatcher(isRejected(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
-        if (action.meta.arg.localContextPath) {
-          return setInLocalContextState(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, {
-            loading: false,
-            error: 'Cannot load site...',
-          });
-        } else if (action.meta.arg.inPageContext) {
-          return setInPageContextState(state, action.meta.arg.destinationKey, {
-            loading: false,
-            error: 'Cannot load site...',
-          });
-        }
+        const { target, childPath } = action.meta.arg;
+        return sendDataTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
+          loading: false,
+          error: 'Cannot load site...',
+        });
       })
       .addMatcher(isFulfilled(getFieldAttributesAndConfig), (state: RenderingState, action): RenderingState => {
         return putInRenderingStateSelf(state, action.meta.arg.path, { fieldAttributes: action.payload.data });
@@ -285,6 +342,26 @@ export const RenderingSlice = createSlice({
       });
   },
 });
+
+const sendDataTo = (
+  state,
+  localContextPath,
+  destinationKey,
+  target: ParameterTarget,
+  childPath: string,
+  value,
+  additionnalPath?: string,
+) => {
+  if (target.targetType === 'currentLocalContextPath') {
+    return setInLocalContextState(state, localContextPath, destinationKey, value, additionnalPath);
+  } else if (target.targetType === 'specificLocalContextPath') {
+    return setInLocalContextState(state, target.targetPath, destinationKey, value, additionnalPath);
+  } else if (target.targetType === 'childLocalContextPath') {
+    return setInLocalContextState(state, applyPath(localContextPath, childPath), destinationKey, value, additionnalPath);
+  } else if (target.targetType === 'pageContextPath') {
+    return setInPageContextState(state, destinationKey, value, additionnalPath);
+  }
+};
 
 const getStubbedOrNot = (resourceId, data) => {
   const stubbed = true;
@@ -310,6 +387,7 @@ export const setInLocalContextState = (
   localContextPath,
   parameterKey: string,
   value: ValueInState,
+  additionnalPath?: string,
 ): RenderingState => {
   // console.log('setInLocalContextState', parameterKey);
   return {
@@ -324,10 +402,21 @@ export const setInLocalContextState = (
               ...(state.localContextsState[localContextPath]
                 ? {
                     ...state.localContextsState[localContextPath].parameters,
-                    ...{ [parameterKey]: value },
+                    ...{
+                      [parameterKey]: additionnalPath
+                        ? {
+                            ...(state.localContextsState[localContextPath][parameterKey]
+                              ? {
+                                  ...state.localContextsState[localContextPath][parameterKey],
+                                  ...{ [additionnalPath]: value },
+                                }
+                              : { [additionnalPath]: value }),
+                          }
+                        : value,
+                    },
                   }
                 : {
-                    ...{ [parameterKey]: value },
+                    ...{ [parameterKey]: additionnalPath ? { [additionnalPath]: value } : value },
                   }),
             },
           },
@@ -337,14 +426,28 @@ export const setInLocalContextState = (
   };
 };
 
-export const setInPageContextState = (state: RenderingState, parameterKey: string, value: ValueInState): RenderingState => {
+export const setInPageContextState = (
+  state: RenderingState,
+  parameterKey: string,
+  value: ValueInState,
+  additionnalPath?: string,
+): RenderingState => {
   // console.log('setInLocalContextState', parameterKey);
   return {
     ...state,
-    [STATE_PAGE_CONTEXT_KEY]: {
-      ...state[STATE_PAGE_CONTEXT_KEY],
+    pageContext: {
+      ...state.pageContext,
       ...{
-        [parameterKey]: value,
+        [parameterKey]: additionnalPath
+          ? {
+              ...(state.pageContext[parameterKey]
+                ? {
+                    ...state.pageContext[parameterKey],
+                    ...{ [additionnalPath]: value },
+                  }
+                : { [additionnalPath]: value }),
+            }
+          : value,
       },
     },
   };
@@ -389,6 +492,7 @@ export const {
   setRenderingCurrentPageId,
   setInRenderingStateOutputs,
   setInLocalState,
+  setInCorrectState,
   setInRenderingStateSelf,
   setActivePage,
   setAction,

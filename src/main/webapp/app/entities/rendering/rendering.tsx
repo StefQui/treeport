@@ -5,12 +5,15 @@ import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { getAttribute, setAction, setInLocalState, setInRenderingStateOutputs } from './rendering.reducer';
+import { getAttribute, setAction, setInCorrectState, setInLocalState, setInRenderingStateOutputs } from './rendering.reducer';
 import SiteList from '../site/site-list';
 import { AttValue } from '../attribute-value/attribute-value';
 import {
-  calculateLocalContextPath,
+  calculateTargetLocalContextPath,
+  handleParameterDefinitions,
+  initLocalContext,
   SmRefToResource,
+  useConstantDatasetFilter,
   useConstantValue,
   useRefToLocalContext,
   useRefToLocalContextValue,
@@ -76,6 +79,8 @@ export const applyPath = (path, pathToApply) => {
     return ROOT_PATH_SEPARATOR + result.join(PATH_SEPARATOR);
   } else if (pathToApply.startsWith('.' + PATH_SEPARATOR)) {
     return path + PATH_SEPARATOR + pathToApply.substring('.'.length);
+  } else if (!pathToApply) {
+    return path;
   } else {
     return path + PATH_SEPARATOR + pathToApply;
   }
@@ -122,7 +127,7 @@ export const PARAMS_SITE_LIST_SELECTED_SITE_KEY = 'selectedSiteKeyInLocalContext
 export const PARAMS_INPUT_OUTPUT_KEY = 'outputParameterKey';
 export const PARAMS_INPUT_DEFAULT_VALUE_KEY = 'defaultValue';
 
-export const PARAMS_CONST_TEXT_VALUE_KEY = 'textValue';
+// export const PARAMS_CONST_TEXT_VALUE_KEY = 'textValue';
 
 export const PARAMS_FORM_ATTRIBUTE_CONTEXT_KEY = 'attributeContext';
 export const PARAMS_FORM_ATTRIBUTE_CONTEXT_RESOURCE_ID_KEY = 'resourceId';
@@ -169,7 +174,7 @@ export type SmInputParams = {
   defaultValue: RuleDefinition;
 };
 
-export type PageResourceParams = {
+export type PageResourceParams = HasParameterDefinitions & {
   layoutResourceId: string;
   layoutElements: PageLayoutElement[];
 };
@@ -295,23 +300,27 @@ export type ValueInState = {
 };
 export type RENDERING_CONTEXT = { [key: string]: ValueInState };
 
+export type TargetInfo = { destinationKey: string; localContextPath: string; target: ParameterTarget; childPath?: string };
+
 export const ELEM_LAYOUT_ELEMENT = 'layoutElement';
 export const ELEM_REF_TO_RESOURCE_ELEMENT = 'SmRefToResource';
 
 export const PARAMETER_DEFINITIONS = 'parameterDefinitions';
-export const PARAMETER_KEY = 'parameterKey';
-export const DEFINITION = 'definition';
-export const RULE_TYPE = 'ruleType';
-export const DEFINITIONS = 'definitions';
-export const CONST_VALUE = 'constValue';
-export const RULE_SOURCE_SITE_ID_VALUE = 'sourceSiteId';
+// export const PARAMETER_KEY = 'parameterKey';
+// export const DEFINITION = 'definition';
+// export const RULE_TYPE = 'ruleType';
+// export const DEFINITIONS = 'definitions';
+// export const CONST_VALUE = 'constValue';
+// export const RULE_SOURCE_SITE_ID_VALUE = 'sourceSiteId';
 
 export const LOCAL_CONTEXT = 'localContext';
 
-export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext' | 'refToSite';
+export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext' | 'refToSite' | 'dataset' | 'constantDatasetFilter';
 export type TransformTo = 'site';
-export type ConstantRuleDefinition = { [RULE_TYPE]: RuleType; [CONST_VALUE]: any };
-export type RefToSiteDefinition = { [RULE_TYPE]: RuleType; [RULE_SOURCE_SITE_ID_VALUE]: RuleDefinition };
+export type ConstantRuleDefinition = { ruleType: RuleType; constValue: any };
+export type RefToSiteDefinition = { ruleType: RuleType; sourceSiteId: RuleDefinition };
+export type DatasetDefinition = { ruleType: RuleType; columnDefinitions: ColumnDefinition[]; filter: RuleDefinition };
+export type ConstantDatasetFilterRuleDefinition = { ruleType: 'constantDatasetFilter'; constFilter: ResourceFilter };
 export type RefToContextRuleDefinition = {
   ruleType: RuleType;
   path: string;
@@ -321,14 +330,49 @@ export type RefToContextRuleDefinition = {
   siteIdSourceParameterKey?: string; // if transformTo is 'site'
   siteIdSourceParameterProperty?: string; // if transformTo is 'site'
 };
-export type RuleDefinition = RefToContextRuleDefinition | ConstantRuleDefinition | RefToSiteDefinition;
-export type ParameterDefinition = { [PARAMETER_KEY]: string; [DEFINITION]?: RuleDefinition; [DEFINITIONS]?: RuleDefinition[] };
+export type RuleDefinition =
+  | RefToContextRuleDefinition
+  | ConstantRuleDefinition
+  | RefToSiteDefinition
+  | DatasetDefinition
+  | ConstantDatasetFilterRuleDefinition;
+
+export type CurrentLocalContextPathTarget = {
+  targetType: 'currentLocalContextPath';
+};
+
+export type ChildLocalContextPathTarget = {
+  targetType: 'childLocalContextPath';
+};
+
+export type PageContextPathTarget = {
+  targetType: 'pageContextPath';
+};
+
+export type SpecificLocalContextPathTarget = {
+  targetType: 'specificLocalContextPath';
+  targetPath: string;
+};
+
+export type ParameterTarget =
+  | CurrentLocalContextPathTarget
+  | ChildLocalContextPathTarget
+  | PageContextPathTarget
+  | SpecificLocalContextPathTarget;
+
+export type ParameterDefinition = {
+  parameterKey: string;
+  target: ParameterTarget;
+  definition?: RuleDefinition;
+  definitions?: RuleDefinition[];
+};
 export type ParameterDefinitions = { [PARAMETER_DEFINITIONS]: ParameterDefinition[] };
 export type LocalContext = { [LOCAL_CONTEXT]: ParameterDefinition[] };
 
 export type SiteListParams = { [PARAMS_SITE_LIST_SELECTED_SITE_KEY]: string };
 export type InputParams = { [PARAMS_INPUT_OUTPUT_KEY]: string; [PARAMS_INPUT_DEFAULT_VALUE_KEY]?: RuleDefinition };
-export type TextParams = { [PARAMS_CONST_TEXT_VALUE_KEY]: RuleDefinition };
+export type HasParameterDefinitions = { parameterDefinitions?: ParameterDefinition[] };
+export type TextParams = HasParameterDefinitions & { textValue: RuleDefinition };
 export type ColumnDefinitions = {
   columnType: 'ID' | 'NAME' | 'ATTRIBUTE' | 'BUTTON';
 };
@@ -439,7 +483,8 @@ export type FormAttributeContextParam = {
 //   [PARAMS_FORM_FIELDS_KEY]: FormFieldParam;
 //   [PARAMS_FORM_FORM_CONTENT_KEY]: any;
 // };
-export type RefToResourceParams = { resourceId: string; parameterDefinitions: ParameterDefinition[] };
+export type HasTargetChildrenResource = { resourceId: string };
+export type RefToResourceParams = HasParameterDefinitions & HasTargetChildrenResource;
 export type Params = RefToResourceParams | SiteListParams | TextParams | InputParams | AttRefParams;
 
 export type CommonProps = {
@@ -541,14 +586,22 @@ export const SmText = (props: SmTextProps) => {
     );
   }
 
-  const textValue = props.params[PARAMS_CONST_TEXT_VALUE_KEY];
+  const textValue = props.params.textValue;
   if (!textValue) {
     return (
       <span>
-        <i>{PARAMS_CONST_TEXT_VALUE_KEY} param is mandatory in SmText</i>
+        <i>textValue param is mandatory in SmText</i>
       </span>
     );
   }
+  const params: TextParams = props.params;
+
+  handleParameterDefinitions(params, props);
+  // const callingParameterDefinitions = params.parameterDefinitions;
+
+  // const builtPath = buildPath(props);
+
+  // initLocalContext(callingParameterDefinitions, props, builtPath);
 
   const calculatedValue: ValueInState = useCalculatedValueState(props, textValue);
   // console.log('SmText', textValue, calculatedValue);
@@ -610,7 +663,7 @@ export const useCalculatedValueStateIfNotNull = (props, resourceId) => {
 };
 
 export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): ValueInState => {
-  const ruleType = ruleDefinition[RULE_TYPE];
+  const ruleType = ruleDefinition.ruleType;
   if (ruleType === 'refToLocalContext') {
     const refToContextRuleDefinition: RefToContextRuleDefinition = ruleDefinition as RefToContextRuleDefinition;
     return useRefToLocalContextValue(
@@ -621,19 +674,10 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
     );
   } else if (ruleType === 'refToPageContext') {
     return useRefToPageContextValue(props, ruleDefinition as RefToContextRuleDefinition);
-    // } else if (ruleType === 'refToSite') {
-    //   const refToSiteDefinition: RefToSiteDefinition = ruleDefinition as RefToSiteDefinition;
-    //   const siteIdRef = refToSiteDefinition[RULE_SOURCE_SITE_ID_VALUE];
-    //   if (!siteIdRef) {
-    //     return {
-    //       loading: false,
-    //       error: `${RULE_SOURCE_SITE_ID_VALUE} must be defined for refToSite ruleDefinition`,
-    //     };
-    //   }
-    //   const siteId = useCalculatedValueState(props, siteIdRef);
-    //   return useRefToLocalContextValue(props, refToContextRuleDefinition.path, refToContextRuleDefinition.sourceParameterKey);
   } else if (ruleType === 'constant') {
     return useConstantValue(props, ruleDefinition as ConstantRuleDefinition);
+  } else if (ruleType === 'constantDatasetFilter') {
+    return useConstantDatasetFilter(props, ruleDefinition as ConstantDatasetFilterRuleDefinition);
   } else {
     return {
       loading: false,
@@ -641,6 +685,51 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
     };
   }
 };
+
+export const initialFilter: ValueInState = { loading: true, value: null };
+
+export const useChangingCalculatedValueState = (props, ruleDefinition: ParameterDefinition, target: ParameterTarget): ValueInState => {
+  const dispatch = useAppDispatch();
+  const [previousResult, setPreviousResult] = useState(initialFilter);
+  const result = useCalculatedValueState(props, ruleDefinition.definition);
+  const [changing, setChanging] = useState(initialFilter);
+  console.log('filteraaa.......other', ruleDefinition, result, previousResult);
+  useEffect(() => {
+    console.log('filter.......5', previousResult, result, valHasChanged(previousResult, result));
+    if (!valHasChanged(previousResult, result)) {
+      return;
+    }
+    // pkeys.forEach(paramKey => {
+    console.log('filterbbb.......changed', result);
+    setPreviousResult(result);
+    setChanging(result);
+
+    dispatch(
+      setInCorrectState({
+        destinationKey: ruleDefinition.parameterKey,
+        localContextPath: props.localContextPath,
+        target,
+        childPath: props.path,
+        value: result,
+      }),
+    );
+    // });
+  }, [result]);
+
+  return changing;
+};
+
+const valHasChanged = (previous, result): boolean => {
+  if (!previous && result) {
+    return true;
+  } else if (!previous && !result) {
+    return false;
+  } else if (previous && !result) {
+    return true;
+  }
+  return JSON.stringify(previous) !== JSON.stringify(result);
+};
+
 // export const useCalculatedValueStateOld = (props, elem) => {
 //   if (!elem) {
 //     return null;
@@ -1215,9 +1304,11 @@ export const MyWrapper = ({ children, ...props }) => {
     cn += ' border-2';
   }
 
-  const lc = useRefToLocalContext(props.localContextPath, calculateLocalContextPath(props));
+  const targetLocalContextPath = calculateTargetLocalContextPath(true, props);
 
-  const displayPath = false;
+  const lc = useRefToLocalContext(targetLocalContextPath);
+
+  const displayPath = true;
   // const shouldDisplay = useShouldDisplay(props);
   // if (!shouldDisplay) {
   //   console.log('evaluateShouldDisplay-----------', props.componentType, shouldDisplay);
@@ -1239,7 +1330,10 @@ export const MyWrapper = ({ children, ...props }) => {
           {/* {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT
         ? (<pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>) : ""} */}
           {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT ? (
-            <pre>{JSON.stringify(lc ? lc : {}, null, 2)}</pre>
+            <div>
+              <b>LocalContext: {targetLocalContextPath}</b>
+              <pre>{JSON.stringify(lc ? lc : {}, null, 2)}</pre>
+            </div>
           ) : (
             ''
           )}

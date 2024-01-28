@@ -14,6 +14,7 @@ import {
   PageComponentResource,
   PageLayoutElement,
   PageResourceContent,
+  PageResourceParams,
   PATH_SEPARATOR,
   RenderingSliceState,
   RESOURCE_CONTENT_KEY,
@@ -28,7 +29,7 @@ import {
   ValueInState,
   // useRenderingState,
 } from './rendering';
-import { calculateLocalContextPath, MyRend } from './resource-content';
+import { calculateTargetLocalContextPath, handleParameterDefinitions, MyRend } from './resource-content';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
@@ -182,6 +183,8 @@ export const SmLayoutElement = (props: SmLayoutElementProps) => {
   const builtPath = buildPath(props);
   const currentPageId: string = useAppSelector((state: RenderingSliceState) => state.rendering[STATE_CURRENT_PAGE_ID_KEY]);
 
+  const params = props.params;
+
   const layoutElementResource: LayoutElementComponentResource = useLayoutElementResource(currentPageId, layoutElementId);
   const layoutElementResourceContent = useResourceWithKey(layoutElementResource, 'content');
   const layoutElementResourceParameters = useResourceWithKey(layoutElementResource, 'parameters');
@@ -201,7 +204,7 @@ export const SmLayoutElement = (props: SmLayoutElementProps) => {
       depth={props.depth}
       // params={props.params ? props.params.params : null}
       currentPath={props.currentPath + PATH_SEPARATOR + props.path}
-      localContextPath={calculateLocalContextPath(props)}
+      localContextPath={calculateTargetLocalContextPath(true, props)}
     ></MyElem>
   );
   // return <MyRend content={layoutElementContent} params={props.params} currentPath={builtPath} localContextPath={builtPath}></MyRend>;

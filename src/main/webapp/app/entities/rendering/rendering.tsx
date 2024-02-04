@@ -618,7 +618,7 @@ export const SmText = (props: SmTextProps) => {
   }
   const params: TextParams = props.params;
 
-  // handleParameterDefinitions(params, props);
+  handleParameterDefinitions(params, props);
   // const callingParameterDefinitions = params.parameterDefinitions;
 
   // const builtPath = buildPath(props);

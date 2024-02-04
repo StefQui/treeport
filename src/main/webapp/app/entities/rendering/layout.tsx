@@ -193,7 +193,7 @@ export const SmLayoutElement = (props: SmLayoutElementProps) => {
     return <span>Missing layoutElementId in layout Element</span>;
   }
 
-  console.log('layoutElementResourceContent', layoutElementResourceContent, props.path, props.currentPath);
+  // console.log('layoutElementResourceContent', layoutElementResourceContent, props.path, props.currentPath);
 
   if (!layoutElementResourceContent) {
     return <span>Cannot display layout element content</span>;

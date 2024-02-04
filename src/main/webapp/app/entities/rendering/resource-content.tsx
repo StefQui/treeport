@@ -32,9 +32,10 @@ import {
   increment,
   ParameterTarget,
   DatasetDefinition,
-  ConstantDatasetFilterRuleDefinition,
   useChangingCalculatedValueState,
   initialFilter,
+  DatasetFilterRuleDefinition,
+  useChangingCalculatedFilterValueState,
 } from './rendering';
 import { getSiteForRenderingStateParameters, searchResources, setInCorrectState, setInLocalState } from './rendering.reducer';
 
@@ -43,6 +44,7 @@ export const useRefToLocalContextValue = (currentLocalContextPath, localContextP
     const contextForLocalContextPath = state.rendering.localContextsState
       ? state.rendering.localContextsState[applyPath(currentLocalContextPath, localContextPath)]
       : null;
+    // console.log('useRefToLocalContextValue', parameterKey, contextForLocalContextPath);
     if (!contextForLocalContextPath) {
       return null;
     }
@@ -55,6 +57,7 @@ export const useRefToLocalContextValue = (currentLocalContextPath, localContextP
       return emptyValue;
     }
     if (!parameterProperty) {
+      // console.log('useRefToLocalContextValue2', valForKey);
       return valForKey;
     }
     if (!valForKey.value) {
@@ -92,15 +95,16 @@ export const useRefToPageContextValue = (props, ruleDefinition: RefToContextRule
 };
 
 export const useConstantValue = (props, definition: ConstantRuleDefinition): ValueInState => {
-  return { loading: false, value: definition.constValue };
+  const [val, setVal] = useState({ loading: false, value: definition.constValue });
+  return val;
 };
 
-export const useConstantDatasetFilter = (props, definition: ConstantDatasetFilterRuleDefinition): ValueInState => {
-  console.log('useConstantDatasetFilter', definition.constFilter);
+export const useConstantDatasetFilter = (props, definition: DatasetFilterRuleDefinition): ValueInState => {
+  console.log('useConstantDatasetFilter', definition.valueFilter);
   const [val, setVal] = useState(initialFilter);
   useEffect(() => {
     console.log('Fist useConstantDatasetFilter');
-    setVal({ loading: false, value: definition.constFilter });
+    setVal({ loading: false, value: definition.valueFilter });
   }, []);
   return val;
 };
@@ -125,6 +129,24 @@ export const initLocalContext = (parameterDefinitions: ParameterDefinition[], pr
         const dsDef = pdef.definition as DatasetDefinition;
         console.log('filter.......1', dsDef.filter);
         handleDataSet(key, target, dsDef, props);
+      } else if (pdef.definition.ruleType === 'datasetFilter') {
+        const dsfDef = pdef.definition as DatasetFilterRuleDefinition;
+        dsfDef.valueFilter;
+        const changingFilter = useChangingCalculatedFilterValueState(props, dsfDef, target);
+        // const changing = useChangingCalculatedValueState(props, pdef, target);
+        useEffect(() => {
+          console.log('filter.......changed2');
+          dispatch(
+            setInCorrectState({
+              destinationKey: pdef.parameterKey,
+              localContextPath: props.localContextPath,
+              target,
+              childPath: props.path,
+              value: changingFilter,
+            }),
+          );
+          // });
+        }, [changingFilter]);
       } else {
         // const [previousResult, setPreviousResult] = useState(null);
         // const result = useCalculatedValueState(props, pdef.definition);

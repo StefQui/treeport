@@ -621,13 +621,23 @@ const rds: ComponentResource = {
           },
           parameterDefinitions: [
             {
+              parameterKey: 'theTerm',
+              target: {
+                targetType: 'currentLocalContextPath',
+              },
+              definition: {
+                ruleType: 'constant',
+                constValue: 'S2',
+              },
+            },
+            {
               parameterKey: 'theFilter',
               target: {
                 targetType: 'currentLocalContextPath',
               },
               definition: {
-                ruleType: 'constantDatasetFilter',
-                constFilter: {
+                ruleType: 'datasetFilter',
+                valueFilter: {
                   filterType: 'AND',
                   items: [
                     // {
@@ -649,21 +659,30 @@ const rds: ComponentResource = {
                       },
                       filterRule: {
                         filterRuleType: 'TEXT_CONTAINS',
-                        terms: '1',
+                        terms: {
+                          ruleType: 'refToLocalContext',
+                          path: '',
+                          sourceParameterKey: 'theTerm',
+                        },
                       },
                     },
-                    {
-                      filterType: 'PROPERTY_FILTER',
-                      property: {
-                        filterPropertyType: 'RESOURCE_ATTRIBUTE',
-                        attributeConfigId: 'toSite',
-                        campaignId: '2023',
-                      },
-                      filterRule: {
-                        filterRuleType: 'NUMBER_GT',
-                        compareValue: 30,
-                      },
-                    },
+                    // {
+                    //   filterType: 'PROPERTY_FILTER',
+                    //   property: {
+                    //     filterPropertyType: 'RESOURCE_ATTRIBUTE',
+                    //     attributeConfigId: 'toSite',
+                    //     campaignId: '2023',
+                    //   },
+                    //   filterRule: {
+                    //     filterRuleType: 'NUMBER_GT',
+                    //     compareValue: {
+                    //       ruleType: 'refToLocalContext',
+                    //       path: '',
+                    //       sourceParameterKey: 'theGt',
+                    //     },
+                    //   },
+                    //   },
+                    // },
                   ],
                 },
               },

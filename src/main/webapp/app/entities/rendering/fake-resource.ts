@@ -612,6 +612,17 @@ const rds: ComponentResource = {
     border: true,
     items: [
       {
+        componentType: 'SmInput',
+        path: 'vsm3d',
+        params: {
+          outputParameterKey: 'theTerm',
+          defaultValue: {
+            ruleType: 'constant',
+            constValue: 'S1',
+          },
+        },
+      },
+      {
         componentType: 'SmText',
         path: 'dataset',
         params: {
@@ -621,13 +632,13 @@ const rds: ComponentResource = {
           },
           parameterDefinitions: [
             {
-              parameterKey: 'theTerm',
+              parameterKey: 'theTerm2',
               target: {
                 targetType: 'currentLocalContextPath',
               },
               definition: {
                 ruleType: 'constant',
-                constValue: 'S2',
+                constValue: 'S1',
               },
             },
             {

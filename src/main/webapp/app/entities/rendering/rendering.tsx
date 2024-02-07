@@ -1,30 +1,25 @@
-import React, { ReactNode, useEffect, useState } from 'react';
-import { LayoutRouteProps, Link, useParams } from 'react-router-dom';
-import { Button, Row, Col, Input } from 'reactstrap';
-import { Translate } from 'react-jhipster';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useEffect, useState } from 'react';
+import { Col, Row } from 'reactstrap';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { getAttribute, setAction, setInCorrectState, setInLocalState, setInRenderingStateOutputs } from './rendering.reducer';
+import { getAttribute, setAction, setInCorrectState, setInLocalState } from './rendering.reducer';
 import SiteList from '../site/site-list';
 import { AttValue } from '../attribute-value/attribute-value';
 import {
   calculateTargetLocalContextPath,
   handleParameterDefinitions,
-  initLocalContext,
   SmRefToResource,
   useConstantDatasetFilter,
   useConstantValue,
   useRefToLocalContext,
   useRefToLocalContextValue,
   useRefToPageContextValue,
-  // ZZZResourceContent,
 } from './resource-content';
 import { buildAttributeIdFormExploded, SmAttributeField, SmForm } from './render-form';
 import { SmLayoutElement, SmMenu, SmPage, usePageContext } from './layout';
-import { IAttribute, IAttributeWithValue } from 'app/shared/model/attribute.model';
+import { IAttributeWithValue } from 'app/shared/model/attribute.model';
 import { DataSet } from './dataset';
-import { existsAndHasAValue, isLoading } from './render-resource-page';
+import { existsAndHasAValue } from './render-resource-page';
 
 // export const TextBasic = props => {
 //   const siteEntity = useAppSelector(state => state.site.entity);
@@ -1466,7 +1461,15 @@ export const MyElem = props => {
   }
 
   return (
-    <MyWrapper {...{ ...props.input, currentPath: props.currentPath, depth: props.depth, localContextPath: props.localContextPath }}>
+    <MyWrapper
+      {...{
+        ...props.input,
+        currentPath: props.currentPath,
+        depth: props.depth,
+        localContextPath: props.localContextPath,
+      }}
+      key={props.currentPath}
+    >
       {renderSwitch({
         ...props.input,
         currentPath: props.currentPath,

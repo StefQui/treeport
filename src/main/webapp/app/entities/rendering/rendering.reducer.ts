@@ -170,19 +170,13 @@ export const RenderingSlice = createSlice({
         const { data, headers } = action.payload;
         const { searchModel, orgaId, target, childPath } = action.meta.arg;
 
-        return sendDataTo(
-          state,
-          action.meta.arg.localContextPath,
-          action.meta.arg.destinationKey,
-          target,
-          childPath,
-          {
-            loading: false,
+        return sendDataTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
+          loading: false,
+          value: {
             entities: data,
             totalItems: parseInt(headers['x-total-count'], 10),
           },
-          'listState',
-        );
+        });
 
         // return putInRenderingStateSelf(state, path, {
         //   paginationState: {

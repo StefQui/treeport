@@ -28,7 +28,11 @@ public class InitialLoadService {
     public static final String COCA = "coca";
     public static final String ROOT = "root";
     public static final String S_1 = "s1";
+    public static final String S_1_1 = "s1-1";
+    public static final String S_1_2 = "s1-2";
     public static final String S_2 = "s2";
+    public static final String S_2_1 = "s2-1";
+    public static final String S_2_2 = "s2-2";
     public static final String R_1 = "r1";
     public static final String R_2 = "r2";
     public static final String R_3 = "r3";
@@ -149,6 +153,30 @@ public class InitialLoadService {
                 .type(SITE)
                 .orgaId(COCA)
                 .parentId(ROOT)
+                .childrenIds(List.of(S_1_1, S_1_2))
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build()
+        );
+        siteRepository.save(
+            Site
+                .builder()
+                .id(S_1_1)
+                .name("Site S1-1")
+                .type(SITE)
+                .orgaId(COCA)
+                .parentId(S_1)
+                .childrenIds(List.of())
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build()
+        );
+        siteRepository.save(
+            Site
+                .builder()
+                .id(S_1_2)
+                .name("Site S1-2")
+                .type(SITE)
+                .orgaId(COCA)
+                .parentId(S_1)
                 .childrenIds(List.of())
                 .tags(Set.of(Tag.builder().id(CAR).build()))
                 .build()
@@ -161,10 +189,35 @@ public class InitialLoadService {
                 .type(SITE)
                 .orgaId(COCA)
                 .parentId(ROOT)
+                .childrenIds(List.of(S_2_1, S_2_2))
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build()
+        );
+        siteRepository.save(
+            Site
+                .builder()
+                .id(S_2_1)
+                .name("Site S2-1")
+                .type(SITE)
+                .orgaId(COCA)
+                .parentId(S_2)
                 .childrenIds(List.of())
                 .tags(Set.of(Tag.builder().id(CAR).build()))
                 .build()
         );
+        siteRepository.save(
+            Site
+                .builder()
+                .id(S_2_2)
+                .name("Site S2-2")
+                .type(SITE)
+                .orgaId(COCA)
+                .parentId(S_2)
+                .childrenIds(List.of())
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build()
+        );
+
         resourceRepository.deleteAll();
         resourceRepository.save(
             Resource

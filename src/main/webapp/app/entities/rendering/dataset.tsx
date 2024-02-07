@@ -26,6 +26,8 @@ import {
   SiteListParams,
   STATE_RS_OUTPUTS_KEY,
   STATE_RS_SELF_KEY,
+  useCalculatedValueState,
+  ValueInState,
 } from './rendering';
 
 export const DataSet = (props: { params: DataSetParams; depth: string; currentPath: string; path: string; localContextPath: string }) => {
@@ -56,9 +58,17 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
       : null;
   });
 
-  const siteList = useAppSelector((state: RenderingSliceState) =>
-    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.entities : null,
-  );
+  const data = props.params.data;
+
+  const siteListProp: ValueInState = useCalculatedValueState(props, data);
+
+  const siteList = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.entities : null;
+  console.log('aaaazzzzzzzzzzzzzzzz', siteListProp, siteList);
+
+  // const siteList = [];
+  // const siteList = useAppSelector((state: RenderingSliceState) =>
+  //   state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.entities : null,
+  // );
 
   const loading = useAppSelector((state: RenderingSliceState) =>
     state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.loading : false,

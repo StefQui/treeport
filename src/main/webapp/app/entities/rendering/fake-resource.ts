@@ -724,7 +724,7 @@ const rds: ComponentResource = {
       },
       {
         componentType: 'dataSet',
-        path: 'dataset2',
+        path: 'dataset22',
         params: {
           columnDefinitions: [
             { columnType: 'ID' },
@@ -733,6 +733,11 @@ const rds: ComponentResource = {
             { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
             { columnType: 'BUTTON', action: 'select' },
           ],
+          data: {
+            ruleType: 'refToLocalContext',
+            path: '',
+            sourceParameterKey: 'myds',
+          },
         },
       },
     ],

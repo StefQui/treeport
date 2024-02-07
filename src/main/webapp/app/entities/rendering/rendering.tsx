@@ -19,7 +19,7 @@ import { buildAttributeIdFormExploded, SmAttributeField, SmForm } from './render
 import { SmLayoutElement, SmMenu, SmPage, usePageContext } from './layout';
 import { IAttributeWithValue } from 'app/shared/model/attribute.model';
 import { DataSet } from './dataset';
-import { existsAndHasAValue } from './render-resource-page';
+import { existsAndHasAValue, isError, isLoading } from './render-resource-page';
 
 // export const TextBasic = props => {
 //   const siteEntity = useAppSelector(state => state.site.entity);
@@ -388,7 +388,7 @@ export type ButtonColumnDefinition = {
   action: 'select' | 'edit';
 };
 export type ColumnDefinition = IdColumnDefinition | NameColumnDefinition | AttributeColumnDefinition | ButtonColumnDefinition;
-export type DataSetParams = { columnDefinitions: ColumnDefinition[] };
+export type DataSetParams = { columnDefinitions: ColumnDefinition[]; data: RuleDefinition };
 
 export type ResourcePropertyFilterTarget = {
   filterPropertyType: 'RESOURCE_PROPERTY';
@@ -725,7 +725,7 @@ export const useChangingCalculatedFilterValueState = (
 const useChangedFilterValues = (filter: ResourceFilter, props): Object => {
   const [result, setResult] = useState({});
   console.log('azzzzz1', result);
-  const val = useCalculatedValueState(props, { ruleType: 'refToLocalContext', path: '', sourceParameterKey: 'theTerm' });
+  // const val = useCalculatedValueState(props, { ruleType: 'refToLocalContext', path: '', sourceParameterKey: 'theTerm' });
 
   useChangedFilterValuesForItem(0, filter, result, setResult, props);
   return result;
@@ -758,7 +758,7 @@ const useChangedFilterValuesForItem = (index: number, filter: ResourceFilter, re
       console.log('azzzzz TEXT_CONTAINS', textContains.terms, props.localContextPath);
       const val = useCalculatedValueState(props, textContains.terms);
       useEffect(() => {
-        if (existsAndHasAValue(val)) {
+        if (val && !isLoading(val) && !isError(val)) {
           setResult({ ...result, ...{ [PROP + index]: val.value } });
         }
       }, [val]);
@@ -1497,7 +1497,7 @@ export const MyWrapper = ({ children, ...props }) => {
 
   const lc = useRefToLocalContext(targetLocalContextPath);
 
-  const displayPath = true;
+  const displayPath = false;
   // const shouldDisplay = useShouldDisplay(props);
   // if (!shouldDisplay) {
   //   console.log('evaluateShouldDisplay-----------', props.componentType, shouldDisplay);

@@ -56,13 +56,16 @@ export const useRefToLocalContextValue = (currentLocalContextPath, localContextP
     if (!valForKey) {
       return emptyValue;
     }
+    console.log('zzzzz2222', parameterProperty);
     if (!parameterProperty) {
       // console.log('useRefToLocalContextValue2', valForKey);
       return valForKey;
     }
+    console.log('zzzzz3333', valForKey, parameterProperty);
     if (!valForKey.value) {
       return emptyValue;
     }
+    console.log('zzzzz44444', parameterProperty);
     return buildValue(getValueForPathInObject(valForKey.value, parameterProperty));
   });
 };
@@ -103,7 +106,7 @@ export const useConstantDatasetFilter = (props, definition: DatasetFilterRuleDef
   console.log('useConstantDatasetFilter', definition.valueFilter);
   const [val, setVal] = useState(initialFilter);
   useEffect(() => {
-    console.log('Fist useConstantDatasetFilter');
+    console.log('First useConstantDatasetFilter');
     setVal({ loading: false, value: definition.valueFilter });
   }, []);
   return val;

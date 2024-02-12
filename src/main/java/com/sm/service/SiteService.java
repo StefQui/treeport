@@ -153,7 +153,28 @@ public class SiteService {
     }
 
     public Page<SiteWithValuesDTO> search(ResourceSearchDTO search, String orgaId) {
-        AggregationResults<SiteWithValues> output = mongoTemplate.aggregate(getPipeline(search, orgaId), "site", SiteWithValues.class);
+        AggregationOperation lookupAgg = generateLookup(search, orgaId);
+        AggregationOperation addFieldsAgg = generateAddFields(search, orgaId);
+        AggregationOperation searchAgg = generateSearchMatch(search, orgaId);
+        AggregationOperation skipAgg = Aggregation.stage(new Document("$skip", search.getPage() * search.getSize()).toJson());
+        AggregationOperation limitAgg = Aggregation.stage(new Document("$limit", search.getSize()).toJson());
+
+        AggregationOperation countSkipAgg = Aggregation.stage(new Document("$skip", 0).toJson());
+        AggregationOperation countLimitAgg = Aggregation.stage(new Document("$limit", 1).toJson());
+        AggregationOperation countAgg = Aggregation.stage(new Document("$count", "count").toJson());
+
+        AggregationResults<Document> countOutput = mongoTemplate.aggregate(
+            Aggregation.newAggregation(lookupAgg, addFieldsAgg, searchAgg, countAgg),
+            "site",
+            Document.class
+        );
+
+        Integer count = countOutput.getMappedResults().get(0).getInteger("count");
+        AggregationResults<SiteWithValues> output = mongoTemplate.aggregate(
+            Aggregation.newAggregation(lookupAgg, addFieldsAgg, searchAgg, skipAgg, limitAgg),
+            "site",
+            SiteWithValues.class
+        );
 
         /*
         Bson doc = null;
@@ -163,10 +184,71 @@ public class SiteService {
         //        List<SiteWithValues> result = output.getMappedResults();
 
         //        return new PageImpl(output.getMappedResults().stream().collect(Collectors.toList()));
-        return new PageImpl(output.getMappedResults().stream().map(siteMapper::toDtoWithValues).collect(Collectors.toList()));
+        return new PageImpl(
+            output.getMappedResults().stream().map(siteMapper::toDtoWithValues).collect(Collectors.toList()),
+            Pageable.unpaged(),
+            count
+        );
     }
 
-    private Aggregation getPipeline(ResourceSearchDTO search, String orgaId) {
+    private AggregationOperation generateSearchMatch(ResourceSearchDTO search, String orgaId) {
+        Document match = new Document("$match", generateSearch(search.getFilter()));
+        return Aggregation.stage(match.toJson());
+    }
+
+    private AggregationOperation generateAddFields(ResourceSearchDTO search, String orgaId) {
+        Document addFields = new Document(
+            "$addFields",
+            new Document(
+                "attributeValues",
+                new Document(
+                    "$arrayToObject",
+                    new Document(
+                        "$map",
+                        new Document("input", "$attributeValues")
+                            .append("as", "item")
+                            .append("in", new Document("k", AttributeKeyUtils.generatePartialId()).append("v", "$$item.attributeValue"))
+                    )
+                )
+            )
+        );
+        return Aggregation.stage(addFields.toJson());
+    }
+
+    private AggregationOperation generateLookup(ResourceSearchDTO search, String orgaId) {
+        List<ColumnDefinitionDTO> cols = search.getColumnDefinitions();
+        ResourceFilterDTO filter = search.getFilter();
+
+        List<AttributePropertyFilterTargetDTO> targets = new ArrayList<>();
+
+        extractAttributeIds(filter, targets);
+
+        List<Document> lookupCrits = cols
+            .stream()
+            .filter(col -> ATTRIBUTE.equals(col.getColumnType()))
+            .map(col -> ((AttributeColumnDTO) col))
+            .map(attCol -> generateDocument(attCol.getAttributeConfigId(), attCol.getCampaignId(), orgaId))
+            .collect(Collectors.toList());
+
+        lookupCrits.addAll(
+            targets
+                .stream()
+                .map(target -> generateDocument(target.getAttributeConfigId(), target.getCampaignId(), orgaId))
+                .collect(Collectors.toList())
+        );
+
+        Document lookup = new Document(
+            "$lookup",
+            new Document("from", "attribute")
+                .append("let", new Document("theSiteId", "$id"))
+                .append("pipeline", Arrays.asList(new Document("$match", new Document("$expr", new Document("$or", lookupCrits)))))
+                .append("as", "attributeValues")
+        );
+
+        return Aggregation.stage(lookup.toJson());
+    }
+
+    private Aggregation getPipelinesssssss(ResourceSearchDTO search, String orgaId) {
         List<ColumnDefinitionDTO> cols = search.getColumnDefinitions();
         ResourceFilterDTO filter = search.getFilter();
 
@@ -214,11 +296,17 @@ public class SiteService {
 
         Document searchMatchCrit = new Document("$match", generateSearch(filter));
 
+        Document skip = new Document("$skip", search.getPage() * search.getSize());
+
+        Document limit = new Document("$limit", search.getSize());
+
         AggregationOperation lookupAgg = Aggregation.stage(lookup.toJson());
         AggregationOperation addFieldsAgg = Aggregation.stage(addFields.toJson());
         AggregationOperation searchAgg = Aggregation.stage(searchMatchCrit.toJson());
+        AggregationOperation skipAgg = Aggregation.stage(skip.toJson());
+        AggregationOperation limitAgg = Aggregation.stage(limit.toJson());
         //        MatchOperation matchStage = Aggregation.match(new Criteria("name").is("Site S1"));
-        return Aggregation.newAggregation(lookupAgg, addFieldsAgg, searchAgg);
+        return Aggregation.newAggregation(lookupAgg, addFieldsAgg, searchAgg, skipAgg, limitAgg);
     }
 
     private Document generateSearch(ResourceFilterDTO filter) {

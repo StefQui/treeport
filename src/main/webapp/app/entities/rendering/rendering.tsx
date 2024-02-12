@@ -120,7 +120,7 @@ export const PARAMS_RESOURCE_ID_KEY = 'resourceId';
 
 export const PARAMS_SITE_LIST_SELECTED_SITE_KEY = 'selectedSiteKeyInLocalContext';
 
-export const PARAMS_INPUT_OUTPUT_KEY = 'outputParameterKey';
+// export const PARAMS_INPUT_OUTPUT_KEY = 'outputParameterKey';
 export const PARAMS_INPUT_DEFAULT_VALUE_KEY = 'defaultValue';
 
 // export const PARAMS_CONST_TEXT_VALUE_KEY = 'textValue';
@@ -315,8 +315,20 @@ export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext' | '
 export type TransformTo = 'site';
 export type ConstantRuleDefinition = { ruleType: RuleType; constValue: any };
 export type RefToSiteDefinition = { ruleType: RuleType; sourceSiteId: RuleDefinition };
-export type DatasetDefinition = { ruleType: RuleType; columnDefinitions: ColumnDefinition[]; filter: RuleDefinition };
+export type DatasetDefinition = {
+  ruleType: RuleType;
+  columnDefinitions: ColumnDefinition[];
+  filter: RuleDefinition;
+  paginationState: RuleDefinition;
+};
+export type PaginationState = {
+  activePage: number;
+  itemsPerPage: number;
+  sort: string;
+  order: string;
+};
 export type DatasetFilterRuleDefinition = { ruleType: 'datasetFilter'; valueFilter: ResourceFilter };
+export type PaginationStateRuleDefinition = { ruleType: 'paginationState'; initialValue: PaginationState };
 export type RefToContextRuleDefinition = {
   ruleType: RuleType;
   path: string;
@@ -331,7 +343,8 @@ export type RuleDefinition =
   | ConstantRuleDefinition
   | RefToSiteDefinition
   | DatasetDefinition
-  | DatasetFilterRuleDefinition;
+  | DatasetFilterRuleDefinition
+  | PaginationStateRuleDefinition;
 
 export type CurrentLocalContextPathTarget = {
   targetType: 'currentLocalContextPath';
@@ -366,7 +379,7 @@ export type ParameterDefinitions = { [PARAMETER_DEFINITIONS]: ParameterDefinitio
 export type LocalContext = { [LOCAL_CONTEXT]: ParameterDefinition[] };
 
 export type SiteListParams = { [PARAMS_SITE_LIST_SELECTED_SITE_KEY]: string };
-export type InputParams = { [PARAMS_INPUT_OUTPUT_KEY]: string; [PARAMS_INPUT_DEFAULT_VALUE_KEY]?: RuleDefinition };
+export type InputParams = { outputParameterKey: string; [PARAMS_INPUT_DEFAULT_VALUE_KEY]?: RuleDefinition };
 export type HasParameterDefinitions = { parameterDefinitions?: ParameterDefinition[] };
 export type TextParams = HasParameterDefinitions & { textValue: RuleDefinition };
 export type ColumnDefinitions = {
@@ -388,7 +401,7 @@ export type ButtonColumnDefinition = {
   action: 'select' | 'edit';
 };
 export type ColumnDefinition = IdColumnDefinition | NameColumnDefinition | AttributeColumnDefinition | ButtonColumnDefinition;
-export type DataSetParams = { columnDefinitions: ColumnDefinition[]; data: RuleDefinition };
+export type DataSetParams = { columnDefinitions: ColumnDefinition[]; data: RuleDefinition; paginationState: RuleDefinition };
 
 export type ResourcePropertyFilterTarget = {
   filterPropertyType: 'RESOURCE_PROPERTY';
@@ -528,10 +541,16 @@ export type LocalContextsState = {
 export type PageContextState = { [path: string]: any };
 export type PageResourcesState = { [path: string]: any };
 export type CurrentPageIdState = string | null;
-export type ActionState = {
+export type ActionState = EntityAction | SetCurrentPageAction;
+export type EntityAction = {
   source: string;
   actionType: 'selectSite' | 'updateAttribute';
   entity: { entityType: 'SITE' | 'RESOURCE' | 'ATTRIBUTES'; entity?: any; entityIds?: any };
+} | null;
+export type SetCurrentPageAction = {
+  source: string;
+  actionType: 'setCurrentPage';
+  currentPage: number;
 } | null;
 export type RenderingState = {
   componentsState: ComponentsState;
@@ -692,9 +711,11 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
   } else if (ruleType === 'refToPageContext') {
     return useRefToPageContextValue(props, ruleDefinition as RefToContextRuleDefinition);
   } else if (ruleType === 'constant') {
-    return useConstantValue(props, ruleDefinition as ConstantRuleDefinition);
+    return useConstantValue(props, (ruleDefinition as ConstantRuleDefinition).constValue);
   } else if (ruleType === 'datasetFilter') {
     return useConstantDatasetFilter(props, ruleDefinition as DatasetFilterRuleDefinition);
+  } else if (ruleType === 'paginationState') {
+    return useConstantValue(props, (ruleDefinition as PaginationStateRuleDefinition).initialValue);
   } else {
     return {
       loading: false,
@@ -1003,11 +1024,11 @@ export const SmInput = (props: { params: InputParams; depth: string; currentPath
   //   ? { loading: false, value: props.params[PARAMS_INPUT_DEFAULT_VALUE_KEY] }
   //   : { loading: false };
 
-  const outputKey = props.params[PARAMS_INPUT_OUTPUT_KEY];
+  const outputKey = props.params.outputParameterKey;
   if (!outputKey) {
     return (
       <span>
-        <i>{PARAMS_INPUT_OUTPUT_KEY} param is mandatory in SmInput</i>
+        <i>outputParameterKey param is mandatory in SmInput</i>
       </span>
     );
   }
@@ -1025,7 +1046,7 @@ export const SmInput = (props: { params: InputParams; depth: string; currentPath
       dispatch(
         setInLocalState({
           localContextPath: props.localContextPath,
-          parameterKey: props.params[PARAMS_INPUT_OUTPUT_KEY],
+          parameterKey: props.params.outputParameterKey,
           value: defaultValue,
         }),
       );
@@ -1046,7 +1067,7 @@ export const SmInput = (props: { params: InputParams; depth: string; currentPath
     dispatch(
       setInLocalState({
         localContextPath: props.localContextPath,
-        parameterKey: props.params[PARAMS_INPUT_OUTPUT_KEY],
+        parameterKey: props.params.outputParameterKey,
         value: { value: event.target.value, loading: false },
       }),
     );

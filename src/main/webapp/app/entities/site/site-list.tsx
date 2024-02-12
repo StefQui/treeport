@@ -33,7 +33,7 @@ export const SiteList = (props: { params: SiteListParams; depth: string; current
   const initialState = {
     paginationState: {
       activePage: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 5,
       sort: 'id',
       order: 'asc',
     },

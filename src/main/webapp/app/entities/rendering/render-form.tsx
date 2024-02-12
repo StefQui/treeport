@@ -32,6 +32,7 @@ import {
   // UPDATED_ATTRIBUTE_IDS_KEY,
   useCalculatedValueState,
   useCalculatedValueStateIfNotNull,
+  EntityAction,
 } from './rendering';
 import { getFieldAttributesAndConfig, saveAttributes, setAction } from './rendering.reducer';
 import { SmRefToResource } from './resource-content';
@@ -53,7 +54,7 @@ const sendUpdateAttributesActionOnSave = (builtPath: string, updatedAttributeIds
   useEffect(() => {
     console.log('updatedAttributeIds!!!!', updatedAttributeIds);
     if (updatedAttributeIds) {
-      const action: ActionState = {
+      const action: EntityAction = {
         source: builtPath,
         actionType: 'updateAttribute',
         entity: { entityType: 'ATTRIBUTES', entityIds: updatedAttributeIds },

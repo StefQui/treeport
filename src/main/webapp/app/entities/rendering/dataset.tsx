@@ -23,6 +23,7 @@ import {
   // ENTITY_KEY,
   PARAMS_SITE_LIST_SELECTED_SITE_KEY,
   RenderingSliceState,
+  SetCurrentPageAction,
   SiteListParams,
   STATE_RS_OUTPUTS_KEY,
   STATE_RS_SELF_KEY,
@@ -33,34 +34,46 @@ import {
 export const DataSet = (props: { params: DataSetParams; depth: string; currentPath: string; path: string; localContextPath: string }) => {
   const dispatch = useAppDispatch();
 
-  const initialState = {
-    paginationState: {
-      activePage: 1,
-      itemsPerPage: 10,
-      sort: 'id',
-      order: 'asc',
-    },
-    listState: {
-      loading: false,
-      errorMessage: null,
-      entities: [],
-      entity: null,
-      updating: false,
-      totalItems: 0,
-      updateSuccess: false,
-    },
-  };
+  // const initialState = {
+  //   paginationState: {
+  //     activePage: 1,
+  //     itemsPerPage: 5,
+  //     sort: 'id',
+  //     order: 'asc',
+  //   },
+  //   listState: {
+  //     loading: false,
+  //     errorMessage: null,
+  //     entities: [],
+  //     entity: null,
+  //     updating: false,
+  //     totalItems: 0,
+  //     updateSuccess: false,
+  //   },
+  // };
 
   const builtPath = buildPath(props);
-  const paginationState = useAppSelector((state: RenderingSliceState) => {
-    return state.rendering.componentsState[builtPath]
-      ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].paginationState
-      : null;
-  });
+  // const paginationState = useAppSelector((state: RenderingSliceState) => {
+  //   return state.rendering.componentsState[builtPath]
+  //     ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].paginationState
+  //     : null;
+  // });
+  // const paginationState = useAppSelector((state: RenderingSliceState) => {
+  //   return state.rendering.componentsState[builtPath]
+  //     ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].paginationState
+  //     : null;
+  // });
 
   const data = props.params.data;
 
+  const paginationState = props.params.paginationState;
+
   const siteListProp: ValueInState = useCalculatedValueState(props, data);
+  const paginationStateProp: ValueInState = useCalculatedValueState(props, paginationState);
+
+  // if (!paginationStateProp) {
+  //   return <span>Missing paginationState</span>;
+  // }
 
   const siteList = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.entities : null;
   console.log('aaaazzzzzzzzzzzzzzzz', siteListProp, siteList);
@@ -74,19 +87,25 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
     state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.loading : false,
   );
 
-  const totalItems = useAppSelector((state: RenderingSliceState) =>
-    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.totalItems : null,
-  );
+  const totalItems = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.totalItems : null;
+  // const totalItems = useAppSelector((state: RenderingSliceState) =>
+  //   state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.totalItems : null,
+  // );
 
-  const activePage = useAppSelector((state: RenderingSliceState) =>
-    state.rendering.componentsState[builtPath]
-      ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].paginationState.activePage
-      : null,
-  );
+  // const activePage = useAppSelector((state: RenderingSliceState) =>
+  //   state.rendering.componentsState[builtPath]
+  //     ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].paginationState.activePage
+  //     : null,
+  // );
+
+  const activePage = paginationStateProp && paginationStateProp.value ? paginationStateProp.value.activePage : 0;
 
   useEffect(() => {
-    // console.log('useEffect1');
-    dispatch(setInRenderingStateSelf({ path: builtPath, value: initialState }));
+    console.log('useEffect1111', paginationStateProp);
+    if (!paginationStateProp) {
+      return;
+    }
+    dispatch(setInRenderingStateSelf({ path: builtPath }));
     // console.log('vvvvvvvvvvvv', loading);
     if (!loading) {
       sortEntities();
@@ -117,71 +136,71 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   // const loading = useAppSelector(state => state.site.loading);
   // const totalItems = useAppSelector(state => state.site.totalItems);
 
-  const doSearchResources = () => {
-    // console.log('getAllSites', builtPath);
-    // const rendering = useAppSelector(state => state.rendering.renderingState[props.refTo]);
+  // const doSearchResources = () => {
+  // console.log('getAllSites', builtPath);
+  // const rendering = useAppSelector(state => state.rendering.renderingState[props.refTo]);
 
-    // const listState = getRenderingStateForPath(rendering, props.path);
-    // console.log('getAllSites2', rendering);
-    const ps = paginationState ? paginationState : initialState.paginationState;
-    // dispatch(
-    //   searchResources({
-    //     searchModel: {
-    //       resourceType: 'SITE',
-    //       columnDefinitions: props.params.columnDefinitions,
-    //       filter: {
-    //         filterType: 'AND',
-    //         items: [
-    //           // {
-    //           //   filterType: 'PROPERTY_FILTER',
-    //           //   property: {
-    //           //     filterPropertyType: 'RESOURCE_PROPERTY',
-    //           //     property: 'name',
-    //           //   },
-    //           //   filterRule: {
-    //           //     filterRuleType: 'TEXT_EQUALS',
-    //           //     terms: 'Site S1',
-    //           //   },
-    //           // },
-    //           {
-    //             filterType: 'PROPERTY_FILTER',
-    //             property: {
-    //               filterPropertyType: 'RESOURCE_PROPERTY',
-    //               property: 'name',
-    //             },
-    //             filterRule: {
-    //               filterRuleType: 'TEXT_CONTAINS',
-    //               terms: '1',
-    //             },
-    //           },
-    //           {
-    //             filterType: 'PROPERTY_FILTER',
-    //             property: {
-    //               filterPropertyType: 'RESOURCE_ATTRIBUTE',
-    //               attributeConfigId: 'toSite',
-    //               campaignId: '2023',
-    //             },
-    //             filterRule: {
-    //               filterRuleType: 'NUMBER_GT',
-    //               compareValue: 30,
-    //             },
-    //           },
-    //         ],
-    //       },
-    //       page: ps.activePage - 1,
-    //       size: ps.itemsPerPage,
-    //       sort: `${ps.sort},${ps.order}`,
-    //     },
-    //     orgaId: 'coca',
-    //     path: builtPath,
-    //   }),
-    // );
-    // setRs(listState);
-  };
+  // const listState = getRenderingStateForPath(rendering, props.path);
+  // console.log('getAllSites2', rendering);
+  // const ps = paginationState ? paginationState : initialState.paginationState;
+  // dispatch(
+  //   searchResources({
+  //     searchModel: {
+  //       resourceType: 'SITE',
+  //       columnDefinitions: props.params.columnDefinitions,
+  //       filter: {
+  //         filterType: 'AND',
+  //         items: [
+  //           // {
+  //           //   filterType: 'PROPERTY_FILTER',
+  //           //   property: {
+  //           //     filterPropertyType: 'RESOURCE_PROPERTY',
+  //           //     property: 'name',
+  //           //   },
+  //           //   filterRule: {
+  //           //     filterRuleType: 'TEXT_EQUALS',
+  //           //     terms: 'Site S1',
+  //           //   },
+  //           // },
+  //           {
+  //             filterType: 'PROPERTY_FILTER',
+  //             property: {
+  //               filterPropertyType: 'RESOURCE_PROPERTY',
+  //               property: 'name',
+  //             },
+  //             filterRule: {
+  //               filterRuleType: 'TEXT_CONTAINS',
+  //               terms: '1',
+  //             },
+  //           },
+  //           {
+  //             filterType: 'PROPERTY_FILTER',
+  //             property: {
+  //               filterPropertyType: 'RESOURCE_ATTRIBUTE',
+  //               attributeConfigId: 'toSite',
+  //               campaignId: '2023',
+  //             },
+  //             filterRule: {
+  //               filterRuleType: 'NUMBER_GT',
+  //               compareValue: 30,
+  //             },
+  //           },
+  //         ],
+  //       },
+  //       page: ps.activePage - 1,
+  //       size: ps.itemsPerPage,
+  //       sort: `${ps.sort},${ps.order}`,
+  //     },
+  //     orgaId: 'coca',
+  //     path: builtPath,
+  //   }),
+  // );
+  // setRs(listState);
+  // };
 
   const sortEntities = () => {
     // console.log('sortEntities', builtPath);
-    doSearchResources();
+    // doSearchResources();
     // const endURL = `?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`;
     // if (pageLocation.search !== endURL) {
     //   navigate(`${pageLocation.pathname}${endURL}`);
@@ -236,7 +255,15 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
 
   const handlePagination = currentPage => {
     // console.log('handlePagination', currentPage);
-    dispatch(setActivePage({ path: builtPath, value: currentPage }));
+    // setInLocalState({
+    //   localContextPath: props.localContextPath,
+    //   parameterKey: props.params.paginationState.sourceParameterKey,
+    //   value: currentPage,
+    // }),
+    const action: SetCurrentPageAction = { source: builtPath, actionType: 'setCurrentPage', currentPage };
+
+    dispatch(setAction(action));
+    // dispatch(setActivePage({ path: builtPath, value: currentPage }));
 
     // const listState = getRenderingStateForPath(rendering, props.path);
     // setStateForPath({
@@ -268,8 +295,8 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
 
   const getSortIconByFieldName = (fieldName: string) => {
     // const renderingState = getRenderingStateForPath(rendering, props.path);
-    const sortFieldName = paginationState.sort;
-    const order = paginationState.order;
+    const sortFieldName = paginationStateProp.value.sort;
+    const order = paginationStateProp.value.order;
     if (sortFieldName !== fieldName) {
       return faSort;
     } else {
@@ -353,7 +380,7 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
                           </Button>
                           <Button
                             tag={Link}
-                            to={`/site/${site.id}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                            to={`/site/${site.id}/edit?page=${paginationStateProp.value.activePage}&sort=${paginationStateProp.value.sort},${paginationStateProp.value.order}`}
                             color="primary"
                             size="sm"
                             data-cy="entityEditButton"
@@ -365,7 +392,7 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
                           </Button>
                           <Button
                             onClick={() =>
-                              (location.href = `/site/${site.id}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`)
+                              (location.href = `/site/${site.id}/delete?page=${paginationStateProp.value.activePage}&sort=${paginationStateProp.value.sort},${paginationStateProp.value.order}`)
                             }
                             color="danger"
                             size="sm"
@@ -394,18 +421,18 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
             <div className={siteList && siteList.length > 0 ? '' : 'd-none'}>
               <div className="justify-content-center d-flex">
                 <JhiItemCount
-                  page={paginationState.activePage}
+                  page={paginationStateProp.value.activePage}
                   total={totalItems}
-                  itemsPerPage={paginationState.itemsPerPage}
+                  itemsPerPage={paginationStateProp.value.itemsPerPage}
                   i18nEnabled
                 />
               </div>
               <div className="justify-content-center d-flex">
                 <JhiPagination
-                  activePage={paginationState.activePage}
+                  activePage={paginationStateProp.value.activePage}
                   onSelect={handlePagination}
                   maxButtons={5}
-                  itemsPerPage={paginationState.itemsPerPage}
+                  itemsPerPage={paginationStateProp.value.itemsPerPage}
                   totalItems={totalItems}
                 />
               </div>

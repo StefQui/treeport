@@ -642,6 +642,21 @@ const rds: ComponentResource = {
               },
             },
             {
+              parameterKey: 'thePaginationState',
+              target: {
+                targetType: 'currentLocalContextPath',
+              },
+              definition: {
+                ruleType: 'paginationState',
+                initialValue: {
+                  activePage: 1,
+                  itemsPerPage: 5,
+                  sort: 'id',
+                  order: 'asc',
+                },
+              },
+            },
+            {
               parameterKey: 'theFilter',
               target: {
                 targetType: 'currentLocalContextPath',
@@ -717,6 +732,11 @@ const rds: ComponentResource = {
                   path: '',
                   sourceParameterKey: 'theFilter',
                 },
+                paginationState: {
+                  ruleType: 'refToLocalContext',
+                  path: '',
+                  sourceParameterKey: 'thePaginationState',
+                },
               },
             },
           ],
@@ -737,6 +757,11 @@ const rds: ComponentResource = {
             ruleType: 'refToLocalContext',
             path: '',
             sourceParameterKey: 'myds',
+          },
+          paginationState: {
+            ruleType: 'refToLocalContext',
+            path: '',
+            sourceParameterKey: 'thePaginationState',
           },
         },
       },

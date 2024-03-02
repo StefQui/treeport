@@ -84,7 +84,11 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   // );
 
   const loading = useAppSelector((state: RenderingSliceState) =>
-    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.loading : false,
+    state.rendering.componentsState[builtPath] &&
+    state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY] &&
+    state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState
+      ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.loading
+      : false,
   );
 
   const totalItems = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.totalItems : null;

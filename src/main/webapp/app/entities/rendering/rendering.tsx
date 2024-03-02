@@ -1518,7 +1518,7 @@ export const MyWrapper = ({ children, ...props }) => {
 
   const lc = useRefToLocalContext(targetLocalContextPath);
 
-  const displayPath = false;
+  const displayPath = true;
   // const shouldDisplay = useShouldDisplay(props);
   // if (!shouldDisplay) {
   //   console.log('evaluateShouldDisplay-----------', props.componentType, shouldDisplay);

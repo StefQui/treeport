@@ -104,63 +104,60 @@ export const applyPath = (path, pathToApply) => {
 // export const LAYOUT_ELEMENTS_KEY = 'layoutElements';
 // export const LAYOUT_ELEMENT_ID = 'layoutElementId';
 // export const LAYOUT_ELEMENT_RESOURCE_ID = 'resourceId';
-export const RESOURCE_FROM_REF_KEY = 'resource';
-export const SITE_FROM_REF_KEY = 'site';
-export const RESOURCE_CONTENT_KEY = 'content';
-export const RESOURCE_PARAMETERS_KEY = 'parameters';
-export const RESOURCE_PARAMETER_KEY = 'parameterKey';
-export const RESOURCE_PARAMETER_TYPE_KEY = 'parameterType';
-export const RESOURCE_PARAMETER_SOURCES_KEY = 'parameterSources';
-export const RESOURCE_PARAMETER_SOURCE_KEY = 'source';
-export const RESOURCE_PARAMETER_SOURCE_PARAMETER_KEY_KEY = 'sourceParameterKey';
+// export const RESOURCE_CONTENT_KEY = 'content';
+// export const RESOURCE_PARAMETERS_KEY = 'parameters';
+// export const RESOURCE_PARAMETER_KEY = 'parameterKey';
+// export const RESOURCE_PARAMETER_TYPE_KEY = 'parameterType';
+// export const RESOURCE_PARAMETER_SOURCES_KEY = 'parameterSources';
+// export const RESOURCE_PARAMETER_SOURCE_KEY = 'source';
+// export const RESOURCE_PARAMETER_SOURCE_PARAMETER_KEY_KEY = 'sourceParameterKey';
 
-export const COMPONENT_TYPE = 'componentType';
-export const PARAMS_KEY = 'params';
-export const PARAMS_RESOURCE_ID_KEY = 'resourceId';
+// export const COMPONENT_TYPE = 'componentType';
+// export const PARAMS_KEY = 'params';
+// export const PARAMS_RESOURCE_ID_KEY = 'resourceId';
 
-export const PARAMS_SITE_LIST_SELECTED_SITE_KEY = 'selectedSiteKeyInLocalContext';
+// export const PARAMS_SITE_LIST_SELECTED_SITE_KEY = 'selectedSiteKeyInLocalContext';
 
 // export const PARAMS_INPUT_OUTPUT_KEY = 'outputParameterKey';
-export const PARAMS_INPUT_DEFAULT_VALUE_KEY = 'defaultValue';
+// export const PARAMS_INPUT_DEFAULT_VALUE_KEY = 'defaultValue';
 
 // export const PARAMS_CONST_TEXT_VALUE_KEY = 'textValue';
 
-export const PARAMS_FORM_ATTRIBUTE_CONTEXT_KEY = 'attributeContext';
-export const PARAMS_FORM_ATTRIBUTE_CONTEXT_RESOURCE_ID_KEY = 'resourceId';
-export const PARAMS_FORM_ATTRIBUTE_CONTEXT_CAMPAIGN_ID_KEY = 'campaignId';
-export const PARAMS_FORM_FIELDS_KEY = 'fields';
-export const PARAMS_FORM_FIELDS_FIELD_TYPE_KEY = 'fieldType';
-export const PARAMS_FORM_FIELDS_FIELD_ID_KEY = 'fieldId';
-export const PARAMS_FORM_FIELDS_ATTRIBUTE_CONFIG_ID_KEY = 'attributeConfigId';
-export const PARAMS_FORM_FIELDS_CAMPAIGN_ID_KEY = 'campaignId';
-export const PARAMS_FORM_FIELDS_USE_CURRENT_KEY = 'useCurrent';
+// export const PARAMS_FORM_ATTRIBUTE_CONTEXT_KEY = 'attributeContext';
+// export const PARAMS_FORM_ATTRIBUTE_CONTEXT_RESOURCE_ID_KEY = 'resourceId';
+// export const PARAMS_FORM_ATTRIBUTE_CONTEXT_CAMPAIGN_ID_KEY = 'campaignId';
+// export const PARAMS_FORM_FIELDS_KEY = 'fields';
+// export const PARAMS_FORM_FIELDS_FIELD_TYPE_KEY = 'fieldType';
+// export const PARAMS_FORM_FIELDS_FIELD_ID_KEY = 'fieldId';
+// export const PARAMS_FORM_FIELDS_ATTRIBUTE_CONFIG_ID_KEY = 'attributeConfigId';
+// export const PARAMS_FORM_FIELDS_CAMPAIGN_ID_KEY = 'campaignId';
+// export const PARAMS_FORM_FIELDS_USE_CURRENT_KEY = 'useCurrent';
 
-export const PARAMS_FORM_FORM_CONTENT_KEY = 'formContent';
+// export const PARAMS_FORM_FORM_CONTENT_KEY = 'formContent';
 
-export const RESOURCE_CONTENT_PROPERTY = 'content';
+// export const RESOURCE_CONTENT_PROPERTY = 'content';
 
-export const STATE_RS_PARAMETERS_KEY = 'parameters';
-export const STATE_RS_OUTPUTS_KEY = 'outputs';
-export const STATE_RS_SELF_KEY = 'self';
+// export const STATE_RS_PARAMETERS_KEY = 'parameters';
+// export const STATE_RS_OUTPUTS_KEY = 'outputs';
+// export const STATE_RS_SELF_KEY = 'self';
 // export const STATE_RS_LOCAL_CONTEXT_KEY = 'localContext';
 
 export const RENDERING_SLICE_KEY = 'rendering';
-export const STATE_CURRENT_PAGE_ID_KEY = 'currentPageId';
-export const STATE_PAGE_RESOURCE_KEY = 'pageResource';
-export const STATE_PAGE_RESOURCES_KEY = 'pageResources';
-export const STATE_PAGE_CONTEXT_KEY = 'pageContext';
+// export const STATE_CURRENT_PAGE_ID_KEY = 'currentPageId';
+// export const STATE_PAGE_RESOURCES_KEY = 'pageResources';
+// export const STATE_PAGE_CONTEXT_KEY = 'pageContext';
 // export const STATE_LAYOUT_ELEMENTS_KEY = 'layoutElements';
 
 export type PARAMETER_SOURCE_TYPE = 'pageContext' | 'localContext';
 export type PARAMETER_TYPE = 'site' | 'string';
 export type PARAMETER_SOURCE = {
-  [RESOURCE_PARAMETER_SOURCE_KEY]: PARAMETER_SOURCE_TYPE;
-  [RESOURCE_PARAMETER_SOURCE_PARAMETER_KEY_KEY]: string;
+  source: PARAMETER_SOURCE_TYPE;
+  sourceParameterKey: string;
 };
 export type PARAMETER = {
-  [RESOURCE_PARAMETER_KEY]: string;
-  [RESOURCE_PARAMETER_TYPE_KEY]: PARAMETER_TYPE;
-  [RESOURCE_PARAMETER_SOURCES_KEY]?: PARAMETER_SOURCE[];
+  parameterKey: string;
+  parameterType: PARAMETER_TYPE;
+  source?: PARAMETER_SOURCE[];
 };
 export type PARAMETER_SOURCES_TYPE = PARAMETER_SOURCE[];
 export type PARAMETERS_TYPE = PARAMETER[];
@@ -170,9 +167,13 @@ export type SmInputParams = {
   defaultValue: RuleDefinition;
 };
 
-export type PageResourceParams = HasParameterDefinitions & {
+export type PageResourceParams = {
   layoutResourceId: string;
   layoutElements: PageLayoutElement[];
+};
+
+export type MenuResourceParams = {
+  menuItems: MenuItem[];
 };
 
 export type SmLayoutElementParams = {
@@ -197,6 +198,7 @@ export type CommonContent = {
   col?: number;
   display?: Display;
   border?: boolean;
+  parameterDefinitions?: ParameterDefinition[];
 };
 
 export type SmTextResourceContent = CommonContent & {
@@ -221,9 +223,7 @@ export type SmRefToResourceResourceContent = CommonContent & {
 
 export type FormResourceContent = CommonContent & {
   componentType: 'Form';
-  attributeContext: FormAttributeContextParam;
-  fields: FormFieldParam[];
-  formContent: any;
+  params: FormParams;
 };
 
 export type SmAttRefResourceContent = CommonContent & {
@@ -243,7 +243,7 @@ export type PageResourceContent = CommonContent & {
 
 export type MenuResourceContent = CommonContent & {
   componentType: 'menu';
-  menuItems: MenuItem[];
+  params: MenuResourceParams;
 };
 
 export type LayoutElementResourceContent = CommonContent & {
@@ -298,10 +298,10 @@ export type RENDERING_CONTEXT = { [key: string]: ValueInState };
 
 export type TargetInfo = { destinationKey: string; localContextPath: string; target: ParameterTarget; childPath?: string };
 
-export const ELEM_LAYOUT_ELEMENT = 'layoutElement';
-export const ELEM_REF_TO_RESOURCE_ELEMENT = 'SmRefToResource';
+// export const ELEM_LAYOUT_ELEMENT = 'layoutElement';
+// export const ELEM_REF_TO_RESOURCE_ELEMENT = 'SmRefToResource';
 
-export const PARAMETER_DEFINITIONS = 'parameterDefinitions';
+// export const PARAMETER_DEFINITIONS = 'parameterDefinitions';
 // export const PARAMETER_KEY = 'parameterKey';
 // export const DEFINITION = 'definition';
 // export const RULE_TYPE = 'ruleType';
@@ -375,13 +375,13 @@ export type ParameterDefinition = {
   definition?: RuleDefinition;
   definitions?: RuleDefinition[];
 };
-export type ParameterDefinitions = { [PARAMETER_DEFINITIONS]: ParameterDefinition[] };
+export type ParameterDefinitions = { parameterDefinitions: ParameterDefinition[] };
 export type LocalContext = { [LOCAL_CONTEXT]: ParameterDefinition[] };
 
-export type SiteListParams = { [PARAMS_SITE_LIST_SELECTED_SITE_KEY]: string };
-export type InputParams = { outputParameterKey: string; [PARAMS_INPUT_DEFAULT_VALUE_KEY]?: RuleDefinition };
-export type HasParameterDefinitions = { parameterDefinitions?: ParameterDefinition[] };
-export type TextParams = HasParameterDefinitions & { textValue: RuleDefinition };
+export type SiteListParams = { selectedSiteKeyInLocalContext: string };
+export type InputParams = { outputParameterKey: string; defaultValue?: RuleDefinition };
+// export type HasParameterDefinitions = { parameterDefinitions?: ParameterDefinition[] };
+export type TextParams = { textValue: RuleDefinition };
 export type ColumnDefinitions = {
   columnType: 'ID' | 'NAME' | 'ATTRIBUTE' | 'BUTTON';
 };
@@ -401,7 +401,13 @@ export type ButtonColumnDefinition = {
   action: 'select' | 'edit';
 };
 export type ColumnDefinition = IdColumnDefinition | NameColumnDefinition | AttributeColumnDefinition | ButtonColumnDefinition;
-export type DataSetParams = { columnDefinitions: ColumnDefinition[]; data: RuleDefinition; paginationState: RuleDefinition };
+
+export type DataSetParams = {
+  columnDefinitions: ColumnDefinition[];
+  data: RuleDefinition;
+  paginationState: RuleDefinition;
+  selectedSiteKeyInLocalContext?: string;
+};
 
 export type ResourcePropertyFilterTarget = {
   filterPropertyType: 'RESOURCE_PROPERTY';
@@ -504,32 +510,33 @@ export type FormFieldParam = {
 };
 
 export type FormAttributeContextParam = {
-  [PARAMS_FORM_ATTRIBUTE_CONTEXT_RESOURCE_ID_KEY]: RuleDefinition;
-  [PARAMS_FORM_ATTRIBUTE_CONTEXT_CAMPAIGN_ID_KEY]: RuleDefinition;
+  resourceId: RuleDefinition;
+  campaignId: RuleDefinition;
 };
 
-// export type FormParams = {
-//   [PARAMS_FORM_ATTRIBUTE_CONTEXT_KEY]: FormAttributeContextParam;
-//   [PARAMS_FORM_FIELDS_KEY]: FormFieldParam;
-//   [PARAMS_FORM_FORM_CONTENT_KEY]: any;
-// };
+export type FormParams = {
+  attributeContext: FormAttributeContextParam;
+  fields: FormFieldParam[];
+  formContent: any;
+};
 export type HasTargetChildrenResource = { resourceId: string };
-export type RefToResourceParams = HasParameterDefinitions & HasTargetChildrenResource;
-export type Params = RefToResourceParams | SiteListParams | TextParams | InputParams | AttRefParams;
+export type RefToResourceParams = HasTargetChildrenResource;
+export type Params = RefToResourceParams | SiteListParams | TextParams | InputParams | AttRefParams | FormParams;
 
 export type CommonProps = {
   depth: string;
   currentPath: string;
   path: string;
   display?: Display;
-
   localContextPath: string;
+  parameterDefinitions?: ParameterDefinition[];
 };
 export type SmTextProps = CommonProps & { params: TextParams };
 export type AttRefProps = CommonProps & { params: AttRefParams };
 export type SmRefToResourceProps = CommonProps & { params: RefToResourceParams };
 export type SmPageProps = CommonProps & { params: PageResourceParams };
 export type SmLayoutElementProps = CommonProps & { params: SmLayoutElementParams };
+export type FormProps = CommonProps & { params: FormParams };
 
 export type Parameters = { [path: string]: ValueInState };
 export type ComponentsState = {
@@ -1033,7 +1040,7 @@ export const SmInput = (props: { params: InputParams; depth: string; currentPath
     );
   }
 
-  const defaultValueKey: RuleDefinition = props.params[PARAMS_INPUT_DEFAULT_VALUE_KEY];
+  const defaultValueKey: RuleDefinition = props.params.defaultValue;
   const defaultValue: ValueInState = defaultValueKey ? useCalculatedValueState(props, defaultValueKey) : { loading: false };
   const [value, setValue] = useState(defaultValue);
   const dispatch = useAppDispatch();
@@ -1437,7 +1444,7 @@ export const MyElem = props => {
         return <SmText {...params}></SmText>;
       case 'SmInput':
         return <SmInput {...params}></SmInput>;
-      case ELEM_REF_TO_RESOURCE_ELEMENT:
+      case 'SmRefToResource':
         return <SmRefToResource {...params}></SmRefToResource>;
       // case 'textRef':
       //   return <TextRef {...params}></TextRef>;
@@ -1465,7 +1472,7 @@ export const MyElem = props => {
         return <SmMenu {...params}></SmMenu>;
       case 'displayer':
         return <SmDisplayer {...params}></SmDisplayer>;
-      case ELEM_LAYOUT_ELEMENT:
+      case 'layoutElement':
         return <SmLayoutElement {...params}></SmLayoutElement>;
       // case 'resourceContent':
       //   return <ZZZResourceContent {...params}></ZZZResourceContent>;
@@ -1539,7 +1546,7 @@ export const MyWrapper = ({ children, ...props }) => {
         <Col md="12">
           {/* {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT
         ? (<pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>) : ""} */}
-          {props.componentType === ELEM_LAYOUT_ELEMENT || props.componentType === ELEM_REF_TO_RESOURCE_ELEMENT ? (
+          {props.componentType === 'layoutElement' || props.componentType === 'SmRefToResource' ? (
             <div>
               <b>LocalContext: {targetLocalContextPath}</b>
               <pre>{JSON.stringify(lc ? lc : {}, null, 2)}</pre>

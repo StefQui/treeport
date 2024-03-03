@@ -21,12 +21,9 @@ import {
   buildPath,
   DataSetParams,
   // ENTITY_KEY,
-  PARAMS_SITE_LIST_SELECTED_SITE_KEY,
   RenderingSliceState,
   SetCurrentPageAction,
   SiteListParams,
-  STATE_RS_OUTPUTS_KEY,
-  STATE_RS_SELF_KEY,
   useCalculatedValueState,
   ValueInState,
 } from './rendering';
@@ -85,9 +82,9 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
 
   const loading = useAppSelector((state: RenderingSliceState) =>
     state.rendering.componentsState[builtPath] &&
-    state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY] &&
-    state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState
-      ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.loading
+    state.rendering.componentsState[builtPath].self &&
+    state.rendering.componentsState[builtPath].self.listState
+      ? state.rendering.componentsState[builtPath].self.listState.loading
       : false,
   );
 
@@ -245,12 +242,12 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   };
 
   const handleSelect = selected => () => {
-    console.log('handleSelect', props.localContextPath, props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY], selected);
+    console.log('handleSelect', props.localContextPath, props.params.selectedSiteKeyInLocalContext, selected);
     // dispatch(setInLocalState({ localContextPath: props.localContextPath,       parameterKey: props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY],value: { value: { entityType: 'SITE', [ENTITY_KEY]: selected } , loading: false} }));
     dispatch(
       setInLocalState({
         localContextPath: props.localContextPath,
-        parameterKey: props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY],
+        parameterKey: props.params.selectedSiteKeyInLocalContext,
         value: { value: selected.id, loading: false },
       }),
     );
@@ -290,7 +287,7 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
     dispatch(
       setInLocalState({
         localContextPath: props.localContextPath,
-        parameterKey: props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY],
+        parameterKey: props.params.selectedSiteKeyInLocalContext,
         value: { value: null, loading: false },
       }),
     );

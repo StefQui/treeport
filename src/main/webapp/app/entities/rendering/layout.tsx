@@ -17,15 +17,8 @@ import {
   PageResourceParams,
   PATH_SEPARATOR,
   RenderingSliceState,
-  RESOURCE_CONTENT_KEY,
-  RESOURCE_FROM_REF_KEY,
-  RESOURCE_PARAMETERS_KEY,
   SmLayoutElementProps,
   SmPageProps,
-  STATE_CURRENT_PAGE_ID_KEY,
-  STATE_PAGE_CONTEXT_KEY,
-  STATE_PAGE_RESOURCES_KEY,
-  STATE_PAGE_RESOURCE_KEY,
   ValueInState,
   // useRenderingState,
 } from './rendering';
@@ -45,7 +38,7 @@ export const SmPage = (props: SmPageProps) => {
 
   const layoutId = props.params.layoutResourceId;
   const builtPath = buildPath(props);
-  const currentPageId = useAppSelector((state: RenderingSliceState) => state.rendering[STATE_CURRENT_PAGE_ID_KEY]);
+  const currentPageId = useAppSelector((state: RenderingSliceState) => state.rendering.currentPageId);
 
   if (!layoutId) {
     return <span>Missing layoutResourceId in Page</span>;
@@ -84,10 +77,6 @@ export const SmPage = (props: SmPageProps) => {
   );
 };
 
-export const usePageResource = () => {
-  return useAppSelector((state: RenderingSliceState) => state.rendering[STATE_PAGE_RESOURCE_KEY][RESOURCE_FROM_REF_KEY]);
-};
-
 export const useResourceStateFromPageResources = (resourceId): ValueInState => {
   return useAppSelector((state: RenderingSliceState) => state.rendering.pageResources[resourceId]);
 };
@@ -110,8 +99,6 @@ const useLayoutElementResourceId = (layoutElements: PageLayoutElement[], layoutE
       if (layoutElement) {
         setLayoutElementResourceId(layoutElement.resourceId);
       }
-
-      // setLayoutElementContent(layoutElement[RESOURCE_CONTENT_KEY]);
     }
   }, [layoutElements]);
 
@@ -181,7 +168,7 @@ export const SmLayoutElement = (props: SmLayoutElementProps) => {
   const dispatch = useAppDispatch();
   const layoutElementId = props.params.layoutElementId;
   const builtPath = buildPath(props);
-  const currentPageId: string = useAppSelector((state: RenderingSliceState) => state.rendering[STATE_CURRENT_PAGE_ID_KEY]);
+  const currentPageId: string = useAppSelector((state: RenderingSliceState) => state.rendering.currentPageId);
 
   const params = props.params;
 

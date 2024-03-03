@@ -35,21 +35,21 @@ const r3: ComponentResource = {
             path: '/layout-content',
             sourceParameterKey: 'sid99',
           },
-          parameterDefinitions: [
-            {
-              parameterKey: 'ridInPageContext',
-              target: {
-                targetType: 'specificLocalContextPath',
-                targetPath: '/layout-menutop',
-              },
-              definition: {
-                ruleType: 'refToLocalContext',
-                path: '/layout-content',
-                sourceParameterKey: 'sid99',
-              },
-            },
-          ],
         },
+        parameterDefinitions: [
+          {
+            parameterKey: 'ridInPageContext',
+            target: {
+              targetType: 'specificLocalContextPath',
+              targetPath: '/layout-menutop',
+            },
+            definition: {
+              ruleType: 'refToLocalContext',
+              path: '/layout-content',
+              sourceParameterKey: 'sid99',
+            },
+          },
+        ],
       },
       {
         componentType: 'SmInput',
@@ -118,77 +118,77 @@ const r3: ComponentResource = {
             col: 12,
             params: {
               resourceId: 'r5',
-              parameterDefinitions: [
-                {
-                  parameterKey: 'const1',
-                  target: {
-                    targetType: 'currentLocalContextPath',
-                  },
-                  definition: {
-                    ruleType: 'constant',
-                    constValue: 'aaa111',
-                  },
+            },
+            parameterDefinitions: [
+              {
+                parameterKey: 'const1',
+                target: {
+                  targetType: 'currentLocalContextPath',
                 },
-                // {
-                //   parameterKey: 'site2',
-                //   definition: {
-                //     ruleType: 'refToPageContext',
-                //     path: '/layout-content',
-                //     sourceParameterKey: 'sid',
-                //   },
-                // },
-                {
-                  parameterKey: 'siteIdFromSiteList',
-                  target: {
-                    targetType: 'currentLocalContextPath',
-                  },
-                  definition: {
-                    ruleType: 'refToLocalContext',
-                    path: '/layout-content',
-                    sourceParameterKey: 'sid99',
-                  },
+                definition: {
+                  ruleType: 'constant',
+                  constValue: 'aaa111',
                 },
-                {
-                  parameterKey: 'theoutputFromInput',
-                  target: {
-                    targetType: 'currentLocalContextPath',
-                  },
-                  definition: {
+              },
+              // {
+              //   parameterKey: 'site2',
+              //   definition: {
+              //     ruleType: 'refToPageContext',
+              //     path: '/layout-content',
+              //     sourceParameterKey: 'sid',
+              //   },
+              // },
+              {
+                parameterKey: 'siteIdFromSiteList',
+                target: {
+                  targetType: 'currentLocalContextPath',
+                },
+                definition: {
+                  ruleType: 'refToLocalContext',
+                  path: '/layout-content',
+                  sourceParameterKey: 'sid99',
+                },
+              },
+              {
+                parameterKey: 'theoutputFromInput',
+                target: {
+                  targetType: 'currentLocalContextPath',
+                },
+                definition: {
+                  ruleType: 'refToLocalContext',
+                  path: '/layout-content',
+                  sourceParameterKey: 'myInputContent',
+                },
+              },
+              {
+                parameterKey: 'thesite44',
+                target: {
+                  targetType: 'currentLocalContextPath',
+                },
+                definition: {
+                  ruleType: 'refToSite',
+                  sourceSiteId: {
                     ruleType: 'refToLocalContext',
                     path: '/layout-content',
                     sourceParameterKey: 'myInputContent',
                   },
                 },
-                {
-                  parameterKey: 'thesite44',
-                  target: {
-                    targetType: 'currentLocalContextPath',
-                  },
-                  definition: {
-                    ruleType: 'refToSite',
-                    sourceSiteId: {
-                      ruleType: 'refToLocalContext',
-                      path: '/layout-content',
-                      sourceParameterKey: 'myInputContent',
-                    },
+              },
+              {
+                parameterKey: 'thesiteFromTheList',
+                target: {
+                  targetType: 'currentLocalContextPath',
+                },
+                definition: {
+                  ruleType: 'refToSite',
+                  sourceSiteId: {
+                    ruleType: 'refToLocalContext',
+                    path: '/layout-content',
+                    sourceParameterKey: 'sid99',
                   },
                 },
-                {
-                  parameterKey: 'thesiteFromTheList',
-                  target: {
-                    targetType: 'currentLocalContextPath',
-                  },
-                  definition: {
-                    ruleType: 'refToSite',
-                    sourceSiteId: {
-                      ruleType: 'refToLocalContext',
-                      path: '/layout-content',
-                      sourceParameterKey: 'sid99',
-                    },
-                  },
-                },
-              ],
-            },
+              },
+            ],
           },
           {
             componentType: 'SmAttRef',
@@ -218,34 +218,34 @@ const r3: ComponentResource = {
 
             params: {
               resourceId: 'rform',
-              parameterDefinitions: [
-                {
-                  parameterKey: 'siteIdFromSiteList',
-                  target: {
-                    targetType: 'currentLocalContextPath',
-                  },
-                  definition: {
+            },
+            parameterDefinitions: [
+              {
+                parameterKey: 'siteIdFromSiteList',
+                target: {
+                  targetType: 'currentLocalContextPath',
+                },
+                definition: {
+                  ruleType: 'refToLocalContext',
+                  path: '/layout-content',
+                  sourceParameterKey: 'sid99',
+                },
+              },
+              {
+                parameterKey: 'thesiteFromTheList',
+                target: {
+                  targetType: 'childLocalContextPath',
+                },
+                definition: {
+                  ruleType: 'refToSite',
+                  sourceSiteId: {
                     ruleType: 'refToLocalContext',
                     path: '/layout-content',
                     sourceParameterKey: 'sid99',
                   },
                 },
-                {
-                  parameterKey: 'thesiteFromTheList',
-                  target: {
-                    targetType: 'childLocalContextPath',
-                  },
-                  definition: {
-                    ruleType: 'refToSite',
-                    sourceSiteId: {
-                      ruleType: 'refToLocalContext',
-                      path: '/layout-content',
-                      sourceParameterKey: 'sid99',
-                    },
-                  },
-                },
-              ],
-            },
+              },
+            ],
           },
         ],
       },
@@ -630,117 +630,117 @@ const rds: ComponentResource = {
             ruleType: 'constant',
             constValue: 'The dataset',
           },
-          parameterDefinitions: [
-            {
-              parameterKey: 'theTerm2',
-              target: {
-                targetType: 'currentLocalContextPath',
-              },
-              definition: {
-                ruleType: 'constant',
-                constValue: 'S1',
+        },
+        parameterDefinitions: [
+          {
+            parameterKey: 'theTerm2',
+            target: {
+              targetType: 'currentLocalContextPath',
+            },
+            definition: {
+              ruleType: 'constant',
+              constValue: 'S1',
+            },
+          },
+          {
+            parameterKey: 'thePaginationState',
+            target: {
+              targetType: 'currentLocalContextPath',
+            },
+            definition: {
+              ruleType: 'paginationState',
+              initialValue: {
+                activePage: 1,
+                itemsPerPage: 5,
+                sort: 'id',
+                order: 'asc',
               },
             },
-            {
-              parameterKey: 'thePaginationState',
-              target: {
-                targetType: 'currentLocalContextPath',
-              },
-              definition: {
-                ruleType: 'paginationState',
-                initialValue: {
-                  activePage: 1,
-                  itemsPerPage: 5,
-                  sort: 'id',
-                  order: 'asc',
-                },
-              },
+          },
+          {
+            parameterKey: 'theFilter',
+            target: {
+              targetType: 'currentLocalContextPath',
             },
-            {
-              parameterKey: 'theFilter',
-              target: {
-                targetType: 'currentLocalContextPath',
-              },
-              definition: {
-                ruleType: 'datasetFilter',
-                valueFilter: {
-                  filterType: 'AND',
-                  items: [
-                    // {
-                    //   filterType: 'PROPERTY_FILTER',
-                    //   property: {
-                    //     filterPropertyType: 'RESOURCE_PROPERTY',
-                    //     property: 'name',
-                    //   },
-                    //   filterRule: {
-                    //     filterRuleType: 'TEXT_EQUALS',
-                    //     terms: 'Site S1',
-                    //   },
-                    // },
-                    {
-                      filterType: 'PROPERTY_FILTER',
-                      property: {
-                        filterPropertyType: 'RESOURCE_PROPERTY',
-                        property: 'name',
-                      },
-                      filterRule: {
-                        filterRuleType: 'TEXT_CONTAINS',
-                        terms: {
-                          ruleType: 'refToLocalContext',
-                          path: '',
-                          sourceParameterKey: 'theTerm',
-                        },
+            definition: {
+              ruleType: 'datasetFilter',
+              valueFilter: {
+                filterType: 'AND',
+                items: [
+                  // {
+                  //   filterType: 'PROPERTY_FILTER',
+                  //   property: {
+                  //     filterPropertyType: 'RESOURCE_PROPERTY',
+                  //     property: 'name',
+                  //   },
+                  //   filterRule: {
+                  //     filterRuleType: 'TEXT_EQUALS',
+                  //     terms: 'Site S1',
+                  //   },
+                  // },
+                  {
+                    filterType: 'PROPERTY_FILTER',
+                    property: {
+                      filterPropertyType: 'RESOURCE_PROPERTY',
+                      property: 'name',
+                    },
+                    filterRule: {
+                      filterRuleType: 'TEXT_CONTAINS',
+                      terms: {
+                        ruleType: 'refToLocalContext',
+                        path: '',
+                        sourceParameterKey: 'theTerm',
                       },
                     },
-                    // {
-                    //   filterType: 'PROPERTY_FILTER',
-                    //   property: {
-                    //     filterPropertyType: 'RESOURCE_ATTRIBUTE',
-                    //     attributeConfigId: 'toSite',
-                    //     campaignId: '2023',
-                    //   },
-                    //   filterRule: {
-                    //     filterRuleType: 'NUMBER_GT',
-                    //     compareValue: {
-                    //       ruleType: 'refToLocalContext',
-                    //       path: '',
-                    //       sourceParameterKey: 'theGt',
-                    //     },
-                    //   },
-                    //   },
-                    // },
-                  ],
-                },
-              },
-            },
-            {
-              parameterKey: 'myds',
-              target: {
-                targetType: 'currentLocalContextPath',
-              },
-              definition: {
-                ruleType: 'dataset',
-                columnDefinitions: [
-                  { columnType: 'ID' },
-                  { columnType: 'NAME' },
-                  { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
-                  { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
-                  { columnType: 'BUTTON', action: 'select' },
+                  },
+                  // {
+                  //   filterType: 'PROPERTY_FILTER',
+                  //   property: {
+                  //     filterPropertyType: 'RESOURCE_ATTRIBUTE',
+                  //     attributeConfigId: 'toSite',
+                  //     campaignId: '2023',
+                  //   },
+                  //   filterRule: {
+                  //     filterRuleType: 'NUMBER_GT',
+                  //     compareValue: {
+                  //       ruleType: 'refToLocalContext',
+                  //       path: '',
+                  //       sourceParameterKey: 'theGt',
+                  //     },
+                  //   },
+                  //   },
+                  // },
                 ],
-                filter: {
-                  ruleType: 'refToLocalContext',
-                  path: '',
-                  sourceParameterKey: 'theFilter',
-                },
-                paginationState: {
-                  ruleType: 'refToLocalContext',
-                  path: '',
-                  sourceParameterKey: 'thePaginationState',
-                },
               },
             },
-          ],
-        },
+          },
+          {
+            parameterKey: 'myds',
+            target: {
+              targetType: 'currentLocalContextPath',
+            },
+            definition: {
+              ruleType: 'dataset',
+              columnDefinitions: [
+                { columnType: 'ID' },
+                { columnType: 'NAME' },
+                { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+                { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+                { columnType: 'BUTTON', action: 'select' },
+              ],
+              filter: {
+                ruleType: 'refToLocalContext',
+                path: '',
+                sourceParameterKey: 'theFilter',
+              },
+              paginationState: {
+                ruleType: 'refToLocalContext',
+                path: '',
+                sourceParameterKey: 'thePaginationState',
+              },
+            },
+          },
+        ],
       },
       {
         componentType: 'dataSet',
@@ -791,76 +791,78 @@ const rform: ComponentResource = {
       {
         componentType: 'Form',
         path: 'vsmform',
-        attributeContext: {
-          resourceId: {
-            ruleType: 'refToLocalContext',
-            path: '..',
-            sourceParameterKey: 'thesiteFromTheList',
-            sourceParameterProperty: 'id',
-          },
-          campaignId: {
-            ruleType: 'constant',
-            constValue: '2023',
-          },
-        },
-        fields: [
-          {
-            fieldType: 'Field',
-            fieldId: 'theToSite',
-            attributeConfigId: 'toSite',
+        params: {
+          attributeContext: {
+            resourceId: {
+              ruleType: 'refToLocalContext',
+              path: '..',
+              sourceParameterKey: 'thesiteFromTheList',
+              sourceParameterProperty: 'id',
+            },
             campaignId: {
-              useCurrent: true,
+              ruleType: 'constant',
+              constValue: '2023',
             },
           },
-          {
-            fieldType: 'Field',
-            fieldId: 'theToConso',
-            attributeConfigId: 'toConso',
-            campaignId: {
-              useCurrent: true,
-            },
-          },
-          {
-            fieldType: 'Field',
-            fieldId: 'theToCert',
-            attributeConfigId: 'isCert',
-            campaignId: {
-              useCurrent: true,
-            },
-          },
-        ],
-        formContent: {
-          componentType: 'verticalPanel',
-          path: 'vp88',
-          items: [
+          fields: [
             {
-              componentType: 'SmText',
-              path: 'resName',
-              params: {
-                textValue: {
-                  ruleType: 'refToLocalContext',
-                  path: '..',
-                  sourceParameterKey: 'thesiteFromTheList',
-                  sourceParameterProperty: 'name',
-                },
+              fieldType: 'Field',
+              fieldId: 'theToSite',
+              attributeConfigId: 'toSite',
+              campaignId: {
+                useCurrent: true,
               },
             },
             {
-              componentType: 'AttributeField',
-              path: 'vsmatt',
-              fieldId: 'theToSite',
-            },
-            {
-              componentType: 'AttributeField',
-              path: 'vsmattbool',
-              fieldId: 'theToCert',
-            },
-            {
-              componentType: 'AttributeField',
-              path: 'vsmattconso',
+              fieldType: 'Field',
               fieldId: 'theToConso',
+              attributeConfigId: 'toConso',
+              campaignId: {
+                useCurrent: true,
+              },
+            },
+            {
+              fieldType: 'Field',
+              fieldId: 'theToCert',
+              attributeConfigId: 'isCert',
+              campaignId: {
+                useCurrent: true,
+              },
             },
           ],
+          formContent: {
+            componentType: 'verticalPanel',
+            path: 'vp88',
+            items: [
+              {
+                componentType: 'SmText',
+                path: 'resName',
+                params: {
+                  textValue: {
+                    ruleType: 'refToLocalContext',
+                    path: '..',
+                    sourceParameterKey: 'thesiteFromTheList',
+                    sourceParameterProperty: 'name',
+                  },
+                },
+              },
+              {
+                componentType: 'AttributeField',
+                path: 'vsmatt',
+                fieldId: 'theToSite',
+              },
+              {
+                componentType: 'AttributeField',
+                path: 'vsmattbool',
+                fieldId: 'theToCert',
+              },
+              {
+                componentType: 'AttributeField',
+                path: 'vsmattconso',
+                fieldId: 'theToConso',
+              },
+            ],
+          },
         },
       },
     ],
@@ -871,18 +873,20 @@ const rmenuTop: ComponentResource = {
   content: {
     componentType: 'menu',
     path: 'menu',
-    menuItems: [
-      {
-        label: 'Page 1',
-        path: 'p1',
-        pageId: 'rpage1',
-      },
-      {
-        label: 'Page 2',
-        path: 'p2',
-        pageId: 'rpage2',
-      },
-    ],
+    params: {
+      menuItems: [
+        {
+          label: 'Page 1',
+          path: 'p1',
+          pageId: 'rpage1',
+        },
+        {
+          label: 'Page 2',
+          path: 'p2',
+          pageId: 'rpage2',
+        },
+      ],
+    },
   },
 };
 const rlayout: ComponentResource = {
@@ -974,21 +978,21 @@ const rpage2: ComponentResource = {
           resourceId: 'r5',
         },
       ],
-      parameterDefinitions: [
-        {
-          parameterKey: 'mmmiii',
-          target: {
-            targetType: 'specificLocalContextPath',
-            targetPath: '/layout-menutop',
-          },
-          definition: {
-            ruleType: 'refToLocalContext',
-            path: '/layout-content',
-            sourceParameterKey: 'sid99',
-          },
-        },
-      ],
     },
+    parameterDefinitions: [
+      {
+        parameterKey: 'mmmiii',
+        target: {
+          targetType: 'specificLocalContextPath',
+          targetPath: '/layout-menutop',
+        },
+        definition: {
+          ruleType: 'refToLocalContext',
+          path: '/layout-content',
+          sourceParameterKey: 'sid99',
+        },
+      },
+    ],
   },
   // parameters: [
   //   {

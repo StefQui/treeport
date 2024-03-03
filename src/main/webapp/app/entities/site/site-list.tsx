@@ -20,11 +20,8 @@ import {
 import {
   buildPath,
   // ENTITY_KEY,
-  PARAMS_SITE_LIST_SELECTED_SITE_KEY,
   RenderingSliceState,
   SiteListParams,
-  STATE_RS_OUTPUTS_KEY,
-  STATE_RS_SELF_KEY,
 } from '../rendering/rendering';
 
 export const SiteList = (props: { params: SiteListParams; depth: string; currentPath: string; path: string; localContextPath: string }) => {
@@ -57,27 +54,23 @@ export const SiteList = (props: { params: SiteListParams; depth: string; current
   // });
   const builtPath = buildPath(props);
   const paginationState = useAppSelector((state: RenderingSliceState) => {
-    return state.rendering.componentsState[builtPath]
-      ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].paginationState
-      : null;
+    return state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath].self.paginationState : null;
   });
 
   const siteList = useAppSelector((state: RenderingSliceState) =>
-    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.entities : null,
+    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath].self.listState.entities : null,
   );
 
   const loading = useAppSelector((state: RenderingSliceState) =>
-    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.loading : false,
+    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath].self.listState.loading : false,
   );
 
   const totalItems = useAppSelector((state: RenderingSliceState) =>
-    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.totalItems : null,
+    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath].self.listState.totalItems : null,
   );
 
   const activePage = useAppSelector((state: RenderingSliceState) =>
-    state.rendering.componentsState[builtPath]
-      ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].paginationState.activePage
-      : null,
+    state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath].self.paginationState.activePage : null,
   );
 
   useEffect(() => {
@@ -174,12 +167,12 @@ export const SiteList = (props: { params: SiteListParams; depth: string; current
   };
 
   const handleSelect = selected => () => {
-    console.log('handleSelect', props.localContextPath, props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY], selected);
+    console.log('handleSelect', props.localContextPath, props.params.selectedSiteKeyInLocalContext, selected);
     // dispatch(setInLocalState({ localContextPath: props.localContextPath,       parameterKey: props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY],value: { value: { entityType: 'SITE', [ENTITY_KEY]: selected } , loading: false} }));
     dispatch(
       setInLocalState({
         localContextPath: props.localContextPath,
-        parameterKey: props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY],
+        parameterKey: props.params.selectedSiteKeyInLocalContext,
         value: { value: selected.id, loading: false },
       }),
     );
@@ -211,7 +204,7 @@ export const SiteList = (props: { params: SiteListParams; depth: string; current
     dispatch(
       setInLocalState({
         localContextPath: props.localContextPath,
-        parameterKey: props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY],
+        parameterKey: props.params.selectedSiteKeyInLocalContext,
         value: { value: null, loading: false },
       }),
     );

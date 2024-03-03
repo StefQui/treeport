@@ -23,7 +23,6 @@ import {
   RefToSiteDefinition,
   RenderingSliceState,
   RENDERING_CONTEXT,
-  RESOURCE_CONTENT_KEY,
   ValueInState,
   // RULE_SOURCE_SITE_ID_VALUE,
   // RULE_TYPE,
@@ -306,7 +305,7 @@ export const calculateTargetLocalContextPath = (childResource = true, props) => 
 
 export const handleParameterDefinitions = (params, props) => {
   const targetLocalContextPath = calculateTargetLocalContextPath(params.target === 'childResource', props);
-  const callingParameterDefinitions = params.parameterDefinitions;
+  const callingParameterDefinitions = props.parameterDefinitions;
   console.log('targetLocalContextPath', targetLocalContextPath);
 
   initLocalContext(callingParameterDefinitions, props, targetLocalContextPath);
@@ -324,7 +323,7 @@ export const SmRefToResource = (props: SmRefToResourceProps) => {
 
   const builtPath = buildPath(props);
   const resource = usePageResourceContentFromResourceId(resourceId);
-  const resourceContent = useResourceWithKey(resource, RESOURCE_CONTENT_KEY);
+  const resourceContent = useResourceWithKey(resource, 'content');
   // const targetParameterDefinitions = useResourceWithKey(resource, LOCAL_CONTEXT);
   // const callingParameterDefinitions = params.parameterDefinitions;
 

@@ -8,9 +8,6 @@ import { IAttributeIdExploded } from 'app/shared/model/attribute-id-exploded';
 import { IResource } from 'app/shared/model/resource.model';
 import {
   // FIELDS_ATTRIBUTES_KEY,
-  STATE_PAGE_CONTEXT_KEY,
-  STATE_RS_SELF_KEY,
-  STATE_RS_OUTPUTS_KEY,
   // UPDATED_ATTRIBUTE_IDS_KEY,
   RENDERING_CONTEXT,
   ValueInState,
@@ -117,10 +114,10 @@ export const RenderingSlice = createSlice({
       };
     },
     setInRenderingStateOutputs(state: RenderingState, action): RenderingState {
-      return setInComponentsState(state, action.payload.path, action.payload.value, STATE_RS_OUTPUTS_KEY);
+      return setInComponentsState(state, action.payload.path, action.payload.value, 'outputs');
     },
     setInRenderingStateSelf(state: RenderingState, action): RenderingState {
-      return setInComponentsState(state, action.payload.path, action.payload.value, STATE_RS_SELF_KEY);
+      return setInComponentsState(state, action.payload.path, action.payload.value, 'self');
     },
     setInCorrectState(
       state: RenderingState,
@@ -250,7 +247,7 @@ export const RenderingSlice = createSlice({
 
         return putInRenderingStateSelf(state, path, {
           paginationState: {
-            ...state.componentsState[path][STATE_RS_SELF_KEY].paginationState,
+            ...state.componentsState[path].self.paginationState,
           },
           listState: {
             loading: false,
@@ -264,7 +261,7 @@ export const RenderingSlice = createSlice({
 
         return putInRenderingStateSelf(state, path, {
           paginationState: {
-            ...state.componentsState[path][STATE_RS_SELF_KEY].paginationState,
+            ...state.componentsState[path].self.paginationState,
           },
           listState: {
             errorMessage: null,

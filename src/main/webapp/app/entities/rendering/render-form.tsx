@@ -18,21 +18,16 @@ import {
   FormFieldParam,
   increment,
   MyElem,
-  PARAMS_FORM_ATTRIBUTE_CONTEXT_KEY,
-  PARAMS_FORM_FIELDS_ATTRIBUTE_CONFIG_ID_KEY,
-  PARAMS_FORM_FIELDS_FIELD_ID_KEY,
-  PARAMS_FORM_FIELDS_FIELD_TYPE_KEY,
-  PARAMS_FORM_FIELDS_KEY,
-  PARAMS_FORM_FORM_CONTENT_KEY,
   PATH_SEPARATOR,
   RenderingSliceState,
   ValueInState,
   ROOT_PATH_SEPARATOR,
-  STATE_RS_SELF_KEY,
   // UPDATED_ATTRIBUTE_IDS_KEY,
   useCalculatedValueState,
   useCalculatedValueStateIfNotNull,
   EntityAction,
+  FormParams,
+  FormProps,
 } from './rendering';
 import { getFieldAttributesAndConfig, saveAttributes, setAction } from './rendering.reducer';
 import { SmRefToResource } from './resource-content';
@@ -65,7 +60,7 @@ const sendUpdateAttributesActionOnSave = (builtPath: string, updatedAttributeIds
   }, [updatedAttributeIds]);
 };
 
-export const SmForm = props => {
+export const SmForm = (props: FormProps) => {
   const dispatch = useAppDispatch();
   const { register, handleSubmit, reset, unregister } = useForm({ defaultValues: {} });
   const builtPath = buildPath(props);
@@ -96,9 +91,9 @@ export const SmForm = props => {
 
   sendUpdateAttributesActionOnSave(builtPath, updatedAttributeIds, mapOfFields);
 
-  const attributeContext: FormAttributeContextParam = props[PARAMS_FORM_ATTRIBUTE_CONTEXT_KEY];
-  const fields: FormFieldParam[] = props[PARAMS_FORM_FIELDS_KEY];
-  const formContent = props[PARAMS_FORM_FORM_CONTENT_KEY];
+  const attributeContext: FormAttributeContextParam = props.params.attributeContext;
+  const fields: FormFieldParam[] = props.params.fields;
+  const formContent = props.params.formContent;
 
   if (!attributeContext) {
     return <span>attributeContext param is mandatory in Form</span>;
@@ -128,13 +123,9 @@ export const SmForm = props => {
   useEffect(() => {
     if (resourceIdValue !== previousResourceIdValue || campaignIdValue !== previousCampaignIdValue) {
       const newMap = fields
-        .filter(field => field[PARAMS_FORM_FIELDS_FIELD_TYPE_KEY] === 'Field')
+        .filter(field => field.fieldType === 'Field')
         .reduce((acc, field) => {
-          acc[field[PARAMS_FORM_FIELDS_FIELD_ID_KEY]] = buildAttributeIdFormExploded(
-            resourceIdValue,
-            field[PARAMS_FORM_FIELDS_ATTRIBUTE_CONFIG_ID_KEY],
-            campaignIdValue,
-          );
+          acc[field.fieldId] = buildAttributeIdFormExploded(resourceIdValue, field.attributeConfigId, campaignIdValue);
           return acc;
         }, {});
       if (newMap) {

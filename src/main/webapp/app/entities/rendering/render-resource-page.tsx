@@ -6,15 +6,10 @@ import { usePageContext, useResourceStateFromPageResources } from './layout';
 import {
   ComponentResource,
   ComponentResourceProperties,
-  COMPONENT_TYPE,
   getRootPath,
   getValueForPathInObject,
   PageResourceContent,
-  PARAMETER_DEFINITIONS,
   RENDERING_CONTEXT,
-  RESOURCE_CONTENT_KEY,
-  RESOURCE_CONTENT_PROPERTY,
-  RESOURCE_PARAMETER_KEY,
   ValueInState,
 } from './rendering';
 import { getResourceForPageResources, setInLocalState, setRenderingCurrentPageId, setRenderingPageContext } from './rendering.reducer';
@@ -145,15 +140,15 @@ export const fillPageContext = pageParameters => {
       const queryParams = new URLSearchParams(location.search);
       const c: RENDERING_CONTEXT = {};
       pageParameters.forEach(param => {
-        c[param[RESOURCE_PARAMETER_KEY]] = {
-          value: queryParams.get(param[RESOURCE_PARAMETER_KEY]),
+        c[param.parameterKey] = {
+          value: queryParams.get(param.parameterKey),
           loading: false,
         };
         dispatch(
           setInLocalState({
             localContextPath: getRootPath(),
-            parameterKey: param[RESOURCE_PARAMETER_KEY],
-            value: c[param[RESOURCE_PARAMETER_KEY]],
+            parameterKey: param.parameterKey,
+            value: c[param.parameterKey],
           }),
         );
         // s;
@@ -193,13 +188,7 @@ export const RenderResourcePage = () => {
       <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>
       {/* <MyElem input={toRender} params={{}} currentPath={getRootPath()} localContextPath={''} depth="0"></MyElem> */}
 
-      <SmRefToResource
-        currentPath=""
-        path=""
-        params={{ resourceId, [PARAMETER_DEFINITIONS]: [] }}
-        localContextPath=""
-        depth="0"
-      ></SmRefToResource>
+      <SmRefToResource currentPath="" path="" params={{ resourceId }} localContextPath="" depth="0"></SmRefToResource>
     </div>
   );
 };

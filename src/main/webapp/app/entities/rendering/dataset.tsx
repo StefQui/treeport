@@ -13,6 +13,8 @@ import {
   searchResources,
   setAction,
   setActivePage,
+  setAnyInCorrectState,
+  setInCorrectState,
   setInLocalState,
   setInRenderingStateOutputs,
   setInRenderingStateSelf,
@@ -20,13 +22,40 @@ import {
 import {
   buildPath,
   DataSetParams,
+  RefToContextRuleDefinition,
   // ENTITY_KEY,
   RenderingSliceState,
+  RuleDefinition,
   SetCurrentPageAction,
   SiteListParams,
   useCalculatedValueState,
+  useFoundValue,
   ValueInState,
 } from './rendering';
+
+const useSiteList = (props, data) => {
+  const dataProp = useFoundValue(props, data);
+  const [siteList, setSiteList] = useState(null);
+  useEffect(() => {
+    // console.log('siteListProp has changed', siteListProp);
+    if (dataProp && dataProp.listState) {
+      setSiteList(dataProp.listState);
+    }
+  }, [dataProp]);
+  return siteList;
+};
+
+export const usePaginationProp = (props, data) => {
+  const dataProp = useFoundValue(props, data);
+  const [pagination, setPagination] = useState(null);
+  useEffect(() => {
+    // console.log('siteListProp has changed', siteListProp);
+    if (dataProp && dataProp.paginationState) {
+      setPagination(dataProp.paginationState);
+    }
+  }, [dataProp]);
+  return pagination;
+};
 
 export const DataSet = (props: { params: DataSetParams; depth: string; currentPath: string; path: string; localContextPath: string }) => {
   const dispatch = useAppDispatch();
@@ -61,12 +90,17 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   //     : null;
   // });
 
-  const data = props.params.data;
+  const data: RuleDefinition = props.params.data;
 
-  const paginationState = props.params.paginationState;
+  // const paginationState = props.params.paginationState;
 
-  const siteListProp: ValueInState = useCalculatedValueState(props, data);
-  const paginationStateProp: ValueInState = useCalculatedValueState(props, paginationState);
+  // const siteListProp: ValueInState = useCalculatedValueState(props, data);
+  const siteListProp = useSiteList(props, data);
+
+  console.log('12345', data, siteListProp, props.localContextPath);
+
+  const paginationProp = usePaginationProp(props, data);
+  // const paginationStateProp: ValueInState = useCalculatedValueState(props, paginationState);
 
   // if (!paginationStateProp) {
   //   return <span>Missing paginationState</span>;
@@ -99,11 +133,11 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   //     : null,
   // );
 
-  const activePage = paginationStateProp && paginationStateProp.value ? paginationStateProp.value.activePage : 0;
+  const activePage = paginationProp ? paginationProp.activePage : 0;
 
   useEffect(() => {
-    console.log('useEffect1111', paginationStateProp);
-    if (!paginationStateProp) {
+    console.log('useEffect1111', paginationProp);
+    if (!paginationProp) {
       return;
     }
     dispatch(setInRenderingStateSelf({ path: builtPath }));
@@ -254,6 +288,8 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
     dispatch(setAction({ source: builtPath, actionType: 'selectSite', entity: { entityType: 'SITE', entity: selected } }));
   };
 
+  const refToContextRuleDefinition: RefToContextRuleDefinition = data as RefToContextRuleDefinition;
+
   const handlePagination = currentPage => {
     // console.log('handlePagination', currentPage);
     // setInLocalState({
@@ -261,9 +297,25 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
     //   parameterKey: props.params.paginationState.sourceParameterKey,
     //   value: currentPage,
     // }),
-    const action: SetCurrentPageAction = { source: builtPath, actionType: 'setCurrentPage', currentPage };
+    const action: SetCurrentPageAction = {
+      source: builtPath,
+      actionType: 'setCurrentPage',
+      currentPage,
+      targetDataset: refToContextRuleDefinition.sourceParameterKey,
+    };
 
     dispatch(setAction(action));
+
+    // dispatch(
+    //   setAnyInCorrectState({
+    //     localContextPath: props.localContextPath,
+    //     destinationKey: refToContextRuleDefinition.sourceParameterKey,
+    //     targetType: 'currentLocalContextPath',
+    //     value: { ...paginationProp, activePage: currentPage },
+    //     additionnalPath: 'paginationState',
+    //   }),
+    // );
+
     // dispatch(setActivePage({ path: builtPath, value: currentPage }));
 
     // const listState = getRenderingStateForPath(rendering, props.path);
@@ -296,8 +348,8 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
 
   const getSortIconByFieldName = (fieldName: string) => {
     // const renderingState = getRenderingStateForPath(rendering, props.path);
-    const sortFieldName = paginationStateProp.value.sort;
-    const order = paginationStateProp.value.order;
+    const sortFieldName = paginationProp.sort;
+    const order = paginationProp.order;
     if (sortFieldName !== fieldName) {
       return faSort;
     } else {
@@ -307,7 +359,7 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
 
   return (
     <div>
-      {paginationState && siteList ? (
+      {paginationProp && siteList ? (
         <div>
           <h2 id="site-heading" data-cy="SiteHeading">
             DataSet
@@ -381,7 +433,7 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
                           </Button>
                           <Button
                             tag={Link}
-                            to={`/site/${site.id}/edit?page=${paginationStateProp.value.activePage}&sort=${paginationStateProp.value.sort},${paginationStateProp.value.order}`}
+                            to={`/site/${site.id}/edit?page=${paginationProp.activePage}&sort=${paginationProp.sort},${paginationProp.order}`}
                             color="primary"
                             size="sm"
                             data-cy="entityEditButton"
@@ -393,7 +445,7 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
                           </Button>
                           <Button
                             onClick={() =>
-                              (location.href = `/site/${site.id}/delete?page=${paginationStateProp.value.activePage}&sort=${paginationStateProp.value.sort},${paginationStateProp.value.order}`)
+                              (location.href = `/site/${site.id}/delete?page=${paginationProp.activePage}&sort=${paginationProp.sort},${paginationProp.order}`)
                             }
                             color="danger"
                             size="sm"
@@ -421,19 +473,14 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
           {totalItems ? (
             <div className={siteList && siteList.length > 0 ? '' : 'd-none'}>
               <div className="justify-content-center d-flex">
-                <JhiItemCount
-                  page={paginationStateProp.value.activePage}
-                  total={totalItems}
-                  itemsPerPage={paginationStateProp.value.itemsPerPage}
-                  i18nEnabled
-                />
+                <JhiItemCount page={paginationProp.activePage} total={totalItems} itemsPerPage={paginationProp.itemsPerPage} i18nEnabled />
               </div>
               <div className="justify-content-center d-flex">
                 <JhiPagination
-                  activePage={paginationStateProp.value.activePage}
+                  activePage={paginationProp.activePage}
                   onSelect={handlePagination}
                   maxButtons={5}
-                  itemsPerPage={paginationStateProp.value.itemsPerPage}
+                  itemsPerPage={paginationProp.itemsPerPage}
                   totalItems={totalItems}
                 />
               </div>

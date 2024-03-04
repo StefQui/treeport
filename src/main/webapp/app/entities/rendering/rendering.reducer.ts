@@ -125,13 +125,43 @@ export const RenderingSlice = createSlice({
         payload: { destinationKey: string; localContextPath: string; target: ParameterTarget; childPath?: string; value: ValueInState };
       },
     ): RenderingState {
-      return sendDataTo(
+      return sendValueTo(
         state,
         action.payload.localContextPath,
         action.payload.destinationKey,
         action.payload.target,
         action.payload.childPath,
         action.payload.value,
+      );
+      // return setInLocalContextState(state, action.payload.localContextPath, action.payload.parameterKey, action.payload.value);
+    },
+    setAnyInCorrectState(
+      state: RenderingState,
+      action: {
+        payload: {
+          destinationKey: string;
+          localContextPath: string;
+          targetType: 'currentLocalContextPath';
+          childPath?: string;
+          value: any;
+          additionnalPath?: string;
+        };
+      },
+    ): RenderingState {
+      // console.log(
+      //   'sendAnyTo',
+      //   action.payload.localContextPath,
+      //   action.payload.destinationKey,
+      //   action.payload.targetType,
+      //   action.payload.value,
+      // );
+      return sendAnyTo(
+        state,
+        action.payload.localContextPath,
+        action.payload.destinationKey,
+        action.payload.targetType,
+        action.payload.value,
+        action.payload.additionnalPath,
       );
       // return setInLocalContextState(state, action.payload.localContextPath, action.payload.parameterKey, action.payload.value);
     },
@@ -167,13 +197,21 @@ export const RenderingSlice = createSlice({
         const { data, headers } = action.payload;
         const { searchModel, orgaId, target, childPath } = action.meta.arg;
 
-        return sendDataTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
-          loading: false,
-          value: {
-            entities: data,
-            totalItems: parseInt(headers['x-total-count'], 10),
+        return sendValueTo(
+          state,
+          action.meta.arg.localContextPath,
+          action.meta.arg.destinationKey,
+          target,
+          childPath,
+          {
+            loading: false,
+            value: {
+              entities: data,
+              totalItems: parseInt(headers['x-total-count'], 10),
+            },
           },
-        });
+          'listState',
+        );
 
         // return putInRenderingStateSelf(state, path, {
         //   paginationState: {
@@ -189,7 +227,7 @@ export const RenderingSlice = createSlice({
       .addMatcher(isPending(searchResources), (state: RenderingState, action): RenderingState => {
         const { target, childPath } = action.meta.arg;
 
-        return sendDataTo(
+        return sendValueTo(
           state,
           action.meta.arg.localContextPath,
           action.meta.arg.destinationKey,
@@ -217,7 +255,7 @@ export const RenderingSlice = createSlice({
       .addMatcher(isRejected(searchResources), (state: RenderingState, action): RenderingState => {
         const { target, childPath } = action.meta.arg;
 
-        return sendDataTo(
+        return sendValueTo(
           state,
           action.meta.arg.localContextPath,
           action.meta.arg.destinationKey,
@@ -306,20 +344,20 @@ export const RenderingSlice = createSlice({
       })
       .addMatcher(isFulfilled(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
         const { target, childPath } = action.meta.arg;
-        return sendDataTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
+        return sendValueTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
           value: action.payload.data,
           loading: false,
         });
       })
       .addMatcher(isPending(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
         const { target, childPath } = action.meta.arg;
-        return sendDataTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
+        return sendValueTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
           loading: true,
         });
       })
       .addMatcher(isRejected(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
         const { target, childPath } = action.meta.arg;
-        return sendDataTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
+        return sendValueTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
           loading: false,
           error: 'Cannot load site...',
         });
@@ -334,7 +372,7 @@ export const RenderingSlice = createSlice({
   },
 });
 
-const sendDataTo = (
+const sendValueTo = (
   state,
   localContextPath,
   destinationKey,
@@ -352,6 +390,13 @@ const sendDataTo = (
   } else if (target.targetType === 'pageContextPath') {
     return setInPageContextState(state, destinationKey, value, additionnalPath);
   }
+};
+
+const sendAnyTo = (state, localContextPath, destinationKey, targetType: 'currentLocalContextPath', value, additionnalPath?: string) => {
+  if (targetType === 'currentLocalContextPath') {
+    return setAnyInLocalContextState(state, localContextPath, destinationKey, value, additionnalPath);
+  }
+  throw new Error('to implement ...AA' + targetType);
 };
 
 const getStubbedOrNot = (resourceId, data) => {
@@ -381,40 +426,51 @@ export const setInLocalContextState = (
   additionnalPath?: string,
 ): RenderingState => {
   // console.log('setInLocalContextState', parameterKey);
-  return {
+  return setAnyInLocalContextState(state, localContextPath, parameterKey, value, additionnalPath);
+};
+
+export const setAnyInLocalContextState = (
+  state: RenderingState,
+  localContextPath,
+  parameterKey: string,
+  value: any,
+  additionnalPath?: string,
+): RenderingState => {
+  console.log('setInLocalContextState', parameterKey, additionnalPath, value);
+
+  const aaa = {
     ...state,
     localContextsState: {
       ...state.localContextsState,
       ...{
         [localContextPath]: {
-          ...state.localContextsState[localContextPath],
-          ...{
-            parameters: {
-              ...(state.localContextsState[localContextPath]
-                ? {
-                    ...state.localContextsState[localContextPath].parameters,
-                    ...{
-                      [parameterKey]: additionnalPath
-                        ? {
-                            ...(state.localContextsState[localContextPath][parameterKey]
-                              ? {
-                                  ...state.localContextsState[localContextPath][parameterKey],
-                                  ...{ [additionnalPath]: value },
-                                }
-                              : { [additionnalPath]: value }),
-                          }
-                        : value,
-                    },
-                  }
-                : {
-                    ...{ [parameterKey]: additionnalPath ? { [additionnalPath]: value } : value },
-                  }),
-            },
+          parameters: {
+            ...(state.localContextsState[localContextPath]
+              ? {
+                  ...state.localContextsState[localContextPath].parameters,
+                  ...{
+                    [parameterKey]: additionnalPath
+                      ? {
+                          ...(state.localContextsState[localContextPath].parameters[parameterKey]
+                            ? {
+                                ...state.localContextsState[localContextPath].parameters[parameterKey],
+                                ...{ [additionnalPath]: value },
+                              }
+                            : { [additionnalPath]: value }),
+                        }
+                      : value,
+                  },
+                }
+              : {
+                  ...{ [parameterKey]: additionnalPath ? { [additionnalPath]: value } : value },
+                }),
           },
         },
       },
     },
   };
+  console.log('aaakkk', parameterKey, additionnalPath, aaa);
+  return aaa;
 };
 
 export const setInPageContextState = (
@@ -483,6 +539,7 @@ export const {
   setRenderingCurrentPageId,
   setInRenderingStateOutputs,
   setInLocalState,
+  setAnyInCorrectState,
   setInCorrectState,
   setInRenderingStateSelf,
   setActivePage,

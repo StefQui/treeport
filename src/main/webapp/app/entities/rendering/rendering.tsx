@@ -206,8 +206,9 @@ export type SmTextResourceContent = CommonContent & {
   params: TextParams;
 };
 
+export type DataSetTableType = 'dataSetTable';
 export type DataSetResourceContent = CommonContent & {
-  componentType: 'dataSet';
+  componentType: DataSetTableType;
   params: DataSetParams;
 };
 
@@ -319,7 +320,7 @@ export type DatasetDefinition = {
   ruleType: RuleType;
   columnDefinitions: ColumnDefinition[];
   filter: RuleDefinition;
-  paginationState: RuleDefinition;
+  initialPaginationState: PaginationState;
 };
 export type PaginationState = {
   activePage: number;
@@ -405,7 +406,7 @@ export type ColumnDefinition = IdColumnDefinition | NameColumnDefinition | Attri
 export type DataSetParams = {
   columnDefinitions: ColumnDefinition[];
   data: RuleDefinition;
-  paginationState: RuleDefinition;
+  // paginationState: RuleDefinition;
   selectedSiteKeyInLocalContext?: string;
 };
 
@@ -558,6 +559,7 @@ export type SetCurrentPageAction = {
   source: string;
   actionType: 'setCurrentPage';
   currentPage: number;
+  targetDataset: string;
 } | null;
 export type RenderingState = {
   componentsState: ComponentsState;
@@ -705,10 +707,60 @@ export const useCalculatedValueStateIfNotNull = (props, resourceId) => {
   return result;
 };
 
+// export const useCalculatedPropertyState = (props, ruleDefinition: RuleDefinition) => {
+//   const ruleType = ruleDefinition.ruleType;
+//   if (ruleType === 'refToLocalContext') {
+//     const refToContextRuleDefinition: RefToContextRuleDefinition = ruleDefinition as RefToContextRuleDefinition;
+//     return useRefToLocalContextValue(
+//       props.localContextPath,
+//       refToContextRuleDefinition.path,
+//       refToContextRuleDefinition.sourceParameterKey,
+//       refToContextRuleDefinition.sourceParameterProperty,
+//     );
+//   } else if (ruleType === 'refToPageContext') {
+//     return useRefToPageContextValue(props, ruleDefinition as RefToContextRuleDefinition);
+//   } else if (ruleType === 'constant') {
+//     return useConstantValue(props, (ruleDefinition as ConstantRuleDefinition).constValue);
+//   } else if (ruleType === 'datasetFilter') {
+//     return useConstantDatasetFilter(props, ruleDefinition as DatasetFilterRuleDefinition);
+//   } else if (ruleType === 'paginationState') {
+//     return useConstantValue(props, (ruleDefinition as PaginationStateRuleDefinition).initialValue);
+//   } else {
+//     return {
+//       loading: false,
+//       error: 'Not implemented : ' + ruleType,
+//     };
+//   }
+// };
+export const useFoundValueInLocalContext = (localContextPath: string, sourceParameterKey: string) => {
+  return useAppSelector((state: RenderingSliceState) => {
+    const contextForLocalContextPath = state.rendering.localContextsState ? state.rendering.localContextsState[localContextPath] : null;
+    if (!contextForLocalContextPath || !contextForLocalContextPath.parameters) {
+      return null;
+    }
+    return contextForLocalContextPath.parameters[sourceParameterKey];
+  });
+};
+
+export const useFoundValue = (props, ruleDefinition: RuleDefinition): any => {
+  const ruleType = ruleDefinition.ruleType;
+  if (ruleType === 'refToLocalContext') {
+    const refToContextRuleDefinition: RefToContextRuleDefinition = ruleDefinition as RefToContextRuleDefinition;
+    return useFoundValueInLocalContext(props.localContextPath, refToContextRuleDefinition.sourceParameterKey);
+  } else if (ruleType === 'refToPageContext') {
+    throw new Error('to implement hereA ' + ruleType);
+  } else if (ruleType === 'constant') {
+    throw new Error('to implement hereB ' + ruleType);
+  }
+  throw new Error('to implement hereC ' + ruleType);
+};
+
 export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): ValueInState => {
   const ruleType = ruleDefinition.ruleType;
   if (ruleType === 'refToLocalContext') {
     const refToContextRuleDefinition: RefToContextRuleDefinition = ruleDefinition as RefToContextRuleDefinition;
+    // const contextState = useLocalContextPath(props.localContextPath, refToContextRuleDefinition.sourceParameterKey);
+    // return
     return useRefToLocalContextValue(
       props.localContextPath,
       refToContextRuleDefinition.path,
@@ -1460,7 +1512,7 @@ export const MyElem = props => {
       //   return <MyInput {...params}></MyInput>;
       case 'siteList':
         return <TheSiteList {...params}></TheSiteList>;
-      case 'dataSet':
+      case 'dataSetTable':
         return <DataSet {...params}></DataSet>;
       case 'Form':
         return <SmForm {...params}></SmForm>;

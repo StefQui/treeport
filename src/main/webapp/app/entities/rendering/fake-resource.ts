@@ -642,21 +642,21 @@ const rds: ComponentResource = {
               constValue: 'S1',
             },
           },
-          {
-            parameterKey: 'thePaginationState',
-            target: {
-              targetType: 'currentLocalContextPath',
-            },
-            definition: {
-              ruleType: 'paginationState',
-              initialValue: {
-                activePage: 1,
-                itemsPerPage: 5,
-                sort: 'id',
-                order: 'asc',
-              },
-            },
-          },
+          // {
+          //   parameterKey: 'thePaginationState',
+          //   target: {
+          //     targetType: 'currentLocalContextPath',
+          //   },
+          //   definition: {
+          //     ruleType: 'paginationState',
+          //     initialValue: {
+          //       activePage: 1,
+          //       itemsPerPage: 4,
+          //       sort: 'id',
+          //       order: 'asc',
+          //     },
+          //   },
+          // },
           {
             parameterKey: 'theFilter',
             target: {
@@ -733,17 +733,18 @@ const rds: ComponentResource = {
                 path: '',
                 sourceParameterKey: 'theFilter',
               },
-              paginationState: {
-                ruleType: 'refToLocalContext',
-                path: '',
-                sourceParameterKey: 'thePaginationState',
+              initialPaginationState: {
+                activePage: 0,
+                itemsPerPage: 5,
+                sort: 'id',
+                order: 'asc',
               },
             },
           },
         ],
       },
       {
-        componentType: 'dataSet',
+        componentType: 'dataSetTable',
         path: 'dataset22',
         params: {
           columnDefinitions: [
@@ -758,11 +759,11 @@ const rds: ComponentResource = {
             path: '',
             sourceParameterKey: 'myds',
           },
-          paginationState: {
-            ruleType: 'refToLocalContext',
-            path: '',
-            sourceParameterKey: 'thePaginationState',
-          },
+          // paginationState: {
+          //   ruleType: 'refToLocalContext',
+          //   path: '',
+          //   sourceParameterKey: 'thePaginationState',
+          // },
         },
       },
     ],

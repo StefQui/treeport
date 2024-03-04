@@ -2,6 +2,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { activateAction } from 'app/modules/account/activate/activate.reducer';
 import React, { useEffect, useState } from 'react';
 import { Row } from 'reactstrap';
+import { usePaginationProp } from './dataset';
 import { usePageContext } from './layout';
 import { usePageResourceContentFromResourceId, useResourceWithKey } from './render-resource-page';
 import {
@@ -39,14 +40,27 @@ import {
   ActionState,
   SetCurrentPageAction,
 } from './rendering';
-import { getSiteForRenderingStateParameters, searchResources, setInCorrectState, setInLocalState } from './rendering.reducer';
+import {
+  getSiteForRenderingStateParameters,
+  searchResources,
+  setAnyInCorrectState,
+  setInCorrectState,
+  setInLocalState,
+} from './rendering.reducer';
 
 export const useRefToLocalContextValue = (currentLocalContextPath, localContextPath, parameterKey, parameterProperty): ValueInState => {
   return useAppSelector((state: RenderingSliceState) => {
     const contextForLocalContextPath = state.rendering.localContextsState
       ? state.rendering.localContextsState[applyPath(currentLocalContextPath, localContextPath)]
       : null;
-    // console.log('useRefToLocalContextValue', parameterKey, contextForLocalContextPath);
+    console.log(
+      'useRefToLocalContextValuedd',
+      currentLocalContextPath,
+      localContextPath,
+      parameterKey,
+      parameterProperty,
+      contextForLocalContextPath,
+    );
     if (!contextForLocalContextPath) {
       return null;
     }
@@ -204,9 +218,48 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
 //   return JSON.stringify(previous) === JSON.stringify(result);
 // };
 
+const useSetCurrentPageAction = (props, initialValue: PaginationState | string | number) => {
+  const [val, setVal] = useState(null);
+  const action: ActionState = useAppSelector((state: RenderingSliceState) => state.rendering.action);
+  useEffect(() => {
+    if (action && action.actionType === 'setCurrentPage') {
+      const action1: SetCurrentPageAction = action;
+      console.log('action1', action1, val);
+      setVal(action1.currentPage);
+    }
+  }, [action]);
+
+  return val;
+};
+
+const setPaginationTo = (pagination: PaginationState, props, key, dispatch) => {
+  dispatch(
+    setAnyInCorrectState({
+      localContextPath: props.localContextPath,
+      destinationKey: key,
+      targetType: 'currentLocalContextPath',
+      value: pagination,
+      additionnalPath: 'paginationState',
+    }),
+  );
+};
+
 const handleDataSet = (key: string, target: ParameterTarget, refToSiteDefinition: DatasetDefinition, props) => {
   const dispatch = useAppDispatch();
   const filter = useCalculatedValueState(props, refToSiteDefinition.filter);
+  const initialPaginationState = refToSiteDefinition.initialPaginationState;
+  const setCurrentPageAction = useSetCurrentPageAction(props, initialPaginationState);
+
+  useEffect(() => {
+    if (setCurrentPageAction) {
+      setPaginationTo({ ...paginationProp, activePage: setCurrentPageAction }, props, key, dispatch);
+    }
+  }, [setCurrentPageAction]);
+
+  useEffect(() => {
+    setPaginationTo(initialPaginationState, props, key, dispatch);
+  }, []);
+
   console.log(
     'handleDataSet.......handleDataSet',
     props.localContextPath,
@@ -214,7 +267,8 @@ const handleDataSet = (key: string, target: ParameterTarget, refToSiteDefinition
     refToSiteDefinition.filter,
   );
 
-  const paginationState = useCalculatedValueState(props, refToSiteDefinition.paginationState);
+  // const activePage = useCalculatedValueState(props, refToSiteDefinition.paginationState);
+  // const paginationState = useCalculatedValueState(props, refToSiteDefinition.paginationState);
   // const ps = {
   //   activePage: 1,
   //   itemsPerPage: 10,
@@ -223,12 +277,24 @@ const handleDataSet = (key: string, target: ParameterTarget, refToSiteDefinition
   // };
   const [previousFilter, setPreviousFilter] = useState({ loading: true });
 
+  const paginationProp = usePaginationProp(props, {
+    ruleType: 'refToLocalContext',
+    path: '',
+    sourceParameterKey: key,
+  });
+
   useEffect(() => {
-    console.log('filter.......handleDataSet', filter, paginationState);
-    if (!filter || !filter.value || filter.value.loading || !paginationState || !paginationState.value) {
+    console.log('filter.......handleDataSet', filter);
+    if (!filter || !filter.value || filter.value.loading || !paginationProp) {
       return;
     }
-    const ps = paginationState.value;
+    // const ps = {
+    //   activePage: 1,
+    //   itemsPerPage: 10,
+    //   sort: 'id',
+    //   order: 'asc',
+    // };
+    // const ps = paginationState.value;
 
     dispatch(
       searchResources({
@@ -236,9 +302,9 @@ const handleDataSet = (key: string, target: ParameterTarget, refToSiteDefinition
           resourceType: 'SITE',
           columnDefinitions: refToSiteDefinition.columnDefinitions,
           filter: filter ? filter.value : null,
-          page: ps.activePage - 1,
-          size: ps.itemsPerPage,
-          sort: `${ps.sort},${ps.order}`,
+          page: paginationProp.activePage,
+          size: paginationProp.itemsPerPage,
+          sort: `${paginationProp.sort},${paginationProp.order}`,
         },
         orgaId: 'coca',
         destinationKey: key,
@@ -247,7 +313,7 @@ const handleDataSet = (key: string, target: ParameterTarget, refToSiteDefinition
         childPath: props.path,
       }),
     );
-  }, [filter, paginationState]);
+  }, [filter, paginationProp]);
 };
 
 const handleRefToSite = (key: string, target: ParameterTarget, refToSiteDefinition: RefToSiteDefinition, props) => {

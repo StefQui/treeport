@@ -123,6 +123,12 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   );
 
   const totalItems = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.totalItems : null;
+  console.log(
+    'totalItems',
+    totalItems,
+    paginationProp ? paginationProp.activePage : '---',
+    paginationProp ? paginationProp.itemsPerPage : '-----',
+  );
   // const totalItems = useAppSelector((state: RenderingSliceState) =>
   //   state.rendering.componentsState[builtPath] ? state.rendering.componentsState[builtPath][STATE_RS_SELF_KEY].listState.totalItems : null,
   // );
@@ -133,7 +139,7 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   //     : null,
   // );
 
-  const activePage = paginationProp ? paginationProp.activePage : 0;
+  const activePage = paginationProp ? paginationProp.activePage : 1;
 
   useEffect(() => {
     console.log('useEffect1111', paginationProp);

@@ -302,7 +302,7 @@ const handleDataSet = (key: string, target: ParameterTarget, refToSiteDefinition
           resourceType: 'SITE',
           columnDefinitions: refToSiteDefinition.columnDefinitions,
           filter: filter ? filter.value : null,
-          page: paginationProp.activePage,
+          page: paginationProp.activePage - 1,
           size: paginationProp.itemsPerPage,
           sort: `${paginationProp.sort},${paginationProp.order}`,
         },

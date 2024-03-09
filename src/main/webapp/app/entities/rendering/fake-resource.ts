@@ -734,7 +734,7 @@ const rds: ComponentResource = {
                 sourceParameterKey: 'theFilter',
               },
               initialPaginationState: {
-                activePage: 0,
+                activePage: 1,
                 itemsPerPage: 5,
                 sort: 'id',
                 order: 'asc',

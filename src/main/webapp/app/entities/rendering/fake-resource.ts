@@ -726,6 +726,7 @@ const rds: ComponentResource = {
                 { columnType: 'NAME' },
                 { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
                 { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+                { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
                 { columnType: 'BUTTON', action: 'select' },
               ],
               filter: {
@@ -768,6 +769,7 @@ const rds: ComponentResource = {
         path: 'dataset22',
         params: {
           columnDefinitions: [
+            { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
             { columnType: 'ID' },
             { columnType: 'NAME' },
             { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },

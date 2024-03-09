@@ -122,6 +122,9 @@ export const useConstantValue = (props, initialValue: PaginationState | string |
       const action1: SetCurrentPageAction = action;
       console.log('action1', action1, val);
       setVal({ loading: false, value: { ...(val.value as PaginationState), activePage: action1.currentPage } });
+    } else if (action && action.actionType === 'refreshDataset') {
+      console.log('action2', action);
+      setVal({ loading: false, value: initialValue });
     }
   }, [action]);
 

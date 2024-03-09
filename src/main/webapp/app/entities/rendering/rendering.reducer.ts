@@ -20,6 +20,7 @@ import {
   TargetInfo,
 } from './rendering';
 import { stubbedResources } from './fake-resource';
+import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
 
 const initialState: RenderingState = {
   componentsState: {},
@@ -46,13 +47,13 @@ export const searchResources = createAsyncThunk(
   `rendering/search`,
   async ({ searchModel, orgaId }: { searchModel: ResourceSearchModel; orgaId: string } & TargetInfo) => {
     const requestUrl = `${resourceApiUrl}/${orgaId}/search`;
-    return axios.post<IResource[]>(requestUrl, searchModel);
+    return axios.post<IResourceWithValue[]>(requestUrl, searchModel);
   },
 );
 
 export const getResourceForPageResources = createAsyncThunk(`rendering/fetch_resource`, async ({ resourceId }: { resourceId: string }) => {
   const requestUrl = `${resourceApiUrl}/${resourceId}`;
-  return axios.get<IResource[]>(requestUrl);
+  return axios.get<IResourceWithValue[]>(requestUrl);
 });
 
 export const getSiteForRenderingStateParameters = createAsyncThunk(

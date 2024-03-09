@@ -368,7 +368,8 @@ public class SiteService {
                 new Document("$eq", List.of("$orgaId", orgaId)),
                 new Document("$eq", List.of("$configId", attributeConfigId)),
                 new Document("$eq", List.of("$campaignId", campaignId)),
-                new Document("$eq", List.of("$siteId", "$$theSiteId"))
+                new Document("$eq", List.of("$siteId", "$$theSiteId")),
+                new Document("$ne", List.of(new Document("$type", "$attributeValue"), "missing"))
             )
         );
     }

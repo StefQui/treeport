@@ -553,13 +553,18 @@ export type CurrentPageIdState = string | null;
 export type ActionState = EntityAction | SetCurrentPageAction;
 export type EntityAction = {
   source: string;
-  actionType: 'selectSite' | 'updateAttribute';
+  actionType: 'selectSite' | 'updateAttribute' | 'refreshDataset';
   entity: { entityType: 'SITE' | 'RESOURCE' | 'ATTRIBUTES'; entity?: any; entityIds?: any };
 } | null;
 export type SetCurrentPageAction = {
   source: string;
   actionType: 'setCurrentPage';
   currentPage: number;
+  targetDataset: string;
+} | null;
+export type RefreshDataSetAction = {
+  source: string;
+  actionType: 'refreshDataset';
   targetDataset: string;
 } | null;
 export type RenderingState = {
@@ -1533,7 +1538,7 @@ export const MyWrapper = ({ children, ...props }) => {
 
   const lc = useRefToLocalContext(targetLocalContextPath);
 
-  const displayPath = true;
+  const displayPath = false;
   // const shouldDisplay = useShouldDisplay(props);
   // if (!shouldDisplay) {
   //   console.log('evaluateShouldDisplay-----------', props.componentType, shouldDisplay);

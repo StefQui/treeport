@@ -23,13 +23,17 @@ import {
   ActionState,
   AndFilter,
   applyPath,
+  AttributeColumnDefinition,
   buildPath,
+  ColumnDefinition,
+  ColumnDefinitions,
   DatasetDefinition,
   DataSetParams,
   OrFilter,
   PaginationState,
   ParameterTarget,
   PropertyFilter,
+  RefreshDataSetAction,
   RefToContextRuleDefinition,
   // ENTITY_KEY,
   RenderingSliceState,
@@ -45,6 +49,8 @@ import {
 } from './rendering';
 import { handleParameterDefinitions } from './resource-content';
 import { isError, isLoading } from './render-resource-page';
+import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
+import { IAttributeValue, IBooleanValue, IDoubleValue } from 'app/shared/model/attribute.model';
 
 const useSiteList = (props, data) => {
   const dataProp = useFoundValue(props, data);
@@ -78,6 +84,18 @@ const useSetCurrentPageAction = (props, initialValue: PaginationState | string |
       const action1: SetCurrentPageAction = action;
       console.log('action1', action1, val);
       setVal(action1.currentPage);
+    }
+  }, [action]);
+
+  return val;
+};
+
+const useRefreshDatasetAction = props => {
+  const [val, setVal] = useState(null);
+  const action: ActionState = useAppSelector((state: RenderingSliceState) => state.rendering.action);
+  useEffect(() => {
+    if (action && action.actionType === 'refreshDataset') {
+      setVal(true);
     }
   }, [action]);
 
@@ -242,6 +260,7 @@ export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDef
   const filter = useCalculatedValueState(props, refToSiteDefinition.filter);
   const initialPaginationState = refToSiteDefinition.initialPaginationState;
   const setCurrentPageAction = useSetCurrentPageAction(props, initialPaginationState);
+  const refreshDatasetAction = useRefreshDatasetAction(props);
 
   const dsfDef = refToSiteDefinition.valueFilter as ResourceFilter;
   const changingFilter: ValueInState = useChangingCalculatedFilterState(props, dsfDef, target);
@@ -346,6 +365,7 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   //     updateSuccess: false,
   //   },
   // };
+  const columnDefinitions = props.params.columnDefinitions;
 
   const builtPath = buildPath(props);
   // const paginationState = useAppSelector((state: RenderingSliceState) => {
@@ -377,7 +397,7 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   //   return <span>Missing paginationState</span>;
   // }
 
-  const siteList = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.entities : null;
+  const siteList: IResourceWithValue[] = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.entities : null;
   // console.log('aaaazzzzzzzzzzzzzzzz', siteListProp, siteList);
 
   // const siteList = [];
@@ -609,7 +629,14 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   //   });
 
   const handleSyncList = () => {
-    sortEntities();
+    const action: RefreshDataSetAction = {
+      source: builtPath,
+      actionType: 'refreshDataset',
+      targetDataset: refToContextRuleDefinition.sourceParameterKey,
+    };
+
+    dispatch(setAction(action));
+    // sortEntities();
   };
 
   const handleCancelSelection = () => {
@@ -632,6 +659,86 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
     } else {
       return order === ASC ? faSortUp : faSortDown;
     }
+  };
+
+  const hasIDColumn = (columnDefinitions: ColumnDefinition[], colType: string) => {
+    return columnDefinitions.find(colDef => colDef.columnType === colType);
+  };
+
+  const displayColumns = (columnDefinitions: ColumnDefinition[], site: IResourceWithValue) => {
+    return columnDefinitions.map((colDef, i) => {
+      const key = 'colkey' + i;
+      if (colDef.columnType === 'ATTRIBUTE') {
+        return displayAttributeColumn(colDef as AttributeColumnDefinition, site, key);
+      } else if (colDef.columnType === 'ID') {
+        return <td key={key}>{site.id}</td>;
+      } else if (colDef.columnType === 'NAME') {
+        return <td key={key}>{site.name}</td>;
+      } else if (colDef.columnType === 'BUTTON') {
+        return <td key={key}>Button...</td>;
+      } else {
+        return <td key={key}>?????</td>;
+      }
+    });
+  };
+
+  const displayAttributeColumn = (colDef: AttributeColumnDefinition, site: IResourceWithValue, key) => {
+    if (!site.attributeValues) {
+      return <td key={key}>-</td>;
+    }
+    const val: IAttributeValue = site.attributeValues[generateLabel(colDef)];
+    if (!val) {
+      return <td key={key}>--</td>;
+    }
+    if (val.attributeValueType === 'BOOLEAN_VT') {
+      return <td key={key}>{renderBoolean(val as IBooleanValue)}</td>;
+    } else if (val.attributeValueType === 'DOUBLE_VT') {
+      return <td key={key}>{renderDouble(val as IDoubleValue)}</td>;
+    }
+    return <td key={key}>To implem... {val.attributeValueType}</td>;
+  };
+
+  const renderBoolean = (val: IBooleanValue) => {
+    if (val.value === undefined || val.value === null) {
+      return '---';
+    } else if (!!val.value) {
+      return 'True';
+    } else {
+      return 'False';
+    }
+  };
+
+  const renderDouble = (val: IDoubleValue) => {
+    if (!val.value) {
+      return '---';
+    } else {
+      return val.value;
+    }
+  };
+
+  const displayColumnHeaders = (columnDefinitions: ColumnDefinition[]) => {
+    return columnDefinitions.map((colDef, i) => {
+      return displayAttributeColumnHeader(colDef as AttributeColumnDefinition, i);
+    });
+  };
+
+  const displayAttributeColumnHeader = (colDef: AttributeColumnDefinition, i) => {
+    const key = 'header' + i;
+    if (colDef.columnType === 'ATTRIBUTE') {
+      return <th key={key}>{generateLabel(colDef)}</th>;
+    } else if (colDef.columnType === 'ID') {
+      return <th key={key}>Id</th>;
+    } else if (colDef.columnType === 'NAME') {
+      return <th key={key}>Name</th>;
+    } else if (colDef.columnType === 'BUTTON') {
+      return <td key={key}>Button...</td>;
+    } else {
+      return <td key={key}>?????</td>;
+    }
+  };
+
+  const generateLabel = (colDef: AttributeColumnDefinition) => {
+    return colDef.attributeConfigId + ':period:' + colDef.campaignId;
   };
 
   return (
@@ -660,37 +767,14 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
               <Table responsive>
                 <thead>
                   <tr>
-                    <th className="hand" onClick={sort('id')}>
-                      <Translate contentKey="treeportApp.site.id">ID</Translate> <FontAwesomeIcon icon={getSortIconByFieldName('id')} />
-                    </th>
-                    <th className="hand" onClick={sort('name')}>
-                      <Translate contentKey="treeportApp.site.name">Name</Translate>{' '}
-                      <FontAwesomeIcon icon={getSortIconByFieldName('name')} />
-                    </th>
-                    <th>
-                      <Translate contentKey="treeportApp.site.content">Content</Translate> <FontAwesomeIcon icon="sort" />
-                    </th>
-                    <th>
-                      <Translate contentKey="treeportApp.site.orga">Orga</Translate> <FontAwesomeIcon icon="sort" />
-                    </th>
-                    <th>
-                      <Translate contentKey="treeportApp.site.parent">Parent</Translate> <FontAwesomeIcon icon="sort" />
-                    </th>
+                    {displayColumnHeaders(columnDefinitions)}
                     <th />
                   </tr>
                 </thead>
                 <tbody>
                   {siteList.map((site, i) => (
                     <tr key={`entity-${i}`} data-cy="entityTable">
-                      <td>
-                        <Button tag={Link} to={`/site/${site.id}`} color="link" size="sm">
-                          {site.id}
-                        </Button>
-                      </td>
-                      <td>{site.name}</td>
-                      <td>{site.content}</td>
-                      <td>{site.orga ? <Link to={`/organisation/${site.orga.id}`}>{site.orga.id}</Link> : ''}</td>
-                      <td>{site.parent ? <Link to={`/site/${site.parent.id}`}>{site.parent.id}</Link> : ''}</td>
+                      {displayColumns(columnDefinitions, site)}
                       <td className="text-end">
                         <div className="btn-group flex-btn-group-container">
                           <Button onClick={handleSelect(site)} color="info" size="sm" data-cy="entitySelectButton">

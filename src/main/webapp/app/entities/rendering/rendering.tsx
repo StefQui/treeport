@@ -9,7 +9,7 @@ import {
   calculateTargetLocalContextPath,
   handleParameterDefinitions,
   SmRefToResource,
-  useConstantDatasetFilter,
+  // useConstantDatasetFilter,
   useConstantValue,
   useRefToLocalContext,
   useRefToLocalContextValue,
@@ -312,7 +312,7 @@ export type TargetInfo = { destinationKey: string; localContextPath: string; tar
 
 export const LOCAL_CONTEXT = 'localContext';
 
-export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext' | 'refToSite' | 'dataset' | 'datasetFilter';
+export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext' | 'refToSite' | 'dataset';
 export type TransformTo = 'site';
 export type ConstantRuleDefinition = { ruleType: RuleType; constValue: any };
 export type RefToSiteDefinition = { ruleType: RuleType; sourceSiteId: RuleDefinition };
@@ -321,6 +321,7 @@ export type DatasetDefinition = {
   columnDefinitions: ColumnDefinition[];
   filter: RuleDefinition;
   initialPaginationState: PaginationState;
+  valueFilter: ResourceFilter;
 };
 export type PaginationState = {
   activePage: number;
@@ -328,7 +329,7 @@ export type PaginationState = {
   sort: string;
   order: string;
 };
-export type DatasetFilterRuleDefinition = { ruleType: 'datasetFilter'; valueFilter: ResourceFilter };
+// export type DatasetFilterRuleDefinition = { ruleType: 'datasetFilter'; valueFilter: ResourceFilter };
 export type PaginationStateRuleDefinition = { ruleType: 'paginationState'; initialValue: PaginationState };
 export type RefToContextRuleDefinition = {
   ruleType: RuleType;
@@ -344,7 +345,7 @@ export type RuleDefinition =
   | ConstantRuleDefinition
   | RefToSiteDefinition
   | DatasetDefinition
-  | DatasetFilterRuleDefinition
+  // | DatasetFilterRuleDefinition
   | PaginationStateRuleDefinition;
 
 export type CurrentLocalContextPathTarget = {
@@ -771,8 +772,8 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
     return useRefToPageContextValue(props, ruleDefinition as RefToContextRuleDefinition);
   } else if (ruleType === 'constant') {
     return useConstantValue(props, (ruleDefinition as ConstantRuleDefinition).constValue);
-  } else if (ruleType === 'datasetFilter') {
-    return useConstantDatasetFilter(props, ruleDefinition as DatasetFilterRuleDefinition);
+    // } else if (ruleType === 'datasetFilter') {
+    //   return useConstantDatasetFilter(props, ruleDefinition as DatasetFilterRuleDefinition);
   } else if (ruleType === 'paginationState') {
     return useConstantValue(props, (ruleDefinition as PaginationStateRuleDefinition).initialValue);
   } else {
@@ -785,67 +786,22 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
 
 export const initialFilter: ValueInState = { loading: true, value: null };
 
-export const useChangingCalculatedFilterValueState = (
-  props,
-  dsfDef: DatasetFilterRuleDefinition,
-  target: ParameterTarget,
-): ValueInState => {
-  // console.log('filterbbb.......changed', result);
+// export const useChangingCalculatedFilterValueState = (
+//   props,
+//   dsfDef: DatasetFilterRuleDefinition,
+//   target: ParameterTarget,
+// ): ValueInState => {
+//   // console.log('filterbbb.......changed', result);
 
-  const initialResult = { loading: false };
-  const filterValues = useChangedFilterValues(dsfDef.valueFilter, props);
-  // console.log('calculateFilter', calculateFilter(dsfDef.valueFilter, {}));
-  const [result, setResult] = useState({ loading: true });
-  useEffect(() => {
-    setResult(calculateFilter(dsfDef.valueFilter, filterValues));
-  }, [filterValues]);
-  return result;
-};
-
-const useChangedFilterValues = (filter: ResourceFilter, props): Object => {
-  const [result, setResult] = useState({});
-  console.log('azzzzz1', result);
-  // const val = useCalculatedValueState(props, { ruleType: 'refToLocalContext', path: '', sourceParameterKey: 'theTerm' });
-
-  useChangedFilterValuesForItem(0, filter, result, setResult, props);
-  return result;
-};
-
-const useChangedFilterValuesForItem = (index: number, filter: ResourceFilter, result, setResult, props): number => {
-  console.log('azzzzz');
-  if (filter.filterType === 'AND') {
-    console.log('azzzzz AND');
-    const and: AndFilter = filter;
-    let newIndex = index;
-    and.items.forEach(item => {
-      const index2 = useChangedFilterValuesForItem(newIndex, item, result, setResult, props);
-      newIndex = newIndex + index2;
-    });
-    return newIndex;
-  } else if (filter.filterType === 'OR') {
-    const or: OrFilter = filter;
-    let newIndex = index;
-    or.items.forEach(item => {
-      const index2 = useChangedFilterValuesForItem(newIndex, item, result, setResult, props);
-      newIndex = newIndex + index2;
-    });
-    return newIndex;
-  } else if (filter.filterType === 'PROPERTY_FILTER') {
-    console.log('azzzzz PROPERTY_FILTER');
-    const propFilter: PropertyFilter = filter;
-    if (propFilter.filterRule.filterRuleType === 'TEXT_CONTAINS') {
-      const textContains: TextContainsFilterRule = propFilter.filterRule;
-      console.log('azzzzz TEXT_CONTAINS', textContains.terms, props.localContextPath);
-      const val = useCalculatedValueState(props, textContains.terms);
-      useEffect(() => {
-        if (val && !isLoading(val) && !isError(val)) {
-          setResult({ ...result, ...{ [PROP + index]: val.value } });
-        }
-      }, [val]);
-    }
-    return 1;
-  }
-};
+//   const initialResult = { loading: false };
+//   const filterValues = useChangedFilterValues(dsfDef.valueFilter, props);
+//   // console.log('calculateFilter', calculateFilter(dsfDef.valueFilter, {}));
+//   const [result, setResult] = useState({ loading: true });
+//   useEffect(() => {
+//     setResult(calculateFilter(dsfDef.valueFilter, filterValues));
+//   }, [filterValues]);
+//   return result;
+// };
 
 // const calculateFilterArray = (props, start: ResourceFilter[], filter: ResourceFilter): ResourceFilter[] => {
 //   if (filter.filterType === 'AND') {
@@ -866,88 +822,88 @@ const useChangedFilterValuesForItem = (index: number, filter: ResourceFilter, re
 //   }
 // };
 
-const calculateFilter = (filter: ResourceFilter, filterValues: Object): ValueInState => {
-  const filterCount = calculateFilterCount(0, filter);
-  console.log('calculateInitialFilter.......', filter, filterCount);
-  const values = Object.values(filterValues);
-  if (values.length !== filterCount || values.findIndex(val => !!val.loading) !== -1) {
-    return { loading: true };
-  }
-  console.log('calculateInitialFilter.......continue');
-  return { loading: false, value: calculateFilterItem(0, filter, filterValues).value };
-};
+// const calculateFilter = (filter: ResourceFilter, filterValues: Object): ValueInState => {
+//   const filterCount = calculateFilterCount(0, filter);
+//   console.log('calculateInitialFilter.......', filter, filterCount);
+//   const values = Object.values(filterValues);
+//   if (values.length !== filterCount || values.findIndex(val => !!val.loading) !== -1) {
+//     return { loading: true };
+//   }
+//   console.log('calculateInitialFilter.......continue');
+//   return { loading: false, value: calculateFilterItem(0, filter, filterValues).value };
+// };
 
-const PROP = 'prop';
+// const PROP = 'prop';
 
-const calculateFilterItem = (
-  pointer: number,
-  filter: ResourceFilter,
-  filterValues: Object,
-): { pointer: number; value: ResourceFilterValue } => {
-  if (filter.filterType === 'AND') {
-    const and: AndFilter = filter;
-    const values = [];
-    let pointerIndex = pointer;
-    and.items.forEach(item => {
-      const res = calculateFilterItem(pointerIndex, item, filterValues);
-      pointerIndex = pointerIndex + res.pointer;
-      values.push(res.value);
-    });
-    return {
-      pointer: pointerIndex,
-      value: { filterType: 'AND', items: values },
-    };
-  } else if (filter.filterType === 'OR') {
-    const or: OrFilter = filter;
-    const values = [];
-    let pointerIndex = pointer;
-    or.items.forEach(item => {
-      const res = calculateFilterItem(pointerIndex, item, filterValues);
-      pointerIndex = pointerIndex + res.pointer;
-      values.push(res.value);
-    });
-    return {
-      pointer: pointerIndex,
-      value: { filterType: 'AND', items: values },
-    };
-  } else if (filter.filterType === 'PROPERTY_FILTER') {
-    const propFilter: PropertyFilter = filter;
-    if (propFilter.filterRule.filterRuleType === 'TEXT_CONTAINS') {
-      const textContains: TextContainsFilterRule = propFilter.filterRule;
-      // return {
-      //   pointer: pointer + 1,
-      //   value: { ...textContains, ...{ filterRuleValue: filterValues[PROP + pointer] } },
-      // };
-      return {
-        pointer: pointer + 1,
-        value: {
-          ...propFilter,
-          filterRule: { ...textContains, ...{ terms: filterValues[PROP + pointer] } },
-        },
-      };
-    }
-    // export type PropertyFilterValue = {
-    //   filterType: 'PROPERTY_FILTER';
-    //   property: PropertyFilterTarget;
-    //   filterRuleValue: FilterRuleValue;
-    // };
-  }
-  throw new Error('to be implemented here2.....' + filter);
-};
+// const calculateFilterItem = (
+//   pointer: number,
+//   filter: ResourceFilter,
+//   filterValues: Object,
+// ): { pointer: number; value: ResourceFilterValue } => {
+//   if (filter.filterType === 'AND') {
+//     const and: AndFilter = filter;
+//     const values = [];
+//     let pointerIndex = pointer;
+//     and.items.forEach(item => {
+//       const res = calculateFilterItem(pointerIndex, item, filterValues);
+//       pointerIndex = pointerIndex + res.pointer;
+//       values.push(res.value);
+//     });
+//     return {
+//       pointer: pointerIndex,
+//       value: { filterType: 'AND', items: values },
+//     };
+//   } else if (filter.filterType === 'OR') {
+//     const or: OrFilter = filter;
+//     const values = [];
+//     let pointerIndex = pointer;
+//     or.items.forEach(item => {
+//       const res = calculateFilterItem(pointerIndex, item, filterValues);
+//       pointerIndex = pointerIndex + res.pointer;
+//       values.push(res.value);
+//     });
+//     return {
+//       pointer: pointerIndex,
+//       value: { filterType: 'AND', items: values },
+//     };
+//   } else if (filter.filterType === 'PROPERTY_FILTER') {
+//     const propFilter: PropertyFilter = filter;
+//     if (propFilter.filterRule.filterRuleType === 'TEXT_CONTAINS') {
+//       const textContains: TextContainsFilterRule = propFilter.filterRule;
+//       // return {
+//       //   pointer: pointer + 1,
+//       //   value: { ...textContains, ...{ filterRuleValue: filterValues[PROP + pointer] } },
+//       // };
+//       return {
+//         pointer: pointer + 1,
+//         value: {
+//           ...propFilter,
+//           filterRule: { ...textContains, ...{ terms: filterValues[PROP + pointer] } },
+//         },
+//       };
+//     }
+//     // export type PropertyFilterValue = {
+//     //   filterType: 'PROPERTY_FILTER';
+//     //   property: PropertyFilterTarget;
+//     //   filterRuleValue: FilterRuleValue;
+//     // };
+//   }
+//   throw new Error('to be implemented here2.....' + filter);
+// };
 
-const calculateFilterCount = (count: number, filter: ResourceFilter): number => {
-  if (filter.filterType === 'AND') {
-    const and: AndFilter = filter;
-    return and.items.reduce((acc, current) => acc + calculateFilterCount(0, current), 0);
-  } else if (filter.filterType === 'OR') {
-    const or: OrFilter = filter;
-    return or.items.reduce((acc, current) => acc + calculateFilterCount(0, current), 0);
-  } else if (filter.filterType === 'PROPERTY_FILTER') {
-    const propFlter: PropertyFilter = filter;
-    return 1;
-  }
-  throw new Error('to be implemented here.....' + filter);
-};
+// const calculateFilterCount = (count: number, filter: ResourceFilter): number => {
+//   if (filter.filterType === 'AND') {
+//     const and: AndFilter = filter;
+//     return and.items.reduce((acc, current) => acc + calculateFilterCount(0, current), 0);
+//   } else if (filter.filterType === 'OR') {
+//     const or: OrFilter = filter;
+//     return or.items.reduce((acc, current) => acc + calculateFilterCount(0, current), 0);
+//   } else if (filter.filterType === 'PROPERTY_FILTER') {
+//     const propFlter: PropertyFilter = filter;
+//     return 1;
+//   }
+//   throw new Error('to be implemented here.....' + filter);
+// };
 
 export const useChangingCalculatedValueState = (props, ruleDefinition: ParameterDefinition, target: ParameterTarget): ValueInState => {
   const dispatch = useAppDispatch();

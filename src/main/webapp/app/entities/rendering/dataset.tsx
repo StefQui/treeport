@@ -20,18 +20,31 @@ import {
   setInRenderingStateSelf,
 } from 'app/entities/rendering/rendering.reducer';
 import {
+  ActionState,
+  AndFilter,
+  applyPath,
   buildPath,
+  DatasetDefinition,
   DataSetParams,
+  OrFilter,
+  PaginationState,
+  ParameterTarget,
+  PropertyFilter,
   RefToContextRuleDefinition,
   // ENTITY_KEY,
   RenderingSliceState,
+  ResourceFilter,
+  ResourceFilterValue,
   RuleDefinition,
   SetCurrentPageAction,
   SiteListParams,
+  TextContainsFilterRule,
   useCalculatedValueState,
   useFoundValue,
   ValueInState,
 } from './rendering';
+import { handleParameterDefinitions } from './resource-content';
+import { isError, isLoading } from './render-resource-page';
 
 const useSiteList = (props, data) => {
   const dataProp = useFoundValue(props, data);
@@ -55,6 +68,262 @@ export const usePaginationProp = (props, data) => {
     }
   }, [dataProp]);
   return pagination;
+};
+
+const useSetCurrentPageAction = (props, initialValue: PaginationState | string | number) => {
+  const [val, setVal] = useState(null);
+  const action: ActionState = useAppSelector((state: RenderingSliceState) => state.rendering.action);
+  useEffect(() => {
+    if (action && action.actionType === 'setCurrentPage') {
+      const action1: SetCurrentPageAction = action;
+      console.log('action1', action1, val);
+      setVal(action1.currentPage);
+    }
+  }, [action]);
+
+  return val;
+};
+
+const setPaginationTo = (pagination: PaginationState, props, key, dispatch) => {
+  dispatch(
+    setAnyInCorrectState({
+      localContextPath: props.localContextPath,
+      destinationKey: key,
+      targetType: 'currentLocalContextPath',
+      value: pagination,
+      additionnalPath: 'paginationState',
+    }),
+  );
+};
+
+export const useChangingCalculatedFilterState = (props, filter: ResourceFilter, target: ParameterTarget): ValueInState => {
+  // console.log('filterbbb.......changed', result);
+
+  const initialResult = { loading: false };
+  const filterValues = useChangedFilterValues(filter, props);
+  // console.log('calculateFilter', calculateFilter(dsfDef.valueFilter, {}));
+  const [result, setResult] = useState({ loading: true });
+  useEffect(() => {
+    setResult(calculateFilter(filter, filterValues));
+  }, [filterValues]);
+  return result;
+};
+
+const useChangedFilterValues = (filter: ResourceFilter, props): Object => {
+  const [result, setResult] = useState({});
+  console.log('azzzzz1', result);
+  // const val = useCalculatedValueState(props, { ruleType: 'refToLocalContext', path: '', sourceParameterKey: 'theTerm' });
+
+  useChangedFilterValuesForItem(0, filter, result, setResult, props);
+  return result;
+};
+
+const useChangedFilterValuesForItem = (index: number, filter: ResourceFilter, result, setResult, props): number => {
+  console.log('azzzzz');
+  if (filter.filterType === 'AND') {
+    console.log('azzzzz AND');
+    const and: AndFilter = filter;
+    let newIndex = index;
+    and.items.forEach(item => {
+      const index2 = useChangedFilterValuesForItem(newIndex, item, result, setResult, props);
+      newIndex = newIndex + index2;
+    });
+    return newIndex;
+  } else if (filter.filterType === 'OR') {
+    const or: OrFilter = filter;
+    let newIndex = index;
+    or.items.forEach(item => {
+      const index2 = useChangedFilterValuesForItem(newIndex, item, result, setResult, props);
+      newIndex = newIndex + index2;
+    });
+    return newIndex;
+  } else if (filter.filterType === 'PROPERTY_FILTER') {
+    console.log('azzzzz PROPERTY_FILTER');
+    const propFilter: PropertyFilter = filter;
+    if (propFilter.filterRule.filterRuleType === 'TEXT_CONTAINS') {
+      const textContains: TextContainsFilterRule = propFilter.filterRule;
+      console.log('azzzzz TEXT_CONTAINS', textContains.terms, props.localContextPath);
+      const val = useCalculatedValueState(props, textContains.terms);
+      useEffect(() => {
+        if (val && !isLoading(val) && !isError(val)) {
+          setResult({ ...result, ...{ [PROP + index]: val.value } });
+        }
+      }, [val]);
+    }
+    return 1;
+  }
+};
+
+const calculateFilter = (filter: ResourceFilter, filterValues: Object): ValueInState => {
+  const filterCount = calculateFilterCount(0, filter);
+  console.log('calculateInitialFilter.......', filter, filterCount);
+  const values = Object.values(filterValues);
+  if (values.length !== filterCount || values.findIndex(val => !!val.loading) !== -1) {
+    return { loading: true };
+  }
+  console.log('calculateInitialFilter.......continue');
+  return { loading: false, value: calculateFilterItem(0, filter, filterValues).value };
+};
+
+const PROP = 'prop';
+
+const calculateFilterItem = (
+  pointer: number,
+  filter: ResourceFilter,
+  filterValues: Object,
+): { pointer: number; value: ResourceFilterValue } => {
+  if (filter.filterType === 'AND') {
+    const and: AndFilter = filter;
+    const values = [];
+    let pointerIndex = pointer;
+    and.items.forEach(item => {
+      const res = calculateFilterItem(pointerIndex, item, filterValues);
+      pointerIndex = pointerIndex + res.pointer;
+      values.push(res.value);
+    });
+    return {
+      pointer: pointerIndex,
+      value: { filterType: 'AND', items: values },
+    };
+  } else if (filter.filterType === 'OR') {
+    const or: OrFilter = filter;
+    const values = [];
+    let pointerIndex = pointer;
+    or.items.forEach(item => {
+      const res = calculateFilterItem(pointerIndex, item, filterValues);
+      pointerIndex = pointerIndex + res.pointer;
+      values.push(res.value);
+    });
+    return {
+      pointer: pointerIndex,
+      value: { filterType: 'AND', items: values },
+    };
+  } else if (filter.filterType === 'PROPERTY_FILTER') {
+    const propFilter: PropertyFilter = filter;
+    if (propFilter.filterRule.filterRuleType === 'TEXT_CONTAINS') {
+      const textContains: TextContainsFilterRule = propFilter.filterRule;
+      // return {
+      //   pointer: pointer + 1,
+      //   value: { ...textContains, ...{ filterRuleValue: filterValues[PROP + pointer] } },
+      // };
+      return {
+        pointer: pointer + 1,
+        value: {
+          ...propFilter,
+          filterRule: { ...textContains, ...{ terms: filterValues[PROP + pointer] } },
+        },
+      };
+    }
+    // export type PropertyFilterValue = {
+    //   filterType: 'PROPERTY_FILTER';
+    //   property: PropertyFilterTarget;
+    //   filterRuleValue: FilterRuleValue;
+    // };
+  }
+  throw new Error('to be implemented here2.....' + filter);
+};
+
+const calculateFilterCount = (count: number, filter: ResourceFilter): number => {
+  if (filter.filterType === 'AND') {
+    const and: AndFilter = filter;
+    return and.items.reduce((acc, current) => acc + calculateFilterCount(0, current), 0);
+  } else if (filter.filterType === 'OR') {
+    const or: OrFilter = filter;
+    return or.items.reduce((acc, current) => acc + calculateFilterCount(0, current), 0);
+  } else if (filter.filterType === 'PROPERTY_FILTER') {
+    const propFlter: PropertyFilter = filter;
+    return 1;
+  }
+  throw new Error('to be implemented here.....' + filter);
+};
+
+export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDefinition: DatasetDefinition, props) => {
+  const dispatch = useAppDispatch();
+  const filter = useCalculatedValueState(props, refToSiteDefinition.filter);
+  const initialPaginationState = refToSiteDefinition.initialPaginationState;
+  const setCurrentPageAction = useSetCurrentPageAction(props, initialPaginationState);
+
+  const dsfDef = refToSiteDefinition.valueFilter as ResourceFilter;
+  const changingFilter: ValueInState = useChangingCalculatedFilterState(props, dsfDef, target);
+  // const changing = useChangingCalculatedValueState(props, pdef, target);
+  // useEffect(() => {
+  //   console.log('filter.......changed2');
+  //   dispatch(
+  //     setInCorrectState({
+  //       destinationKey: pdef.parameterKey,
+  //       localContextPath: props.localContextPath,
+  //       target,
+  //       childPath: props.path,
+  //       value: changingFilter,
+  //     }),
+  //   );
+  //   // });
+  // }, [changingFilter]);
+
+  useEffect(() => {
+    if (setCurrentPageAction) {
+      setPaginationTo({ ...paginationProp, activePage: setCurrentPageAction }, props, key, dispatch);
+    }
+  }, [setCurrentPageAction]);
+
+  useEffect(() => {
+    setPaginationTo(initialPaginationState, props, key, dispatch);
+  }, []);
+
+  console.log(
+    'handleDataSet.......handleDataSet',
+    props.localContextPath,
+    applyPath(props.localContextPath, ''),
+    refToSiteDefinition.filter,
+  );
+
+  // const activePage = useCalculatedValueState(props, refToSiteDefinition.paginationState);
+  // const paginationState = useCalculatedValueState(props, refToSiteDefinition.paginationState);
+  // const ps = {
+  //   activePage: 1,
+  //   itemsPerPage: 10,
+  //   sort: 'id',
+  //   order: 'asc',
+  // };
+  const [previousFilter, setPreviousFilter] = useState({ loading: true });
+
+  const paginationProp = usePaginationProp(props, {
+    ruleType: 'refToLocalContext',
+    path: '',
+    sourceParameterKey: key,
+  });
+
+  useEffect(() => {
+    console.log('filter.......handleDataSet', changingFilter);
+    if (!changingFilter || !changingFilter.value || changingFilter.value.loading || !paginationProp) {
+      return;
+    }
+    // const ps = {
+    //   activePage: 1,
+    //   itemsPerPage: 10,
+    //   sort: 'id',
+    //   order: 'asc',
+    // };
+    // const ps = paginationState.value;
+
+    dispatch(
+      searchResources({
+        searchModel: {
+          resourceType: 'SITE',
+          columnDefinitions: refToSiteDefinition.columnDefinitions,
+          filter: changingFilter ? changingFilter.value : null,
+          page: paginationProp.activePage - 1,
+          size: paginationProp.itemsPerPage,
+          sort: `${paginationProp.sort},${paginationProp.order}`,
+        },
+        orgaId: 'coca',
+        destinationKey: key,
+        localContextPath: props.localContextPath,
+        target,
+        childPath: props.path,
+      }),
+    );
+  }, [paginationProp, changingFilter]);
 };
 
 export const DataSet = (props: { params: DataSetParams; depth: string; currentPath: string; path: string; localContextPath: string }) => {
@@ -90,6 +359,8 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   //     : null;
   // });
 
+  handleParameterDefinitions(props.params, props);
+
   const data: RuleDefinition = props.params.data;
 
   // const paginationState = props.params.paginationState;
@@ -97,7 +368,7 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   // const siteListProp: ValueInState = useCalculatedValueState(props, data);
   const siteListProp = useSiteList(props, data);
 
-  console.log('12345', data, siteListProp, props.localContextPath);
+  // console.log('12345', data, siteListProp, props.localContextPath);
 
   const paginationProp = usePaginationProp(props, data);
   // const paginationStateProp: ValueInState = useCalculatedValueState(props, paginationState);
@@ -107,7 +378,7 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
   // }
 
   const siteList = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.entities : null;
-  console.log('aaaazzzzzzzzzzzzzzzz', siteListProp, siteList);
+  // console.log('aaaazzzzzzzzzzzzzzzz', siteListProp, siteList);
 
   // const siteList = [];
   // const siteList = useAppSelector((state: RenderingSliceState) =>

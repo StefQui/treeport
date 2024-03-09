@@ -657,63 +657,63 @@ const rds: ComponentResource = {
           //     },
           //   },
           // },
-          {
-            parameterKey: 'theFilter',
-            target: {
-              targetType: 'currentLocalContextPath',
-            },
-            definition: {
-              ruleType: 'datasetFilter',
-              valueFilter: {
-                filterType: 'AND',
-                items: [
-                  // {
-                  //   filterType: 'PROPERTY_FILTER',
-                  //   property: {
-                  //     filterPropertyType: 'RESOURCE_PROPERTY',
-                  //     property: 'name',
-                  //   },
-                  //   filterRule: {
-                  //     filterRuleType: 'TEXT_EQUALS',
-                  //     terms: 'Site S1',
-                  //   },
-                  // },
-                  {
-                    filterType: 'PROPERTY_FILTER',
-                    property: {
-                      filterPropertyType: 'RESOURCE_PROPERTY',
-                      property: 'name',
-                    },
-                    filterRule: {
-                      filterRuleType: 'TEXT_CONTAINS',
-                      terms: {
-                        ruleType: 'refToLocalContext',
-                        path: '',
-                        sourceParameterKey: 'theTerm',
-                      },
-                    },
-                  },
-                  // {
-                  //   filterType: 'PROPERTY_FILTER',
-                  //   property: {
-                  //     filterPropertyType: 'RESOURCE_ATTRIBUTE',
-                  //     attributeConfigId: 'toSite',
-                  //     campaignId: '2023',
-                  //   },
-                  //   filterRule: {
-                  //     filterRuleType: 'NUMBER_GT',
-                  //     compareValue: {
-                  //       ruleType: 'refToLocalContext',
-                  //       path: '',
-                  //       sourceParameterKey: 'theGt',
-                  //     },
-                  //   },
-                  //   },
-                  // },
-                ],
-              },
-            },
-          },
+          // {
+          //   parameterKey: 'theFilter',
+          //   target: {
+          //     targetType: 'currentLocalContextPath',
+          //   },
+          //   definition: {
+          //     ruleType: 'datasetFilter',
+          //     valueFilter: {
+          //       filterType: 'AND',
+          //       items: [
+          //         // {
+          //         //   filterType: 'PROPERTY_FILTER',
+          //         //   property: {
+          //         //     filterPropertyType: 'RESOURCE_PROPERTY',
+          //         //     property: 'name',
+          //         //   },
+          //         //   filterRule: {
+          //         //     filterRuleType: 'TEXT_EQUALS',
+          //         //     terms: 'Site S1',
+          //         //   },
+          //         // },
+          //         {
+          //           filterType: 'PROPERTY_FILTER',
+          //           property: {
+          //             filterPropertyType: 'RESOURCE_PROPERTY',
+          //             property: 'name',
+          //           },
+          //           filterRule: {
+          //             filterRuleType: 'TEXT_CONTAINS',
+          //             terms: {
+          //               ruleType: 'refToLocalContext',
+          //               path: '',
+          //               sourceParameterKey: 'theTerm',
+          //             },
+          //           },
+          //         },
+          //         // {
+          //         //   filterType: 'PROPERTY_FILTER',
+          //         //   property: {
+          //         //     filterPropertyType: 'RESOURCE_ATTRIBUTE',
+          //         //     attributeConfigId: 'toSite',
+          //         //     campaignId: '2023',
+          //         //   },
+          //         //   filterRule: {
+          //         //     filterRuleType: 'NUMBER_GT',
+          //         //     compareValue: {
+          //         //       ruleType: 'refToLocalContext',
+          //         //       path: '',
+          //         //       sourceParameterKey: 'theGt',
+          //         //     },
+          //         //   },
+          //         //   },
+          //         // },
+          //       ],
+          //     },
+          //   },
+          // },
           {
             parameterKey: 'myds',
             target: {
@@ -738,6 +738,26 @@ const rds: ComponentResource = {
                 itemsPerPage: 5,
                 sort: 'id',
                 order: 'asc',
+              },
+              valueFilter: {
+                filterType: 'AND',
+                items: [
+                  {
+                    filterType: 'PROPERTY_FILTER',
+                    property: {
+                      filterPropertyType: 'RESOURCE_PROPERTY',
+                      property: 'name',
+                    },
+                    filterRule: {
+                      filterRuleType: 'TEXT_CONTAINS',
+                      terms: {
+                        ruleType: 'refToLocalContext',
+                        path: '',
+                        sourceParameterKey: 'theTerm',
+                      },
+                    },
+                  },
+                ],
               },
             },
           },

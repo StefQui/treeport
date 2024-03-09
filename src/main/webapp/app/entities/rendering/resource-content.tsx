@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { activateAction } from 'app/modules/account/activate/activate.reducer';
 import React, { useEffect, useState } from 'react';
 import { Row } from 'reactstrap';
-import { usePaginationProp } from './dataset';
+import { handleDataSet, usePaginationProp } from './dataset';
 import { usePageContext } from './layout';
 import { usePageResourceContentFromResourceId, useResourceWithKey } from './render-resource-page';
 import {
@@ -34,11 +34,12 @@ import {
   DatasetDefinition,
   useChangingCalculatedValueState,
   initialFilter,
-  DatasetFilterRuleDefinition,
-  useChangingCalculatedFilterValueState,
+  // DatasetFilterRuleDefinition,
   PaginationState,
   ActionState,
   SetCurrentPageAction,
+  ResourceFilter,
+  // useChangingCalculatedFilterState,
 } from './rendering';
 import {
   getSiteForRenderingStateParameters,
@@ -127,15 +128,15 @@ export const useConstantValue = (props, initialValue: PaginationState | string |
   return val;
 };
 
-export const useConstantDatasetFilter = (props, definition: DatasetFilterRuleDefinition): ValueInState => {
-  console.log('useConstantDatasetFilter', definition.valueFilter);
-  const [val, setVal] = useState(initialFilter);
-  useEffect(() => {
-    console.log('First useConstantDatasetFilter');
-    setVal({ loading: false, value: definition.valueFilter });
-  }, []);
-  return val;
-};
+// export const useConstantDatasetFilter = (props, definition: DatasetFilterRuleDefinition): ValueInState => {
+//   console.log('useConstantDatasetFilter', definition.valueFilter);
+//   const [val, setVal] = useState(initialFilter);
+//   useEffect(() => {
+//     console.log('First useConstantDatasetFilter');
+//     setVal({ loading: false, value: definition.valueFilter });
+//   }, []);
+//   return val;
+// };
 
 export const initLocalContext = (parameterDefinitions: ParameterDefinition[], props, targetLocalContextPath) => {
   // const localContextPath = calculateLocalContextPath(props);
@@ -161,24 +162,24 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
     const dsDef = pdef.definition as DatasetDefinition;
     console.log('filter.......1', dsDef.filter);
     handleDataSet(pdef.parameterKey, target, dsDef, props);
-  } else if (pdef.definition.ruleType === 'datasetFilter') {
-    const dsfDef = pdef.definition as DatasetFilterRuleDefinition;
-    dsfDef.valueFilter;
-    const changingFilter = useChangingCalculatedFilterValueState(props, dsfDef, target);
-    // const changing = useChangingCalculatedValueState(props, pdef, target);
-    useEffect(() => {
-      console.log('filter.......changed2');
-      dispatch(
-        setInCorrectState({
-          destinationKey: pdef.parameterKey,
-          localContextPath: props.localContextPath,
-          target,
-          childPath: props.path,
-          value: changingFilter,
-        }),
-      );
-      // });
-    }, [changingFilter]);
+    // } else if (pdef.definition.ruleType === 'datasetFilter') {
+    //   const dsfDef = pdef.definition as DatasetFilterRuleDefinition;
+    //   dsfDef.valueFilter;
+    //   const changingFilter = useChangingCalculatedFilterValueState(props, dsfDef, target);
+    //   // const changing = useChangingCalculatedValueState(props, pdef, target);
+    //   useEffect(() => {
+    //     console.log('filter.......changed2');
+    //     dispatch(
+    //       setInCorrectState({
+    //         destinationKey: pdef.parameterKey,
+    //         localContextPath: props.localContextPath,
+    //         target,
+    //         childPath: props.path,
+    //         value: changingFilter,
+    //       }),
+    //     );
+    //     // });
+    //   }, [changingFilter]);
   } else {
     // const [previousResult, setPreviousResult] = useState(null);
     // const result = useCalculatedValueState(props, pdef.definition);
@@ -218,103 +219,120 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
 //   return JSON.stringify(previous) === JSON.stringify(result);
 // };
 
-const useSetCurrentPageAction = (props, initialValue: PaginationState | string | number) => {
-  const [val, setVal] = useState(null);
-  const action: ActionState = useAppSelector((state: RenderingSliceState) => state.rendering.action);
-  useEffect(() => {
-    if (action && action.actionType === 'setCurrentPage') {
-      const action1: SetCurrentPageAction = action;
-      console.log('action1', action1, val);
-      setVal(action1.currentPage);
-    }
-  }, [action]);
+// const useSetCurrentPageAction = (props, initialValue: PaginationState | string | number) => {
+//   const [val, setVal] = useState(null);
+//   const action: ActionState = useAppSelector((state: RenderingSliceState) => state.rendering.action);
+//   useEffect(() => {
+//     if (action && action.actionType === 'setCurrentPage') {
+//       const action1: SetCurrentPageAction = action;
+//       console.log('action1', action1, val);
+//       setVal(action1.currentPage);
+//     }
+//   }, [action]);
 
-  return val;
-};
+//   return val;
+// };
 
-const setPaginationTo = (pagination: PaginationState, props, key, dispatch) => {
-  dispatch(
-    setAnyInCorrectState({
-      localContextPath: props.localContextPath,
-      destinationKey: key,
-      targetType: 'currentLocalContextPath',
-      value: pagination,
-      additionnalPath: 'paginationState',
-    }),
-  );
-};
+// const setPaginationTo = (pagination: PaginationState, props, key, dispatch) => {
+//   dispatch(
+//     setAnyInCorrectState({
+//       localContextPath: props.localContextPath,
+//       destinationKey: key,
+//       targetType: 'currentLocalContextPath',
+//       value: pagination,
+//       additionnalPath: 'paginationState',
+//     }),
+//   );
+// };
 
-const handleDataSet = (key: string, target: ParameterTarget, refToSiteDefinition: DatasetDefinition, props) => {
-  const dispatch = useAppDispatch();
-  const filter = useCalculatedValueState(props, refToSiteDefinition.filter);
-  const initialPaginationState = refToSiteDefinition.initialPaginationState;
-  const setCurrentPageAction = useSetCurrentPageAction(props, initialPaginationState);
+// const handleDataSet = (key: string, target: ParameterTarget, refToSiteDefinition: DatasetDefinition, props) => {
+//   const dispatch = useAppDispatch();
+//   const filter = useCalculatedValueState(props, refToSiteDefinition.filter);
+//   const initialPaginationState = refToSiteDefinition.initialPaginationState;
+//   const setCurrentPageAction = useSetCurrentPageAction(props, initialPaginationState);
 
-  useEffect(() => {
-    if (setCurrentPageAction) {
-      setPaginationTo({ ...paginationProp, activePage: setCurrentPageAction }, props, key, dispatch);
-    }
-  }, [setCurrentPageAction]);
+//   const dsfDef = refToSiteDefinition.valueFilter as ResourceFilter;
+//   const changingFilter: ValueInState = useChangingCalculatedFilterState(props, dsfDef, target);
+//   // const changing = useChangingCalculatedValueState(props, pdef, target);
+//   // useEffect(() => {
+//   //   console.log('filter.......changed2');
+//   //   dispatch(
+//   //     setInCorrectState({
+//   //       destinationKey: pdef.parameterKey,
+//   //       localContextPath: props.localContextPath,
+//   //       target,
+//   //       childPath: props.path,
+//   //       value: changingFilter,
+//   //     }),
+//   //   );
+//   //   // });
+//   // }, [changingFilter]);
 
-  useEffect(() => {
-    setPaginationTo(initialPaginationState, props, key, dispatch);
-  }, []);
+//   useEffect(() => {
+//     if (setCurrentPageAction) {
+//       setPaginationTo({ ...paginationProp, activePage: setCurrentPageAction }, props, key, dispatch);
+//     }
+//   }, [setCurrentPageAction]);
 
-  console.log(
-    'handleDataSet.......handleDataSet',
-    props.localContextPath,
-    applyPath(props.localContextPath, ''),
-    refToSiteDefinition.filter,
-  );
+//   useEffect(() => {
+//     setPaginationTo(initialPaginationState, props, key, dispatch);
+//   }, []);
 
-  // const activePage = useCalculatedValueState(props, refToSiteDefinition.paginationState);
-  // const paginationState = useCalculatedValueState(props, refToSiteDefinition.paginationState);
-  // const ps = {
-  //   activePage: 1,
-  //   itemsPerPage: 10,
-  //   sort: 'id',
-  //   order: 'asc',
-  // };
-  const [previousFilter, setPreviousFilter] = useState({ loading: true });
+//   console.log(
+//     'handleDataSet.......handleDataSet',
+//     props.localContextPath,
+//     applyPath(props.localContextPath, ''),
+//     refToSiteDefinition.filter,
+//   );
 
-  const paginationProp = usePaginationProp(props, {
-    ruleType: 'refToLocalContext',
-    path: '',
-    sourceParameterKey: key,
-  });
+//   // const activePage = useCalculatedValueState(props, refToSiteDefinition.paginationState);
+//   // const paginationState = useCalculatedValueState(props, refToSiteDefinition.paginationState);
+//   // const ps = {
+//   //   activePage: 1,
+//   //   itemsPerPage: 10,
+//   //   sort: 'id',
+//   //   order: 'asc',
+//   // };
+//   const [previousFilter, setPreviousFilter] = useState({ loading: true });
 
-  useEffect(() => {
-    console.log('filter.......handleDataSet', filter);
-    if (!filter || !filter.value || filter.value.loading || !paginationProp) {
-      return;
-    }
-    // const ps = {
-    //   activePage: 1,
-    //   itemsPerPage: 10,
-    //   sort: 'id',
-    //   order: 'asc',
-    // };
-    // const ps = paginationState.value;
+//   const paginationProp = usePaginationProp(props, {
+//     ruleType: 'refToLocalContext',
+//     path: '',
+//     sourceParameterKey: key,
+//   });
 
-    dispatch(
-      searchResources({
-        searchModel: {
-          resourceType: 'SITE',
-          columnDefinitions: refToSiteDefinition.columnDefinitions,
-          filter: filter ? filter.value : null,
-          page: paginationProp.activePage - 1,
-          size: paginationProp.itemsPerPage,
-          sort: `${paginationProp.sort},${paginationProp.order}`,
-        },
-        orgaId: 'coca',
-        destinationKey: key,
-        localContextPath: props.localContextPath,
-        target,
-        childPath: props.path,
-      }),
-    );
-  }, [filter, paginationProp]);
-};
+//   useEffect(() => {
+//     console.log('filter.......handleDataSet', changingFilter);
+//     if (!changingFilter || !changingFilter.value || changingFilter.value.loading || !paginationProp) {
+//       return;
+//     }
+//     // const ps = {
+//     //   activePage: 1,
+//     //   itemsPerPage: 10,
+//     //   sort: 'id',
+//     //   order: 'asc',
+//     // };
+//     // const ps = paginationState.value;
+
+//     dispatch(
+//       searchResources({
+//         searchModel: {
+//           resourceType: 'SITE',
+//           columnDefinitions: refToSiteDefinition.columnDefinitions,
+//           filter: changingFilter ? changingFilter.value : null,
+//           page: paginationProp.activePage - 1,
+//           size: paginationProp.itemsPerPage,
+//           sort: `${paginationProp.sort},${paginationProp.order}`,
+//         },
+//         orgaId: 'coca',
+//         destinationKey: key,
+//         localContextPath: props.localContextPath,
+//         target,
+//         childPath: props.path,
+//       }),
+//     );
+//   }, [paginationProp, changingFilter]);
+// };
 
 const handleRefToSite = (key: string, target: ParameterTarget, refToSiteDefinition: RefToSiteDefinition, props) => {
   const dispatch = useAppDispatch();

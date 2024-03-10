@@ -25,9 +25,10 @@ import {
   // UPDATED_ATTRIBUTE_IDS_KEY,
   useCalculatedValueState,
   useCalculatedValueStateIfNotNull,
-  EntityAction,
+  // EntityAction,
   FormParams,
   FormProps,
+  UpdateAttributeAction,
 } from './rendering';
 import { getFieldAttributesAndConfig, saveAttributes, setAction } from './rendering.reducer';
 import { SmRefToResource } from './resource-content';
@@ -49,9 +50,10 @@ const sendUpdateAttributesActionOnSave = (builtPath: string, updatedAttributeIds
   useEffect(() => {
     console.log('updatedAttributeIds!!!!', updatedAttributeIds);
     if (updatedAttributeIds) {
-      const action: EntityAction = {
+      const action: UpdateAttributeAction = {
         source: builtPath,
         actionType: 'updateAttribute',
+        timestamp: new Date(),
         entity: { entityType: 'ATTRIBUTES', entityIds: updatedAttributeIds },
       };
       dispatch(setAction(action));

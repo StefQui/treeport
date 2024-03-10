@@ -43,6 +43,7 @@ import {
   SetCurrentPageAction,
   SiteListParams,
   TextContainsFilterRule,
+  UpdateAttributeAction,
   useCalculatedValueState,
   useFoundValue,
   ValueInState,
@@ -95,7 +96,9 @@ const useRefreshDatasetAction = props => {
   const action: ActionState = useAppSelector((state: RenderingSliceState) => state.rendering.action);
   useEffect(() => {
     if (action && action.actionType === 'refreshDataset') {
-      setVal(true);
+      setVal((action as RefreshDataSetAction).timestamp);
+    } else if (action && action.actionType === 'updateAttribute') {
+      setVal((action as UpdateAttributeAction).timestamp);
     }
   }, [action]);
 
@@ -279,6 +282,12 @@ export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDef
   //   // });
   // }, [changingFilter]);
 
+  // useEffect(() => {
+  //   if (refreshDatasetAction) {
+  //     console.log('refreshDatasetAction');
+  //   }
+  // }, [refreshDatasetAction]);
+
   useEffect(() => {
     if (setCurrentPageAction) {
       setPaginationTo({ ...paginationProp, activePage: setCurrentPageAction }, props, key, dispatch);
@@ -313,7 +322,7 @@ export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDef
   });
 
   useEffect(() => {
-    console.log('filter.......handleDataSet', changingFilter);
+    console.log('filter.......handleDataSet', changingFilter, refreshDatasetAction);
     if (!changingFilter || !changingFilter.value || changingFilter.value.loading || !paginationProp) {
       return;
     }
@@ -342,7 +351,7 @@ export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDef
         childPath: props.path,
       }),
     );
-  }, [paginationProp, changingFilter]);
+  }, [paginationProp, changingFilter, refreshDatasetAction]);
 };
 
 export const DataSet = (props: { params: DataSetParams; depth: string; currentPath: string; path: string; localContextPath: string }) => {
@@ -632,6 +641,7 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
     const action: RefreshDataSetAction = {
       source: builtPath,
       actionType: 'refreshDataset',
+      timestamp: new Date(),
       targetDataset: refToContextRuleDefinition.sourceParameterKey,
     };
 

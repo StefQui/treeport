@@ -550,21 +550,28 @@ export type LocalContextsState = {
 export type PageContextState = { [path: string]: any };
 export type PageResourcesState = { [path: string]: any };
 export type CurrentPageIdState = string | null;
-export type ActionState = EntityAction | SetCurrentPageAction;
-export type EntityAction = {
-  source: string;
-  actionType: 'selectSite' | 'updateAttribute' | 'refreshDataset';
-  entity: { entityType: 'SITE' | 'RESOURCE' | 'ATTRIBUTES'; entity?: any; entityIds?: any };
-} | null;
+export type ActionState = SetCurrentPageAction | UpdateAttributeAction | RefreshDataSetAction;
+// export type EntityAction = {
+//   source: string;
+//   actionType: 'selectSite' | 'updateAttribute' | 'refreshDataset';
+//   entity: { entityType: 'SITE' | 'RESOURCE' | 'ATTRIBUTES'; entity?: any; entityIds?: any };
+// } | null;
 export type SetCurrentPageAction = {
   source: string;
   actionType: 'setCurrentPage';
   currentPage: number;
   targetDataset: string;
 } | null;
+export type UpdateAttributeAction = {
+  source: string;
+  actionType: 'updateAttribute';
+  timestamp: Date;
+  entity: { entityType: 'SITE' | 'RESOURCE' | 'ATTRIBUTES'; entity?: any; entityIds?: any };
+} | null;
 export type RefreshDataSetAction = {
   source: string;
   actionType: 'refreshDataset';
+  timestamp: Date;
   targetDataset: string;
 } | null;
 export type RenderingState = {

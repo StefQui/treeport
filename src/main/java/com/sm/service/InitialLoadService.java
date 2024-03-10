@@ -39,7 +39,9 @@ public class InitialLoadService {
     public static final String R_4 = "r4";
     public static final String R_5 = "r5";
     public static final String R_DS = "rds";
+    public static final String R_DS_WITH_FORM = "rDsWithForm";
     public static final String R_PAGEDS = "rpageDs";
+    public static final String R_PAGEDS_WITH_FORM = "rpageDsWithForm";
     public static final String R_FORM = "rform";
     public static final String R_LAYOUT = "rlayout";
     public static final String R_PAGE1 = "rpage1";
@@ -80,8 +82,14 @@ public class InitialLoadService {
     @Value("classpath:json/rds.json")
     org.springframework.core.io.Resource rdsSourceFile;
 
+    @Value("classpath:json/rDsWithForm.json")
+    org.springframework.core.io.Resource rDsWithFormSourceFile;
+
     @Value("classpath:json/rpageDs.json")
     org.springframework.core.io.Resource rpageDsSourceFile;
+
+    @Value("classpath:json/rpageDsWithForm.json")
+    org.springframework.core.io.Resource rpageDsWithFormSourceFile;
 
     @Value("classpath:json/rform.json")
     org.springframework.core.io.Resource rFormSourceFile;
@@ -288,11 +296,33 @@ public class InitialLoadService {
         resourceRepository.save(
             Resource
                 .builder()
+                .id(R_DS_WITH_FORM)
+                .name("Resource rds with form")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rDsWithFormSourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
                 .id(R_PAGEDS)
                 .name("Resource rpageDs")
                 .type(RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageDsSourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_PAGEDS_WITH_FORM)
+                .name("Resource rpageDsWithForm")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rpageDsWithFormSourceFile))
                 .childrenIds(List.of())
                 .build()
         );

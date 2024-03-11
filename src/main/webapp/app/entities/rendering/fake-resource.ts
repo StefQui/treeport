@@ -605,6 +605,135 @@ const r5: ComponentResource = {
   ],
 };
 
+const siteDetail: ComponentResource = {
+  content: {
+    componentType: 'verticalPanel',
+    path: 'vp-rds-sitedetail',
+    border: true,
+    items: [
+      {
+        componentType: 'SmText',
+        path: 'const',
+        params: {
+          textValue: {
+            ruleType: 'itemParamProperty',
+            propertyDefinition: {
+              type: 'ID',
+            },
+          },
+        },
+      },
+      {
+        componentType: 'SmText',
+        path: 'const',
+        params: {
+          textValue: {
+            ruleType: 'itemParamProperty',
+            propertyDefinition: {
+              type: 'NAME',
+            },
+          },
+        },
+      },
+      {
+        componentType: 'SmText',
+        path: 'const',
+        params: {
+          textValue: {
+            ruleType: 'itemParamProperty',
+            propertyDefinition: {
+              type: 'ATTRIBUTE',
+              attributeConfigId: 'toSite',
+              campaignId: '2023',
+            },
+          },
+        },
+      },
+    ],
+  },
+};
+
+const rDsList: ComponentResource = {
+  content: {
+    componentType: 'verticalPanel',
+    path: 'vp-rds-list',
+    border: true,
+    items: [
+      {
+        componentType: 'SmText',
+        path: 'const',
+        params: {
+          textValue: {
+            ruleType: 'constant',
+            constValue: 'Exemple de Datalist',
+          },
+        },
+        parameterDefinitions: [
+          {
+            parameterKey: 'myds',
+            target: {
+              targetType: 'currentLocalContextPath',
+            },
+            definition: {
+              ruleType: 'dataset',
+              columnDefinitions: [
+                { columnType: 'ID' },
+                { columnType: 'NAME' },
+                { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+                { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+                { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
+                { columnType: 'BUTTON', action: 'select' },
+              ],
+              filter: {
+                ruleType: 'refToLocalContext',
+                path: '',
+                sourceParameterKey: 'theFilter',
+              },
+              initialPaginationState: {
+                activePage: 1,
+                itemsPerPage: 5,
+                sort: 'id',
+                order: 'asc',
+              },
+              valueFilter: {
+                filterType: 'AND',
+                items: [
+                  {
+                    filterType: 'PROPERTY_FILTER',
+                    property: {
+                      filterPropertyType: 'RESOURCE_PROPERTY',
+                      property: 'name',
+                    },
+                    filterRule: {
+                      filterRuleType: 'TEXT_CONTAINS',
+                      terms: {
+                        ruleType: 'refToLocalContext',
+                        path: '',
+                        sourceParameterKey: 'theTerm',
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+      {
+        componentType: 'dataSetList',
+        path: 'dataset33',
+        params: {
+          data: {
+            ruleType: 'refToLocalContext',
+            path: '',
+            sourceParameterKey: 'myds',
+          },
+        },
+      },
+    ],
+  },
+};
+
 const rDsWithForm: ComponentResource = {
   content: {
     componentType: 'verticalPanel',
@@ -1298,10 +1427,32 @@ const rpageDsWithForm: ComponentResource = {
   parameters: [],
 };
 
+const rpageDsList: ComponentResource = {
+  content: {
+    componentType: 'page',
+    path: 'page-ds',
+    params: {
+      layoutResourceId: 'rlayout',
+      layoutElements: [
+        {
+          layoutElementId: 'menuTop',
+          resourceId: 'rmenuTop',
+        },
+        {
+          layoutElementId: 'theContent',
+          resourceId: 'rDsList',
+        },
+      ],
+    },
+  },
+  parameters: [],
+};
+
 export const stubbedResources = {
   r3,
   r4,
   r5,
+  siteDetail,
   rmenuTop,
   rlayout,
   rpage1,
@@ -1309,6 +1460,8 @@ export const stubbedResources = {
   rform,
   rds,
   rDsWithForm,
+  rDsList,
   rpageDs,
   rpageDsWithForm,
+  rpageDsList,
 };

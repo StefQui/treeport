@@ -39,6 +39,7 @@ import {
   ActionState,
   SetCurrentPageAction,
   ResourceFilter,
+  ItemParamPropertyRuleDefinition,
   // useChangingCalculatedFilterState,
 } from './rendering';
 import {
@@ -165,6 +166,10 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
     const dsDef = pdef.definition as DatasetDefinition;
     console.log('filter.......1', dsDef.filter);
     handleDataSet(pdef.parameterKey, target, dsDef, props);
+    // } else if (pdef.definition.ruleType === 'itemParamProperty') {
+    //   const dsDef = pdef.definition as ItemParamPropertyRuleDefinition;
+    //   handleDataSet(pdef.parameterKey, target, dsDef, props);
+
     // } else if (pdef.definition.ruleType === 'datasetFilter') {
     //   const dsfDef = pdef.definition as DatasetFilterRuleDefinition;
     //   dsfDef.valueFilter;
@@ -411,19 +416,17 @@ export const SmRefToResource = (props: SmRefToResourceProps) => {
   const builtPath = buildPath(props);
   const resource = usePageResourceContentFromResourceId(resourceId);
   const resourceContent = useResourceWithKey(resource, 'content');
-  // const targetParameterDefinitions = useResourceWithKey(resource, LOCAL_CONTEXT);
-  // const callingParameterDefinitions = params.parameterDefinitions;
 
-  // initLocalContext(callingParameterDefinitions, props, builtPath);
   handleParameterDefinitions(params, props);
 
   if (resourceContent) {
-    // console.log('resourceContent', resourceContent);
+    console.log('resourceContent', props.itemParam);
     return (
       <MyElem
         input={resourceContent}
         depth={increment(props.depth)}
-        // params={props.params ? params.params : null}
+        params={props.params ? params : null}
+        itemParam={props.itemParam}
         currentPath={builtPath}
         localContextPath={calculateTargetLocalContextPath(true, props)}
       ></MyElem>

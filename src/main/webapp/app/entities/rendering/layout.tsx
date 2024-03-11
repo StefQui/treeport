@@ -233,7 +233,10 @@ export const SmMenu = props => {
               Dataset
             </Nav.Link>
             <Nav.Link as={NavLink} to="/coca/render/rpageDsWithForm">
-              Dataset2
+              DatasetWithForm
+            </Nav.Link>
+            <Nav.Link as={NavLink} to="/coca/render/rpageDsList">
+              DataList
             </Nav.Link>
             <Nav.Link as={NavLink} to="/contact">
               Contact

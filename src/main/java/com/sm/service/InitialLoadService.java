@@ -38,10 +38,13 @@ public class InitialLoadService {
     public static final String R_3 = "r3";
     public static final String R_4 = "r4";
     public static final String R_5 = "r5";
+    public static final String R_SITE_DETAIL = "siteDetail";
     public static final String R_DS = "rds";
     public static final String R_DS_WITH_FORM = "rDsWithForm";
+    public static final String R_DS_LIST = "rDsList";
     public static final String R_PAGEDS = "rpageDs";
     public static final String R_PAGEDS_WITH_FORM = "rpageDsWithForm";
+    public static final String R_PAGEDS_LIST = "rpageDsList";
     public static final String R_FORM = "rform";
     public static final String R_LAYOUT = "rlayout";
     public static final String R_PAGE1 = "rpage1";
@@ -79,17 +82,26 @@ public class InitialLoadService {
     @Value("classpath:json/r5.json")
     org.springframework.core.io.Resource r5SourceFile;
 
+    @Value("classpath:json/siteDetail.json")
+    org.springframework.core.io.Resource siteDetailSourceFile;
+
     @Value("classpath:json/rds.json")
     org.springframework.core.io.Resource rdsSourceFile;
 
     @Value("classpath:json/rDsWithForm.json")
     org.springframework.core.io.Resource rDsWithFormSourceFile;
 
+    @Value("classpath:json/rDsList.json")
+    org.springframework.core.io.Resource rDsListSourceFile;
+
     @Value("classpath:json/rpageDs.json")
     org.springframework.core.io.Resource rpageDsSourceFile;
 
     @Value("classpath:json/rpageDsWithForm.json")
     org.springframework.core.io.Resource rpageDsWithFormSourceFile;
+
+    @Value("classpath:json/rpageDsList.json")
+    org.springframework.core.io.Resource rpageDsListSourceFile;
 
     @Value("classpath:json/rform.json")
     org.springframework.core.io.Resource rFormSourceFile;
@@ -285,6 +297,17 @@ public class InitialLoadService {
         resourceRepository.save(
             Resource
                 .builder()
+                .id(R_SITE_DETAIL)
+                .name("Resource siteDetail")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(siteDetailSourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
                 .id(R_DS)
                 .name("Resource rds")
                 .type(RESOURCE)
@@ -307,6 +330,17 @@ public class InitialLoadService {
         resourceRepository.save(
             Resource
                 .builder()
+                .id(R_DS_LIST)
+                .name("Resource rds with list")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rDsListSourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
                 .id(R_PAGEDS)
                 .name("Resource rpageDs")
                 .type(RESOURCE)
@@ -323,6 +357,17 @@ public class InitialLoadService {
                 .type(RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageDsWithFormSourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_PAGEDS_LIST)
+                .name("Resource rpageDsList")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rpageDsListSourceFile))
                 .childrenIds(List.of())
                 .build()
         );

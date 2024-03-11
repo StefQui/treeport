@@ -1,0 +1,178 @@
+{
+  "content": {
+    "componentType": "verticalPanel",
+    "path": "vp5",
+    "border": true,
+    "items": [
+      {
+        "componentType": "SmText",
+        "path": "vsm55",
+        "params": {
+          "textValue": {
+            "or": [
+              {
+                "refToPath": {
+                  "path": "../..",
+                  "property": "toto"
+                }
+              },
+              {
+                "refToContext": {
+                  "property": "tata"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "componentType": "SmText",
+        "path": "vsm99",
+        "params": {
+          "textValue": {
+            "refToPath": {
+              "path": "../..",
+              "property": "tata"
+            }
+          }
+        }
+      },
+      {
+        "componentType": "SmText",
+        "path": "vsm1000",
+        "params": {
+          "textValue": {
+            "refToContext": {
+              "property": "tata"
+            }
+          }
+        }
+      },
+      {
+        "componentType": "SmText",
+        "path": "resName",
+        "params": {
+          "textValue": {
+            "refToPath": {
+              "path": "../..",
+              "property": "selectedResource.entity.name"
+            }
+          }
+        }
+      },
+      {
+        "componentType": "SmSiteRef",
+        "path": "vsm8800",
+        "params": {
+          "siteValue": {
+            "refToPath": {
+              "path": "../..",
+              "property": "selectedResource"
+            }
+          }
+        }
+      },
+      {
+        "componentType": "SmText",
+        "path": "aaaa",
+        "col": 6,
+        "params": {
+          "textValue": {
+            "const": {
+              "constValue": "To site"
+            }
+          }
+        }
+      },
+      {
+        "componentType": "SmAttRef",
+        "path": "attRefToSite",
+        "col": 6,
+        "params": {
+          "resourceId": {
+            "refToPath": {
+              "path": "../..",
+              "property": "selectedResource.entity.id"
+            }
+          },
+          "campaignId": {
+            "refToPath": {
+              "path": "/pag/vp8/vp/vpc/campaignId"
+            }
+          },
+          "attConfig": {
+            "const": {
+              "constValue": "toSite"
+            }
+          }
+        }
+      },
+      {
+        "componentType": "SmText",
+        "path": "aaaa",
+        "col": 6,
+        "params": {
+          "textValue": {
+            "const": {
+              "constValue": "To Consolidé"
+            }
+          }
+        }
+      },
+      {
+        "componentType": "SmAttRef",
+        "path": "attRefToConso",
+        "col": 6,
+        "params": {
+          "resourceId": {
+            "refToPath": {
+              "path": "../..",
+              "property": "selectedResource.entity.id"
+            }
+          },
+          "campaignId": {
+            "const": {
+              "constValue": "2023"
+            }
+          },
+          "attConfig": {
+            "const": {
+              "constValue": "toConso"
+            }
+          }
+        }
+      },
+      {
+        "componentType": "SmAttRef",
+        "path": "attRefToFixed",
+        "col": 6,
+        "params": {
+          "resourceId": {
+            "const": {
+              "constValue": "root"
+            }
+          },
+          "campaignId": {
+            "const": {
+              "constValue": "2023"
+            }
+          },
+          "attConfig": {
+            "const": {
+              "constValue": "toConso"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "localContext": [
+    {
+      "parameterKey": "myConst",
+      "definition": {
+        "ruleType": "constant",
+        "constValue": "aaa"
+      }
+    }
+  ]
+}

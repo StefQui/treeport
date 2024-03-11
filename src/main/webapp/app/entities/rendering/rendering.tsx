@@ -18,8 +18,12 @@ import {
 import { buildAttributeIdFormExploded, SmAttributeField, SmForm } from './render-form';
 import { SmLayoutElement, SmMenu, SmPage, usePageContext } from './layout';
 import { IAttributeWithValue } from 'app/shared/model/attribute.model';
-import { DataSet } from './dataset';
+import { DataSet, generateLabel } from './dataset';
 import { existsAndHasAValue, isError, isLoading } from './render-resource-page';
+import { DataSetList } from './datalist';
+import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
+import { Default } from 'react-toastify/dist/utils';
+import { generateKey } from '../attribute/attribute.utils';
 
 // export const TextBasic = props => {
 //   const siteEntity = useAppSelector(state => state.site.entity);
@@ -212,6 +216,12 @@ export type DataSetResourceContent = CommonContent & {
   params: DataSetParams;
 };
 
+export type DataSetListType = 'dataSetList';
+export type DataSetListResourceContent = CommonContent & {
+  componentType: DataSetListType;
+  params: DataSetListParams;
+};
+
 export type SmInputResourceContent = CommonContent & {
   componentType: 'SmInput';
   params: SmInputParams;
@@ -260,6 +270,7 @@ export type VerticalPanelResourceElement = CommonContent & {
 export type ComponentResourceContent =
   | SmTextResourceContent
   | DataSetResourceContent
+  | DataSetListResourceContent
   | SmInputResourceContent
   | SmRefToResourceResourceContent
   | FormResourceContent
@@ -312,7 +323,7 @@ export type TargetInfo = { destinationKey: string; localContextPath: string; tar
 
 export const LOCAL_CONTEXT = 'localContext';
 
-export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext' | 'refToSite' | 'dataset';
+export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext' | 'refToSite' | 'dataset' | 'itemParamProperty';
 export type TransformTo = 'site';
 export type ConstantRuleDefinition = { ruleType: RuleType; constValue: any };
 export type RefToSiteDefinition = { ruleType: RuleType; sourceSiteId: RuleDefinition };
@@ -329,8 +340,28 @@ export type PaginationState = {
   sort: string;
   order: string;
 };
+
+export type PropertyDefinition = IdPropertyDefinition | NamePropertyDefinition | AttributePropertyDefinition;
+
+export type IdPropertyDefinition = {
+  type: 'ID';
+};
+
+export type NamePropertyDefinition = {
+  type: 'NAME';
+};
+
+export type AttributePropertyDefinition = {
+  type: 'ATTRIBUTE';
+  attributeConfigId: string;
+  campaignId: string;
+};
 // export type DatasetFilterRuleDefinition = { ruleType: 'datasetFilter'; valueFilter: ResourceFilter };
 export type PaginationStateRuleDefinition = { ruleType: 'paginationState'; initialValue: PaginationState };
+export type ItemParamPropertyRuleDefinition = {
+  ruleType: RuleType;
+  propertyDefinition: PropertyDefinition;
+};
 export type RefToContextRuleDefinition = {
   ruleType: RuleType;
   path: string;
@@ -345,6 +376,7 @@ export type RuleDefinition =
   | ConstantRuleDefinition
   | RefToSiteDefinition
   | DatasetDefinition
+  | ItemParamPropertyRuleDefinition
   // | DatasetFilterRuleDefinition
   | PaginationStateRuleDefinition;
 
@@ -407,8 +439,11 @@ export type ColumnDefinition = IdColumnDefinition | NameColumnDefinition | Attri
 export type DataSetParams = {
   columnDefinitions: ColumnDefinition[];
   data: RuleDefinition;
-  // paginationState: RuleDefinition;
   selectedSiteKeyInLocalContext?: string;
+};
+
+export type DataSetListParams = {
+  data: RuleDefinition;
 };
 
 export type ResourcePropertyFilterTarget = {
@@ -531,6 +566,7 @@ export type CommonProps = {
   path: string;
   display?: Display;
   localContextPath: string;
+  itemParam?: IResourceWithValue;
   parameterDefinitions?: ParameterDefinition[];
 };
 export type SmTextProps = CommonProps & { params: TextParams };
@@ -655,6 +691,11 @@ export const SmText = (props: SmTextProps) => {
   const params: TextParams = props.params;
 
   handleParameterDefinitions(params, props);
+
+  // const itemParam = props.itemParam;
+  // if (itemParam) {
+  //   return <h1>{itemParam.name}</h1>;
+  // }
   // const callingParameterDefinitions = params.parameterDefinitions;
 
   // const builtPath = buildPath(props);
@@ -782,6 +823,27 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
     );
   } else if (ruleType === 'refToPageContext') {
     return useRefToPageContextValue(props, ruleDefinition as RefToContextRuleDefinition);
+  } else if (ruleType === 'itemParamProperty') {
+    const def: ItemParamPropertyRuleDefinition = ruleDefinition as ItemParamPropertyRuleDefinition;
+    const propDef = def.propertyDefinition;
+    let str = '--';
+    if (def.propertyDefinition.type === 'ID') {
+      str = props.itemParam.id;
+    } else if (def.propertyDefinition.type === 'NAME') {
+      str = props.itemParam.name;
+    } else if (def.propertyDefinition.type === 'ATTRIBUTE') {
+      const keys = Object.keys(props.itemParam.attributeValues);
+      // const values = props.itemParam.attributeValues;
+      // console.log('filterbbb.......changed', values);
+      const attDef: AttributePropertyDefinition = def.propertyDefinition;
+      if (!keys) {
+        str = '-';
+      } else {
+        const found = keys.find(val => val === generateLabel(attDef));
+        str = found ? props.itemParam.attributeValues[found].value : '---';
+      }
+    }
+    return { loading: false, value: str };
   } else if (ruleType === 'constant') {
     return useConstantValue(props, (ruleDefinition as ConstantRuleDefinition).constValue);
     // } else if (ruleType === 'datasetFilter') {
@@ -1359,6 +1421,7 @@ export const hidden = () => {
 export const MyVerticalPanel = props => {
   // const shouldDisplay = useShouldDisplay(props);
   // if (!shouldDisplay) return hidden();
+  console.log('MyVerticalPanel', props);
 
   const renderItems = items =>
     items.map((item, index) => (
@@ -1368,6 +1431,7 @@ export const MyVerticalPanel = props => {
         input={{ ...item }}
         currentPath={props.currentPath + PATH_SEPARATOR + props.path}
         form={props.form}
+        itemParam={props.itemParam}
         localContextPath={props.localContextPath}
       ></MyElem>
     ));
@@ -1456,6 +1520,7 @@ export const MyElem = props => {
     //   <Col md={props.col ?? 12}>Hidden</Col>;
     //   // </MyWrapper>;
     // }
+    console.log('renderSwitch', params.componentType, props);
 
     switch (params.componentType) {
       // case 'textBasic':
@@ -1482,6 +1547,8 @@ export const MyElem = props => {
         return <TheSiteList {...params}></TheSiteList>;
       case 'dataSetTable':
         return <DataSet {...params}></DataSet>;
+      case 'dataSetList':
+        return <DataSetList {...params}></DataSetList>;
       case 'Form':
         return <SmForm {...params}></SmForm>;
       case 'AttributeField':
@@ -1523,6 +1590,7 @@ export const MyElem = props => {
         currentPath: props.currentPath,
         depth: props.depth,
         form: props.form,
+        itemParam: props.itemParam,
         localContextPath: props.localContextPath,
       })}
     </MyWrapper>

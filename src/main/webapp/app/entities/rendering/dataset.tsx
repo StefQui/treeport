@@ -53,7 +53,7 @@ import { isError, isLoading } from './render-resource-page';
 import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
 import { IAttributeValue, IBooleanValue, IDoubleValue } from 'app/shared/model/attribute.model';
 
-const useSiteList = (props, data) => {
+export const useSiteList = (props, data) => {
   const dataProp = useFoundValue(props, data);
   const [siteList, setSiteList] = useState(null);
   useEffect(() => {
@@ -177,9 +177,9 @@ const useChangedFilterValuesForItem = (index: number, filter: ResourceFilter, re
 
 const calculateFilter = (filter: ResourceFilter, filterValues: Object): ValueInState => {
   const filterCount = calculateFilterCount(0, filter);
-  console.log('calculateInitialFilter.......', filter, filterCount);
+  console.log('calculateInitialFilter.......', filter, filterCount, filterValues);
   const values = Object.values(filterValues);
-  if (values.length !== filterCount || values.findIndex(val => !!val.loading) !== -1) {
+  if (values.length !== filterCount || values.findIndex(val => val && !!val.loading) !== -1) {
     return { loading: true };
   }
   console.log('calculateInitialFilter.......continue');
@@ -231,7 +231,7 @@ const calculateFilterItem = (
         pointer: pointer + 1,
         value: {
           ...propFilter,
-          filterRule: { ...textContains, ...{ terms: filterValues[PROP + pointer] } },
+          filterRule: { ...textContains, ...{ terms: filterValues[PROP + pointer] ?? '' } },
         },
       };
     }
@@ -352,6 +352,10 @@ export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDef
       }),
     );
   }, [paginationProp, changingFilter, refreshDatasetAction]);
+};
+
+export const generateLabel = (colDef: { attributeConfigId: string; campaignId: string }) => {
+  return colDef.attributeConfigId + ':period:' + colDef.campaignId;
 };
 
 export const DataSet = (props: { params: DataSetParams; depth: string; currentPath: string; path: string; localContextPath: string }) => {
@@ -745,10 +749,6 @@ export const DataSet = (props: { params: DataSetParams; depth: string; currentPa
     } else {
       return <td key={key}>?????</td>;
     }
-  };
-
-  const generateLabel = (colDef: AttributeColumnDefinition) => {
-    return colDef.attributeConfigId + ':period:' + colDef.campaignId;
   };
 
   return (

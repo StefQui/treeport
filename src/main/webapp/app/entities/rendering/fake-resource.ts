@@ -697,23 +697,7 @@ const rDsList: ComponentResource = {
               },
               valueFilter: {
                 filterType: 'AND',
-                items: [
-                  {
-                    filterType: 'PROPERTY_FILTER',
-                    property: {
-                      filterPropertyType: 'RESOURCE_PROPERTY',
-                      property: 'name',
-                    },
-                    filterRule: {
-                      filterRuleType: 'TEXT_CONTAINS',
-                      terms: {
-                        ruleType: 'refToLocalContext',
-                        path: '',
-                        sourceParameterKey: 'theTerm',
-                      },
-                    },
-                  },
-                ],
+                items: [],
               },
             },
           },

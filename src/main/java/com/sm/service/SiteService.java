@@ -163,18 +163,19 @@ public class SiteService {
         AggregationOperation countLimitAgg = Aggregation.stage(new Document("$limit", 1).toJson());
         AggregationOperation countAgg = Aggregation.stage(new Document("$count", "count").toJson());
 
-        AggregationResults<Document> countOutput = mongoTemplate.aggregate(
-            Aggregation.newAggregation(lookupAgg, addFieldsAgg, searchAgg, countAgg),
-            "site",
-            Document.class
-        );
+        Aggregation agg1 = null;
+        Aggregation agg2 = null;
+        if (searchAgg != null) {
+            agg1 = Aggregation.newAggregation(lookupAgg, addFieldsAgg, searchAgg, countAgg);
+            agg2 = Aggregation.newAggregation(lookupAgg, addFieldsAgg, searchAgg, skipAgg, limitAgg);
+        } else {
+            agg1 = Aggregation.newAggregation(lookupAgg, addFieldsAgg, countAgg);
+            agg2 = Aggregation.newAggregation(lookupAgg, addFieldsAgg, skipAgg, limitAgg);
+        }
+        AggregationResults<Document> countOutput = mongoTemplate.aggregate(agg1, "site", Document.class);
 
         Integer count = countOutput.getMappedResults().get(0).getInteger("count");
-        AggregationResults<SiteWithValues> output = mongoTemplate.aggregate(
-            Aggregation.newAggregation(lookupAgg, addFieldsAgg, searchAgg, skipAgg, limitAgg),
-            "site",
-            SiteWithValues.class
-        );
+        AggregationResults<SiteWithValues> output = mongoTemplate.aggregate(agg2, "site", SiteWithValues.class);
 
         /*
         Bson doc = null;
@@ -192,8 +193,12 @@ public class SiteService {
     }
 
     private AggregationOperation generateSearchMatch(ResourceSearchDTO search, String orgaId) {
-        Document match = new Document("$match", generateSearch(search.getFilter()));
-        return Aggregation.stage(match.toJson());
+        final Document matchCrit = generateSearch(search.getFilter());
+        if (matchCrit != null) {
+            Document match = new Document("$match", matchCrit);
+            return Aggregation.stage(match.toJson());
+        }
+        return null;
     }
 
     private AggregationOperation generateAddFields(ResourceSearchDTO search, String orgaId) {
@@ -312,10 +317,16 @@ public class SiteService {
     private Document generateSearch(ResourceFilterDTO filter) {
         if (filter instanceof AndFilterDTO) {
             List<Document> children = new ArrayList<>();
+            if (((AndFilterDTO) filter).getItems() == null || ((AndFilterDTO) filter).getItems().size() == 0) {
+                return null;
+            }
             ((AndFilterDTO) filter).getItems().stream().forEach(item -> children.add(generateSearch(item)));
             return new Document("$and", children);
         } else if (filter instanceof OrFilterDTO) {
             List<Document> children = new ArrayList<>();
+            if (((OrFilterDTO) filter).getItems() == null || ((OrFilterDTO) filter).getItems().size() == 0) {
+                return null;
+            }
             ((OrFilterDTO) filter).getItems().stream().forEach(item -> children.add(generateSearch(item)));
             return new Document("$or", children);
         } else if (filter instanceof PropertyFilterDTO) {

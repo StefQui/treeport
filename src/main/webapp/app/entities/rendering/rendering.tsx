@@ -323,12 +323,19 @@ export type TargetInfo = { destinationKey: string; localContextPath: string; tar
 
 export const LOCAL_CONTEXT = 'localContext';
 
-export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext' | 'refToSite' | 'dataset' | 'itemParamProperty';
+export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext' | 'refToSite' | 'dataset' | 'itemParamProperty' | 'datatree';
 export type TransformTo = 'site';
 export type ConstantRuleDefinition = { ruleType: RuleType; constValue: any };
 export type RefToSiteDefinition = { ruleType: RuleType; sourceSiteId: RuleDefinition };
 export type DatasetDefinition = {
-  ruleType: RuleType;
+  ruleType: 'dataset';
+  columnDefinitions: ColumnDefinition[];
+  filter: RuleDefinition;
+  initialPaginationState: PaginationState;
+  valueFilter: ResourceFilter;
+};
+export type DatatreeDefinition = {
+  ruleType: 'datatree';
   columnDefinitions: ColumnDefinition[];
   filter: RuleDefinition;
   initialPaginationState: PaginationState;
@@ -359,7 +366,7 @@ export type AttributePropertyDefinition = {
 // export type DatasetFilterRuleDefinition = { ruleType: 'datasetFilter'; valueFilter: ResourceFilter };
 export type PaginationStateRuleDefinition = { ruleType: 'paginationState'; initialValue: PaginationState };
 export type ItemParamPropertyRuleDefinition = {
-  ruleType: RuleType;
+  ruleType: 'itemParamProperty';
   propertyDefinition: PropertyDefinition;
 };
 export type RefToContextRuleDefinition = {
@@ -376,6 +383,7 @@ export type RuleDefinition =
   | ConstantRuleDefinition
   | RefToSiteDefinition
   | DatasetDefinition
+  | DatatreeDefinition
   | ItemParamPropertyRuleDefinition
   // | DatasetFilterRuleDefinition
   | PaginationStateRuleDefinition;
@@ -1613,7 +1621,7 @@ export const MyWrapper = ({ children, ...props }) => {
 
   const lc = useRefToLocalContext(targetLocalContextPath);
 
-  const displayPath = false;
+  const displayPath = true;
   // const shouldDisplay = useShouldDisplay(props);
   // if (!shouldDisplay) {
   //   console.log('evaluateShouldDisplay-----------', props.componentType, shouldDisplay);

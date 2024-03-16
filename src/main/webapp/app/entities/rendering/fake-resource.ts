@@ -733,6 +733,40 @@ const rDtTree: ComponentResource = {
             constValue: 'Exemple de Datatree',
           },
         },
+        parameterDefinitions: [
+          {
+            parameterKey: 'mydt',
+            target: {
+              targetType: 'currentLocalContextPath',
+            },
+            definition: {
+              ruleType: 'datatree',
+              columnDefinitions: [
+                { columnType: 'ID' },
+                { columnType: 'NAME' },
+                { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+                { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+                { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
+                { columnType: 'BUTTON', action: 'select' },
+              ],
+              filter: {
+                ruleType: 'refToLocalContext',
+                path: '',
+                sourceParameterKey: 'theFilter',
+              },
+              initialPaginationState: {
+                activePage: 1,
+                itemsPerPage: 5,
+                sort: 'id',
+                order: 'asc',
+              },
+              valueFilter: {
+                filterType: 'AND',
+                items: [],
+              },
+            },
+          },
+        ],
       },
     ],
   },

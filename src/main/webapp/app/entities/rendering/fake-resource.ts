@@ -718,6 +718,26 @@ const rDsList: ComponentResource = {
   },
 };
 
+const rDtTree: ComponentResource = {
+  content: {
+    componentType: 'verticalPanel',
+    path: 'vp-rdt-tree',
+    border: true,
+    items: [
+      {
+        componentType: 'SmText',
+        path: 'const',
+        params: {
+          textValue: {
+            ruleType: 'constant',
+            constValue: 'Exemple de Datatree',
+          },
+        },
+      },
+    ],
+  },
+};
+
 const rDsWithForm: ComponentResource = {
   content: {
     componentType: 'verticalPanel',
@@ -1432,6 +1452,27 @@ const rpageDsList: ComponentResource = {
   parameters: [],
 };
 
+const rpageDtTree: ComponentResource = {
+  content: {
+    componentType: 'page',
+    path: 'page-dt',
+    params: {
+      layoutResourceId: 'rlayout',
+      layoutElements: [
+        {
+          layoutElementId: 'menuTop',
+          resourceId: 'rmenuTop',
+        },
+        {
+          layoutElementId: 'theContent',
+          resourceId: 'rDtTree',
+        },
+      ],
+    },
+  },
+  parameters: [],
+};
+
 export const stubbedResources = {
   r3,
   r4,
@@ -1445,7 +1486,9 @@ export const stubbedResources = {
   rds,
   rDsWithForm,
   rDsList,
+  rDtTree,
   rpageDs,
   rpageDsWithForm,
   rpageDsList,
+  rpageDtTree,
 };

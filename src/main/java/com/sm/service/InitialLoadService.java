@@ -42,9 +42,11 @@ public class InitialLoadService {
     public static final String R_DS = "rds";
     public static final String R_DS_WITH_FORM = "rDsWithForm";
     public static final String R_DS_LIST = "rDsList";
+    public static final String R_DT_TREE = "rDtTree";
     public static final String R_PAGEDS = "rpageDs";
     public static final String R_PAGEDS_WITH_FORM = "rpageDsWithForm";
     public static final String R_PAGEDS_LIST = "rpageDsList";
+    public static final String R_PAGEDT_TREE = "rpageDtTree";
     public static final String R_FORM = "rform";
     public static final String R_LAYOUT = "rlayout";
     public static final String R_PAGE1 = "rpage1";
@@ -94,6 +96,9 @@ public class InitialLoadService {
     @Value("classpath:json/rDsList.json")
     org.springframework.core.io.Resource rDsListSourceFile;
 
+    @Value("classpath:json/rDtTree.json")
+    org.springframework.core.io.Resource rDtTreeSourceFile;
+
     @Value("classpath:json/rpageDs.json")
     org.springframework.core.io.Resource rpageDsSourceFile;
 
@@ -102,6 +107,9 @@ public class InitialLoadService {
 
     @Value("classpath:json/rpageDsList.json")
     org.springframework.core.io.Resource rpageDsListSourceFile;
+
+    @Value("classpath:json/rpageDtTree.json")
+    org.springframework.core.io.Resource rpageDtTreeSourceFile;
 
     @Value("classpath:json/rform.json")
     org.springframework.core.io.Resource rFormSourceFile;
@@ -341,6 +349,17 @@ public class InitialLoadService {
         resourceRepository.save(
             Resource
                 .builder()
+                .id(R_DT_TREE)
+                .name("Resource rdt with tree")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rDtTreeSourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
                 .id(R_PAGEDS)
                 .name("Resource rpageDs")
                 .type(RESOURCE)
@@ -368,6 +387,17 @@ public class InitialLoadService {
                 .type(RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageDsListSourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_PAGEDT_TREE)
+                .name("Resource rpageDtTree")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rpageDtTreeSourceFile))
                 .childrenIds(List.of())
                 .build()
         );

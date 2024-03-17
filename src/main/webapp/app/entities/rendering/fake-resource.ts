@@ -1,4 +1,4 @@
-import { ComponentResource, LayoutElementResourceContent } from './rendering';
+import { ComponentResource } from './type';
 
 const r3: ComponentResource = {
   content: {

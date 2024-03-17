@@ -6,21 +6,19 @@ import { ISite } from 'app/shared/model/site.model';
 import { IAttribute, IAttributeWithValue } from 'app/shared/model/attribute.model';
 import { IAttributeIdExploded } from 'app/shared/model/attribute-id-exploded';
 import { IResource } from 'app/shared/model/resource.model';
-import {
-  // FIELDS_ATTRIBUTES_KEY,
-  // UPDATED_ATTRIBUTE_IDS_KEY,
-  RENDERING_CONTEXT,
-  ValueInState,
-  RENDERING_SLICE_KEY,
-  ActionState,
-  RenderingState,
-  ResourceSearchModel,
-  ParameterTarget,
-  applyPath,
-  TargetInfo,
-} from './rendering';
 import { stubbedResources } from './fake-resource';
 import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
+import { applyPath } from './shared';
+import {
+  RenderingState,
+  ResourceSearchModel,
+  TargetInfo,
+  RENDERING_SLICE_KEY,
+  RENDERING_CONTEXT,
+  ParameterTarget,
+  ValueInState,
+  ActionState,
+} from './type';
 
 const initialState: RenderingState = {
   componentsState: {},

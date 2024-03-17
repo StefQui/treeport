@@ -4,34 +4,14 @@ import { IAttribute, IAttributeValue, IAttributeWithValue, IBooleanValue, IDoubl
 import React, { useEffect, useState } from 'react';
 import { FieldValues, useForm, UseFormReset } from 'react-hook-form';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Input } from 'reactstrap';
+import { FormProps, Input } from 'reactstrap';
 import { DoubleValue } from '../attribute-value/attribute-value';
 import { existsAndHasAValue } from './render-resource-page';
-import {
-  ActionState,
-  buildPath,
-  displayWarning,
-  // ENTITY_IDS_KEY,
-  // ENTITY_KEY,
-  // FIELDS_ATTRIBUTES_KEY,
-  FormAttributeContextParam,
-  FormFieldParam,
-  increment,
-  MyElem,
-  PATH_SEPARATOR,
-  RenderingSliceState,
-  ValueInState,
-  ROOT_PATH_SEPARATOR,
-  // UPDATED_ATTRIBUTE_IDS_KEY,
-  useCalculatedValueState,
-  useCalculatedValueStateIfNotNull,
-  // EntityAction,
-  FormParams,
-  FormProps,
-  UpdateAttributeAction,
-} from './rendering';
+import { MyElem, increment } from './rendering';
 import { getFieldAttributesAndConfig, saveAttributes, setAction } from './rendering.reducer';
-import { SmRefToResource } from './resource-content';
+import { SmRefToResource } from './sm-resource-content';
+import { buildPath, useCalculatedValueStateIfNotNull, PATH_SEPARATOR, useCalculatedValueState } from './shared';
+import { UpdateAttributeAction, FormAttributeContextParam, FormFieldParam, RenderingSliceState } from './type';
 
 const getValueFromField = (fieldId: string, att: IAttributeWithValue, value): IAttributeValue => {
   const type = att.config.attributeType;

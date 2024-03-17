@@ -1,54 +1,32 @@
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { activateAction } from 'app/modules/account/activate/activate.reducer';
-import React, { useEffect, useState } from 'react';
-import { Row } from 'reactstrap';
-import { handleDataSet, usePaginationProp } from './dataset';
-import { usePageContext } from './layout';
-import { usePageResourceContentFromResourceId, useResourceWithKey } from './render-resource-page';
+import { useEffect, useState } from 'react';
+import { handleDataSet } from './dataset';
+import { usePageContext } from './sm-layout';
 import {
   applyPath,
-  buildPath,
   buildValue,
-  ConstantRuleDefinition,
-  // CONST_VALUE,
-  // DEFINITION,
-  emptyValue,
   getRootPath,
   getValueForPathInObject,
-  MyElem,
-  ParameterDefinition,
-  Parameters,
   PATH_SEPARATOR,
-  RefToContextRuleDefinition,
-  RefToResourceParams,
-  RefToSiteDefinition,
-  RenderingSliceState,
-  RENDERING_CONTEXT,
-  ValueInState,
-  // RULE_SOURCE_SITE_ID_VALUE,
-  // RULE_TYPE,
   useCalculatedValueState,
-  SmRefToResourceProps,
-  increment,
-  ParameterTarget,
-  DatasetDefinition,
   useChangingCalculatedValueState,
-  initialFilter,
-  // DatasetFilterRuleDefinition,
+} from './shared';
+import { getSiteForRenderingStateParameters, setInCorrectState } from './rendering.reducer';
+import {
+  ValueInState,
+  Parameters,
+  RenderingSliceState,
+  emptyValue,
+  RefToContextRuleDefinition,
+  RENDERING_CONTEXT,
   PaginationState,
   ActionState,
   SetCurrentPageAction,
-  ResourceFilter,
-  ItemParamPropertyRuleDefinition,
-  // useChangingCalculatedFilterState,
-} from './rendering';
-import {
-  getSiteForRenderingStateParameters,
-  searchResources,
-  setAnyInCorrectState,
-  setInCorrectState,
-  setInLocalState,
-} from './rendering.reducer';
+  ParameterDefinition,
+  RefToSiteDefinition,
+  DatasetDefinition,
+  ParameterTarget,
+} from './type';
 
 export const useRefToLocalContextValue = (currentLocalContextPath, localContextPath, parameterKey, parameterProperty): ValueInState => {
   return useAppSelector((state: RenderingSliceState) => {
@@ -369,15 +347,6 @@ const handleRefToSite = (key: string, target: ParameterTarget, refToSiteDefiniti
   }, [siteId]);
 };
 
-// export const calculateLocalContextPath = props => {
-//   if (!props.localContextPath && !props.path) {
-//     return getRootPath();
-//   } else if (props.localContextPath === getRootPath()) {
-//     return props.localContextPath + props.path;
-//   }
-//   return props.localContextPath + PATH_SEPARATOR + props.path;
-// };
-
 export const calculateTargetLocalContextPath = (childResource = true, props) => {
   if (!props.localContextPath && !props.path) {
     return getRootPath();
@@ -401,74 +370,4 @@ export const handleParameterDefinitions = (params, props) => {
   console.log('targetLocalContextPath', targetLocalContextPath);
 
   initLocalContext(callingParameterDefinitions, props, targetLocalContextPath);
-};
-
-export const SmRefToResource = (props: SmRefToResourceProps) => {
-  console.log('TheSmRefToResource', props);
-
-  const params: RefToResourceParams = props.params;
-
-  if (!params || !params.resourceId) {
-    return <span>resourceId param is mandatory</span>;
-  }
-  const { resourceId } = params;
-
-  const builtPath = buildPath(props);
-  const resource = usePageResourceContentFromResourceId(resourceId);
-  const resourceContent = useResourceWithKey(resource, 'content');
-
-  handleParameterDefinitions(params, props);
-
-  if (resourceContent) {
-    console.log('resourceContent', props.itemParam);
-    return (
-      <MyElem
-        input={resourceContent}
-        depth={increment(props.depth)}
-        params={props.params ? params : null}
-        itemParam={props.itemParam}
-        currentPath={builtPath}
-        localContextPath={calculateTargetLocalContextPath(true, props)}
-      ></MyElem>
-    );
-  }
-  return (
-    <div>
-      <span>no val for SmRefToResource</span>
-    </div>
-  );
-};
-
-export const MyRend = props => {
-  const [input, setInput] = useState({ type: 'notype', text: 'kkk', layoutElements: {} });
-  const [error, setError] = useState('');
-  useEffect(() => {
-    try {
-      setError('');
-      setInput(props.content ? JSON.parse(props.content) : {});
-    } catch (ex) {
-      setError('pb while parsing json');
-    }
-  }, [props.content]);
-
-  if (error) {
-    return <Row md="8">{error}</Row>;
-  }
-
-  // console.log('......', props.currentPath, props.params);
-  return (
-    <Row md="8">
-      {props.content ? (
-        <MyElem
-          input={input}
-          depth={increment(props.depth)}
-          params={props.params ? props.params.params : null}
-          currentPath={props.currentPath}
-          localContextPath={props.localContextPath}
-        ></MyElem>
-      ) : (
-        <p>Loading...</p>
-      )}
-    </Row>
-  );
 };

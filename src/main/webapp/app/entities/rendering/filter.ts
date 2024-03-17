@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 
+import { isError, isLoading } from './render-resource-page';
+import { useCalculatedValueState } from './shared';
 import {
+  ResourceFilter,
+  ParameterTarget,
+  ValueInState,
   AndFilter,
   OrFilter,
-  ParameterTarget,
   PropertyFilter,
-  ResourceFilter,
-  ResourceFilterValue,
   TextContainsFilterRule,
-  useCalculatedValueState,
-  ValueInState,
-} from './rendering';
-import { isError, isLoading } from './render-resource-page';
+  ResourceFilterValue,
+} from './type';
 
 export const useChangingCalculatedFilterState = (props, filter: ResourceFilter, target: ParameterTarget): ValueInState => {
   // console.log('filterbbb.......changed', result);

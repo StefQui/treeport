@@ -17,12 +17,8 @@ import {
   setInRenderingStateOutputs,
   setInRenderingStateSelf,
 } from 'app/entities/rendering/rendering.reducer';
-import {
-  buildPath,
-  // ENTITY_KEY,
-  RenderingSliceState,
-  SiteListParams,
-} from '../rendering/rendering';
+import { buildPath } from '../rendering/shared';
+import { SiteListParams, RenderingSliceState } from '../rendering/type';
 
 export const SiteList = (props: { params: SiteListParams; depth: string; currentPath: string; path: string; localContextPath: string }) => {
   const dispatch = useAppDispatch();

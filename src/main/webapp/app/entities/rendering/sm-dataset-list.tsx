@@ -1,69 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button, Table } from 'reactstrap';
-import { Translate, getPaginationState, JhiPagination, JhiItemCount } from 'react-jhipster';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
-import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
-import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
+import React from 'react';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
-import {
-  getSites,
-  searchResources,
-  setAction,
-  setActivePage,
-  setAnyInCorrectState,
-  setInCorrectState,
-  setInLocalState,
-  setInRenderingStateOutputs,
-  setInRenderingStateSelf,
-} from 'app/entities/rendering/rendering.reducer';
-import {
-  ActionState,
-  AndFilter,
-  applyPath,
-  AttributeColumnDefinition,
-  buildPath,
-  ColumnDefinition,
-  ColumnDefinitions,
-  DatasetDefinition,
-  DataSetListParams,
-  DataSetParams,
-  OrFilter,
-  PaginationState,
-  ParameterTarget,
-  PropertyFilter,
-  RefreshDataSetAction,
-  RefToContextRuleDefinition,
-  // ENTITY_KEY,
-  RenderingSliceState,
-  ResourceFilter,
-  ResourceFilterValue,
-  RuleDefinition,
-  SetCurrentPageAction,
-  SiteListParams,
-  TextContainsFilterRule,
-  UpdateAttributeAction,
-  useCalculatedValueState,
-  useFoundValue,
-  ValueInState,
-} from './rendering';
-import { handleParameterDefinitions, SmRefToResource } from './resource-content';
-import { isError, isLoading } from './render-resource-page';
+import { SmRefToResource } from './sm-resource-content';
 import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
-import { IAttributeValue, IBooleanValue, IDoubleValue } from 'app/shared/model/attribute.model';
+import { buildPath } from './shared';
+import { DataSetListParams, RuleDefinition, RenderingSliceState, RefToContextRuleDefinition } from './type';
 import { useSiteList } from './dataset';
 
-export const DataSetList = (props: {
+export const SmDatasetList = (props: {
   params: DataSetListParams;
   depth: string;
   currentPath: string;
   path: string;
   localContextPath: string;
 }) => {
-  const dispatch = useAppDispatch();
-
   const builtPath = buildPath(props);
 
   const data: RuleDefinition = props.params.data;

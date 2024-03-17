@@ -2,18 +2,11 @@ import { useAppDispatch } from 'app/config/store';
 import { IResource } from 'app/shared/model/resource.model';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { usePageContext, useResourceStateFromPageResources } from './layout';
-import {
-  ComponentResource,
-  ComponentResourceProperties,
-  getRootPath,
-  getValueForPathInObject,
-  PageResourceContent,
-  RENDERING_CONTEXT,
-  ValueInState,
-} from './rendering';
+import { usePageContext, useResourceStateFromPageResources } from './sm-layout';
+import { getValueForPathInObject, getRootPath } from './shared';
 import { getResourceForPageResources, setInLocalState, setRenderingCurrentPageId, setRenderingPageContext } from './rendering.reducer';
-import { SmRefToResource } from './resource-content';
+import { SmRefToResource } from './sm-resource-content';
+import { ValueInState, ComponentResource, ComponentResourceProperties, RENDERING_CONTEXT } from './type';
 
 export const existsAndHasAValue = (resourceState: ValueInState) => {
   return !!(resourceState && resourceState.value);

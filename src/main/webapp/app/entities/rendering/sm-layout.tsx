@@ -1,35 +1,22 @@
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import React, { useEffect, useState } from 'react';
-import {
-  buildPath,
-  ComponentResource,
-  increment,
-  LayoutElementComponentResource,
-  LayoutElementResourceContent,
-  // LAYOUT_ELEMENTS_KEY,
-  // LAYOUT_ELEMENT_ID,
-  // LAYOUT_ELEMENT_RESOURCE_ID,
-  // LAYOUT_RESOURCE_ID_KEY,
-  MyElem,
-  PageComponentResource,
-  PageLayoutElement,
-  PageResourceContent,
-  PageResourceParams,
-  PATH_SEPARATOR,
-  RenderingSliceState,
-  SmLayoutElementProps,
-  SmPageProps,
-  ValueInState,
-  // useRenderingState,
-} from './rendering';
-import { calculateTargetLocalContextPath, handleParameterDefinitions, MyRend } from './resource-content';
+import { calculateTargetLocalContextPath } from './sm-resource-content';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
-import { Button } from 'reactstrap';
-import { BrowserRouter, Link, NavLink, Router } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { fillPageContext, usePageResourceContentFromResourceId, useResourceWithKey } from './render-resource-page';
+import {
+  SmPageProps,
+  RenderingSliceState,
+  ValueInState,
+  PageLayoutElement,
+  LayoutElementComponentResource,
+  PageComponentResource,
+  SmLayoutElementProps,
+} from './type';
+import { increment, MyElem } from './rendering';
+import { buildPath, PATH_SEPARATOR } from './shared';
 // import { setRenderingLayoutElements } from './rendering.reducer';
 
 export const SmPage = (props: SmPageProps) => {
@@ -250,6 +237,3 @@ export const SmMenu = props => {
     </Navbar>
   );
 };
-function useResourceParametersFromState(builtPath: any) {
-  throw new Error('Function not implemented.');
-}

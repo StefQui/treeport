@@ -1,22 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Button, Table } from 'reactstrap';
-import { Translate, JhiPagination, JhiItemCount } from 'react-jhipster';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
-import {
-  searchResources,
-  setAction,
-  setAnyInCorrectState,
-  setInLocalState,
-  setInRenderingStateSelf,
-} from 'app/entities/rendering/rendering.reducer';
-import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
-import { IAttributeValue, IBooleanValue, IDoubleValue } from 'app/shared/model/attribute.model';
+import { searchResources, setAnyInCorrectState } from 'app/entities/rendering/rendering.reducer';
 import { useChangingCalculatedFilterState } from './filter';
-import { handleParameterDefinitions } from './parameter-definition';
-import { useFoundValue, useCalculatedValueState, applyPath, buildPath } from './shared';
+import { useFoundValue, useCalculatedValueState, applyPath } from './shared';
 import {
   PaginationState,
   ActionState,
@@ -28,11 +15,6 @@ import {
   DatasetDefinition,
   ResourceFilter,
   ValueInState,
-  DataSetParams,
-  RuleDefinition,
-  RefToContextRuleDefinition,
-  ColumnDefinition,
-  AttributeColumnDefinition,
 } from './type';
 
 export const useSiteList = (props, data) => {
@@ -101,7 +83,7 @@ const setPaginationTo = (pagination: PaginationState, props, key, dispatch) => {
 
 export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDefinition: DatasetDefinition, props) => {
   const dispatch = useAppDispatch();
-  const filter = useCalculatedValueState(props, refToSiteDefinition.filter);
+  // const filter = useCalculatedValueState(props, refToSiteDefinition.filter);
   const initialPaginationState = refToSiteDefinition.initialPaginationState;
   const setCurrentPageAction = useSetCurrentPageAction(props, initialPaginationState);
   const refreshDatasetAction = useRefreshDatasetAction(props);
@@ -120,12 +102,12 @@ export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDef
     setPaginationTo(initialPaginationState, props, key, dispatch);
   }, []);
 
-  console.log(
-    'handleDataSet.......handleDataSet',
-    props.localContextPath,
-    applyPath(props.localContextPath, ''),
-    refToSiteDefinition.filter,
-  );
+  // console.log(
+  //   'handleDataSet.......handleDataSet',
+  //   props.localContextPath,
+  //   applyPath(props.localContextPath, ''),
+  //   refToSiteDefinition.filter,
+  // );
 
   const [previousFilter, setPreviousFilter] = useState({ loading: true });
 

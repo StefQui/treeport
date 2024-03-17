@@ -30,9 +30,9 @@ import {
   ValueInState,
   DataSetParams,
   RuleDefinition,
-  RefToContextRuleDefinition,
   ColumnDefinition,
   AttributeColumnDefinition,
+  RefToLocalContextRuleDefinition,
 } from './type';
 import { useSiteList } from './dataset';
 
@@ -114,7 +114,7 @@ export const SmDatasetTable = (props: {
     dispatch(setAction({ source: builtPath, actionType: 'selectSite', entity: { entityType: 'SITE', entity: selected } }));
   };
 
-  const refToContextRuleDefinition: RefToContextRuleDefinition = data as RefToContextRuleDefinition;
+  const refToContextRuleDefinition: RefToLocalContextRuleDefinition = data as RefToLocalContextRuleDefinition;
 
   const handlePagination = currentPage => {
     const action: SetCurrentPageAction = {

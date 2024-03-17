@@ -3,24 +3,20 @@ import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { setInCorrectState } from './rendering.reducer';
 import {
-  // useConstantDatasetFilter,
-  useConstantValue,
-  useRefToLocalContextValue,
-  useRefToPageContextValue,
-} from './sm-resource-content';
-import {
   ValueInState,
   RenderingSliceState,
   RuleDefinition,
-  RefToContextRuleDefinition,
   ItemParamPropertyRuleDefinition,
   AttributePropertyDefinition,
   ConstantRuleDefinition,
   PaginationStateRuleDefinition,
   ParameterDefinition,
   ParameterTarget,
+  RefToLocalContextRuleDefinition,
+  RefToPageContextRuleDefinition,
 } from './type';
 import { generateLabel } from './sm-dataset-table';
+import { useRefToLocalContextValue, useRefToPageContextValue, useConstantValue } from './parameter-definition';
 
 export const PATH_SEPARATOR = '/';
 export const ROOT_PATH_SEPARATOR = '/';
@@ -112,7 +108,7 @@ export const useFoundValueInLocalContext = (localContextPath: string, sourcePara
 export const useFoundValue = (props, ruleDefinition: RuleDefinition): any => {
   const ruleType = ruleDefinition.ruleType;
   if (ruleType === 'refToLocalContext') {
-    const refToContextRuleDefinition: RefToContextRuleDefinition = ruleDefinition as RefToContextRuleDefinition;
+    const refToContextRuleDefinition: RefToLocalContextRuleDefinition = ruleDefinition as RefToLocalContextRuleDefinition;
     return useFoundValueInLocalContext(props.localContextPath, refToContextRuleDefinition.sourceParameterKey);
   } else if (ruleType === 'refToPageContext') {
     throw new Error('to implement hereA ' + ruleType);
@@ -125,7 +121,7 @@ export const useFoundValue = (props, ruleDefinition: RuleDefinition): any => {
 export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): ValueInState => {
   const ruleType = ruleDefinition.ruleType;
   if (ruleType === 'refToLocalContext') {
-    const refToContextRuleDefinition: RefToContextRuleDefinition = ruleDefinition as RefToContextRuleDefinition;
+    const refToContextRuleDefinition: RefToLocalContextRuleDefinition = ruleDefinition as RefToLocalContextRuleDefinition;
     // const contextState = useLocalContextPath(props.localContextPath, refToContextRuleDefinition.sourceParameterKey);
     // return
     return useRefToLocalContextValue(
@@ -135,7 +131,7 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
       refToContextRuleDefinition.sourceParameterProperty,
     );
   } else if (ruleType === 'refToPageContext') {
-    return useRefToPageContextValue(props, ruleDefinition as RefToContextRuleDefinition);
+    return useRefToPageContextValue(props, ruleDefinition as RefToPageContextRuleDefinition);
   } else if (ruleType === 'itemParamProperty') {
     const def: ItemParamPropertyRuleDefinition = ruleDefinition as ItemParamPropertyRuleDefinition;
     const propDef = def.propertyDefinition;
@@ -144,6 +140,8 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
       str = props.itemParam.id;
     } else if (def.propertyDefinition.type === 'NAME') {
       str = props.itemParam.name;
+    } else if (def.propertyDefinition.type === 'PARENT_ID') {
+      str = props.itemParam.parentId;
     } else if (def.propertyDefinition.type === 'ATTRIBUTE') {
       const keys = Object.keys(props.itemParam.attributeValues);
       // const values = props.itemParam.attributeValues;

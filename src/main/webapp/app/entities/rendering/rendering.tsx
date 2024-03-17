@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Col, Row } from 'reactstrap';
 
 import SiteList from '../site/site-list';
-import { calculateTargetLocalContextPath, SmRefToResource, useRefToLocalContext } from './sm-resource-content';
+import { calculateTargetLocalContextPath, SmRefToResource } from './sm-resource-content';
 import { SmAttributeField, SmForm } from './sm-form';
 import { SmLayoutElement, SmMenu, SmPage, usePageContext } from './sm-layout';
 import { SmDatasetList } from './sm-dataset-list';
@@ -13,6 +13,7 @@ import { ValueInState, RENDERING_CONTEXT } from './type';
 import { buildPath, useCalculatedValueState } from './shared';
 import { SmDatasetTable } from './sm-dataset-table';
 import { SmVerticalPanel } from './sm-vertical-panel';
+import { useRefToLocalContext } from './parameter-definition';
 
 export const initialFilter: ValueInState = { loading: true, value: null };
 

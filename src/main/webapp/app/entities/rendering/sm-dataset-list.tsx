@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { SmRefToResource } from './sm-resource-content';
 import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
 import { buildPath } from './shared';
-import { DataSetListParams, RuleDefinition, RenderingSliceState, RefToContextRuleDefinition } from './type';
+import { DataSetListParams, RuleDefinition, RenderingSliceState } from './type';
 import { useSiteList } from './dataset';
 
 export const SmDatasetList = (props: {
@@ -33,7 +33,7 @@ export const SmDatasetList = (props: {
   const totalItems = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.totalItems : null;
   console.log('totalItems', totalItems);
 
-  const refToContextRuleDefinition: RefToContextRuleDefinition = data as RefToContextRuleDefinition;
+  // const refToContextRuleDefinition: RefToLocalContextRuleDefinition = data as RefToLocalContextRuleDefinition;
 
   const renderItems = siteList => {
     return siteList.map((site, i) => renderItem(site, i));

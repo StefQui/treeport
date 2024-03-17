@@ -174,7 +174,7 @@ public class SiteService {
         }
         AggregationResults<Document> countOutput = mongoTemplate.aggregate(agg1, "site", Document.class);
 
-        Integer count = countOutput.getMappedResults().get(0).getInteger("count");
+        Integer count = countOutput.getMappedResults().size() > 0 ? countOutput.getMappedResults().get(0).getInteger("count") : 0;
         AggregationResults<SiteWithValues> output = mongoTemplate.aggregate(agg2, "site", SiteWithValues.class);
 
         /*

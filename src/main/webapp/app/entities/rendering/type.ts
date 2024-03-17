@@ -180,19 +180,19 @@ export const LOCAL_CONTEXT = 'localContext';
 
 export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext' | 'refToSite' | 'dataset' | 'itemParamProperty' | 'datatree';
 export type TransformTo = 'site';
-export type ConstantRuleDefinition = { ruleType: RuleType; constValue: any };
-export type RefToSiteDefinition = { ruleType: RuleType; sourceSiteId: RuleDefinition };
+export type ConstantRuleDefinition = { ruleType: 'constant'; constValue: any };
+export type RefToSiteDefinition = { ruleType: 'refToSite'; sourceSiteId: RuleDefinition };
 export type DatasetDefinition = {
   ruleType: 'dataset';
   columnDefinitions: ColumnDefinition[];
-  filter: RuleDefinition;
+  // filter: RuleDefinition;
   initialPaginationState: PaginationState;
   valueFilter: ResourceFilter;
 };
 export type DatatreeDefinition = {
   ruleType: 'datatree';
   columnDefinitions: ColumnDefinition[];
-  filter: RuleDefinition;
+  // filter: RuleDefinition;
   initialPaginationState: PaginationState;
   valueFilter: ResourceFilter;
 };
@@ -203,7 +203,7 @@ export type PaginationState = {
   order: string;
 };
 
-export type PropertyDefinition = IdPropertyDefinition | NamePropertyDefinition | AttributePropertyDefinition;
+export type PropertyDefinition = IdPropertyDefinition | NamePropertyDefinition | ParentIdPropertyDefinition | AttributePropertyDefinition;
 
 export type IdPropertyDefinition = {
   type: 'ID';
@@ -211,6 +211,10 @@ export type IdPropertyDefinition = {
 
 export type NamePropertyDefinition = {
   type: 'NAME';
+};
+
+export type ParentIdPropertyDefinition = {
+  type: 'PARENT_ID';
 };
 
 export type AttributePropertyDefinition = {
@@ -224,23 +228,32 @@ export type ItemParamPropertyRuleDefinition = {
   ruleType: 'itemParamProperty';
   propertyDefinition: PropertyDefinition;
 };
-export type RefToContextRuleDefinition = {
-  ruleType: RuleType;
+export type RefToLocalContextRuleDefinition = {
+  ruleType: 'refToLocalContext';
   path: string;
   sourceParameterKey: string;
   sourceParameterProperty?: string;
-  transformTo?: TransformTo;
-  siteIdSourceParameterKey?: string; // if transformTo is 'site'
-  siteIdSourceParameterProperty?: string; // if transformTo is 'site'
+  // transformTo?: TransformTo;
+  // siteIdSourceParameterKey?: string; // if transformTo is 'site'
+  // siteIdSourceParameterProperty?: string; // if transformTo is 'site'
+};
+export type RefToPageContextRuleDefinition = {
+  ruleType: 'refToPageContext';
+  path: string;
+  sourceParameterKey: string;
+  sourceParameterProperty?: string;
+  // transformTo?: TransformTo;
+  // siteIdSourceParameterKey?: string; // if transformTo is 'site'
+  // siteIdSourceParameterProperty?: string; // if transformTo is 'site'
 };
 export type RuleDefinition =
-  | RefToContextRuleDefinition
+  | RefToLocalContextRuleDefinition
+  | RefToPageContextRuleDefinition
   | ConstantRuleDefinition
   | RefToSiteDefinition
   | DatasetDefinition
   | DatatreeDefinition
   | ItemParamPropertyRuleDefinition
-  // | DatasetFilterRuleDefinition
   | PaginationStateRuleDefinition;
 
 export type CurrentLocalContextPathTarget = {
@@ -309,9 +322,11 @@ export type DataSetListParams = {
   data: RuleDefinition;
 };
 
+export type ResourcePropertyFilterTargetType = 'name' | 'id' | 'parentId';
+
 export type ResourcePropertyFilterTarget = {
   filterPropertyType: 'RESOURCE_PROPERTY';
-  property: string;
+  property: ResourcePropertyFilterTargetType;
 };
 export type AttributePropertyFilterTarget = {
   filterPropertyType: 'RESOURCE_ATTRIBUTE';
@@ -391,7 +406,7 @@ export type ResourceFilterValue = AndFilterValue | OrFilterValue | PropertyFilte
 export type ResourceSearchModel = {
   resourceType: 'SITE' | 'RESOURCE';
   columnDefinitions: ColumnDefinition[];
-  filter?: ResourceFilter;
+  filter?: ResourceFilterValue;
   page?: number;
   size?: number;
   sort?: string;

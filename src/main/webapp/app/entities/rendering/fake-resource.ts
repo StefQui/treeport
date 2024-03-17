@@ -684,11 +684,11 @@ const rDsList: ComponentResource = {
                 { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
                 { columnType: 'BUTTON', action: 'select' },
               ],
-              filter: {
-                ruleType: 'refToLocalContext',
-                path: '',
-                sourceParameterKey: 'theFilter',
-              },
+              // filter: {
+              //   ruleType: 'refToLocalContext',
+              //   path: '',
+              //   sourceParameterKey: 'theFilter',
+              // },
               initialPaginationState: {
                 activePage: 1,
                 itemsPerPage: 5,
@@ -749,11 +749,11 @@ const rDtTree: ComponentResource = {
                 { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
                 { columnType: 'BUTTON', action: 'select' },
               ],
-              filter: {
-                ruleType: 'refToLocalContext',
-                path: '',
-                sourceParameterKey: 'theFilter',
-              },
+              // filter: {
+              //   ruleType: 'refToLocalContext',
+              //   path: '',
+              //   sourceParameterKey: 'theFilter',
+              // },
               initialPaginationState: {
                 activePage: 1,
                 itemsPerPage: 5,
@@ -841,11 +841,11 @@ const rDsWithForm: ComponentResource = {
                     { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
                     { columnType: 'BUTTON', action: 'select' },
                   ],
-                  filter: {
-                    ruleType: 'refToLocalContext',
-                    path: '',
-                    sourceParameterKey: 'theFilter',
-                  },
+                  // filter: {
+                  //   ruleType: 'refToLocalContext',
+                  //   path: '',
+                  //   sourceParameterKey: 'theFilter',
+                  // },
                   initialPaginationState: {
                     activePage: 1,
                     itemsPerPage: 5,
@@ -1123,11 +1123,11 @@ const rds: ComponentResource = {
                 { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
                 { columnType: 'BUTTON', action: 'select' },
               ],
-              filter: {
-                ruleType: 'refToLocalContext',
-                path: '',
-                sourceParameterKey: 'theFilter',
-              },
+              // filter: {
+              //   ruleType: 'refToLocalContext',
+              //   path: '',
+              //   sourceParameterKey: 'theFilter',
+              // },
               initialPaginationState: {
                 activePage: 1,
                 itemsPerPage: 5,

@@ -17,7 +17,6 @@ import {
   Parameters,
   RenderingSliceState,
   emptyValue,
-  RefToContextRuleDefinition,
   RENDERING_CONTEXT,
   PaginationState,
   ActionState,
@@ -26,7 +25,10 @@ import {
   RefToSiteDefinition,
   DatasetDefinition,
   ParameterTarget,
+  RefToPageContextRuleDefinition,
+  DatatreeDefinition,
 } from './type';
+import { handleDataTree } from './datatree';
 
 export const useRefToLocalContextValue = (currentLocalContextPath, localContextPath, parameterKey, parameterProperty): ValueInState => {
   return useAppSelector((state: RenderingSliceState) => {
@@ -79,7 +81,7 @@ export const useRefToLocalContext = (targetLocalContextPath): Parameters => {
   });
 };
 
-export const useRefToPageContextValue = (props, ruleDefinition: RefToContextRuleDefinition): ValueInState => {
+export const useRefToPageContextValue = (props, ruleDefinition: RefToPageContextRuleDefinition): ValueInState => {
   const [contextValue, setContextValue] = useState({ loading: false });
 
   // console.log('useRefToPageContextValu--------', definition);
@@ -142,8 +144,10 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
     //   handleDatasetFilter(key, target, pdef.definition as DatasetFilterDefinition, props);
   } else if (pdef.definition.ruleType === 'dataset') {
     const dsDef = pdef.definition as DatasetDefinition;
-    console.log('filter.......1', dsDef.filter);
     handleDataSet(pdef.parameterKey, target, dsDef, props);
+  } else if (pdef.definition.ruleType === 'datatree') {
+    const dsDef = pdef.definition as DatatreeDefinition;
+    handleDataTree(pdef.parameterKey, target, dsDef, props);
     // } else if (pdef.definition.ruleType === 'itemParamProperty') {
     //   const dsDef = pdef.definition as ItemParamPropertyRuleDefinition;
     //   handleDataSet(pdef.parameterKey, target, dsDef, props);

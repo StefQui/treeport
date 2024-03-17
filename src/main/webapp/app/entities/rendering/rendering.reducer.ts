@@ -196,6 +196,8 @@ export const RenderingSlice = createSlice({
         const { data, headers } = action.payload;
         const { searchModel, orgaId, target, childPath } = action.meta.arg;
 
+        console.log('kkkk', action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath);
+
         return sendValueTo(
           state,
           action.meta.arg.localContextPath,

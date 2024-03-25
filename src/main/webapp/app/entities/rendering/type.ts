@@ -163,7 +163,7 @@ export type ValueInState = {
 };
 export type RENDERING_CONTEXT = { [key: string]: ValueInState };
 
-export type TargetInfo = { destinationKey: string; localContextPath: string; target: ParameterTarget; childPath?: string };
+export type TargetInfo = { destinationKey: string; localContextPath: string; target: ParameterTarget; treePath?: string[] };
 
 // export const ELEM_LAYOUT_ELEMENT = 'layoutElement';
 // export const ELEM_REF_TO_RESOURCE_ELEMENT = 'SmRefToResource';

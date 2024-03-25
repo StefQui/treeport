@@ -343,7 +343,6 @@ const handleRefToSite = (key: string, target: ParameterTarget, refToSiteDefiniti
           destinationKey: key,
           localContextPath: props.localContextPath,
           target,
-          childPath: props.path,
         }),
       );
       // });

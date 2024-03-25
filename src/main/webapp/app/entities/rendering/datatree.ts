@@ -43,6 +43,7 @@ export const handleDataTree = (key: string, target: ParameterTarget, refToSiteDe
       localContextPath: props.localContextPath,
       target,
       childPath: props.path,
+      treePath: ['/'],
     };
   };
 

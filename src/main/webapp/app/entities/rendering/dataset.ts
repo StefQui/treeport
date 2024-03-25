@@ -137,7 +137,6 @@ export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDef
         destinationKey: key,
         localContextPath: props.localContextPath,
         target,
-        childPath: props.path,
       }),
     );
   }, [paginationProp, changingFilter, refreshDatasetAction]);

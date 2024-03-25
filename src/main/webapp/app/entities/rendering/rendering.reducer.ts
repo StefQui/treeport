@@ -19,6 +19,7 @@ import {
   ValueInState,
   ActionState,
 } from './type';
+import { handleDataTree } from './datatree';
 
 const initialState: RenderingState = {
   componentsState: {},
@@ -129,7 +130,6 @@ export const RenderingSlice = createSlice({
         action.payload.localContextPath,
         action.payload.destinationKey,
         action.payload.target,
-        action.payload.childPath,
         action.payload.value,
       );
       // return setInLocalContextState(state, action.payload.localContextPath, action.payload.parameterKey, action.payload.value);
@@ -194,16 +194,15 @@ export const RenderingSlice = createSlice({
     builder
       .addMatcher(isFulfilled(searchResources), (state: RenderingState, action): RenderingState => {
         const { data, headers } = action.payload;
-        const { searchModel, orgaId, target, childPath } = action.meta.arg;
+        const { searchModel, orgaId, target, treePath } = action.meta.arg;
 
-        console.log('kkkk', action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath);
+        console.log('kkkk', action.meta.arg.localContextPath, action.meta.arg.destinationKey, target);
 
         return sendValueTo(
           state,
           action.meta.arg.localContextPath,
-          action.meta.arg.destinationKey,
+          action.meta.arg.destinationKey, // pdef.parameterKey
           target,
-          childPath,
           {
             loading: false,
             value: {
@@ -211,7 +210,8 @@ export const RenderingSlice = createSlice({
               totalItems: parseInt(headers['x-total-count'], 10),
             },
           },
-          'listState',
+          treePath ? null : 'listState',
+          treePath,
         );
 
         // return putInRenderingStateSelf(state, path, {
@@ -226,14 +226,13 @@ export const RenderingSlice = createSlice({
         // });
       })
       .addMatcher(isPending(searchResources), (state: RenderingState, action): RenderingState => {
-        const { target, childPath } = action.meta.arg;
+        const { target } = action.meta.arg;
 
         return sendValueTo(
           state,
           action.meta.arg.localContextPath,
           action.meta.arg.destinationKey,
           target,
-          childPath,
           {
             errorMessage: null,
             updateSuccess: false,
@@ -254,14 +253,13 @@ export const RenderingSlice = createSlice({
         // });
       })
       .addMatcher(isRejected(searchResources), (state: RenderingState, action): RenderingState => {
-        const { target, childPath } = action.meta.arg;
+        const { target } = action.meta.arg;
 
         return sendValueTo(
           state,
           action.meta.arg.localContextPath,
           action.meta.arg.destinationKey,
           target,
-          childPath,
           {
             errorMessage: 'Cannot get the search result',
             loading: false,
@@ -344,21 +342,21 @@ export const RenderingSlice = createSlice({
         });
       })
       .addMatcher(isFulfilled(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
-        const { target, childPath } = action.meta.arg;
-        return sendValueTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
+        const { target } = action.meta.arg;
+        return sendValueTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, {
           value: action.payload.data,
           loading: false,
         });
       })
       .addMatcher(isPending(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
-        const { target, childPath } = action.meta.arg;
-        return sendValueTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
+        const { target } = action.meta.arg;
+        return sendValueTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, {
           loading: true,
         });
       })
       .addMatcher(isRejected(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
-        const { target, childPath } = action.meta.arg;
-        return sendValueTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, childPath, {
+        const { target } = action.meta.arg;
+        return sendValueTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, {
           loading: false,
           error: 'Cannot load site...',
         });
@@ -377,17 +375,17 @@ const sendValueTo = (
   state,
   localContextPath,
   destinationKey,
-  target: ParameterTarget,
-  childPath: string,
+  target: ParameterTarget, // currentLocalContextPath, pageContextPath,...
   value,
-  additionnalPath?: string,
+  additionnalPath?: string | null, // 'listState'
+  treePath?: string[],
 ) => {
   if (target.targetType === 'currentLocalContextPath') {
-    return setInLocalContextState(state, localContextPath, destinationKey, value, additionnalPath);
+    return setInLocalContextState(state, localContextPath, destinationKey, value, additionnalPath, treePath);
   } else if (target.targetType === 'specificLocalContextPath') {
     return setInLocalContextState(state, target.targetPath, destinationKey, value, additionnalPath);
-  } else if (target.targetType === 'childLocalContextPath') {
-    return setInLocalContextState(state, applyPath(localContextPath, childPath), destinationKey, value, additionnalPath);
+    // } else if (target.targetType === 'childLocalContextPath') {
+    //   return setInLocalContextState(state, applyPath(localContextPath, childPath), destinationKey, value, additionnalPath);
   } else if (target.targetType === 'pageContextPath') {
     return setInPageContextState(state, destinationKey, value, additionnalPath);
   }
@@ -419,23 +417,84 @@ const putInRenderingStateSelf = (state: RenderingState, path, value: any): Rende
   return setInComponentsState(state, path, value, 'self');
 };
 
+type TreeNode = {
+  content: any;
+  isLoading: boolean;
+  children: TreeNodeWrapper;
+};
+
+type TreeNodeWrapper = {
+  [treePath: string]: TreeNode;
+};
+
+type EntitiesValue = {
+  loading: boolean;
+  value: {
+    entities: IResource[];
+    totalItems: number;
+  };
+};
+
+function handleTree(treeWrapper: TreeNodeWrapper, value: EntitiesValue, treePath: string[]): TreeNodeWrapper {
+  console.log('handle ccc2', treeWrapper['/']);
+  if (!treeWrapper['/']) {
+    return {
+      '/': {
+        content: { kkk: 'mmm' },
+        isLoading: false,
+        children: {},
+      },
+    };
+  }
+  return {
+    '/': {
+      content: {},
+      isLoading: false,
+      children: {},
+    },
+  };
+}
+
+function handleParameters(localContextPath: any, parameterKey: string, value: any, additionnalPath?: string | null, treePath?: string[]) {
+  console.log('handleParameters', parameterKey, value, additionnalPath, treePath);
+  if (additionnalPath) {
+    const bbb = {
+      [parameterKey]: {
+        ...(localContextPath && localContextPath.parameters[parameterKey]),
+        ...{ [additionnalPath]: value },
+      },
+    };
+    console.log('handle bbb', bbb);
+    return bbb;
+  } else if (treePath) {
+    return {
+      [parameterKey]: handleTree(localContextPath.parameters[parameterKey], value, treePath),
+    };
+  } else {
+    console.log('handle ddd', { [parameterKey]: value });
+    return { [parameterKey]: value };
+  }
+}
+
 export const setInLocalContextState = (
   state: RenderingState,
   localContextPath,
-  parameterKey: string,
+  parameterKey: string, // pdef.parameterKey
   value: ValueInState,
-  additionnalPath?: string,
+  additionnalPath?: string | null,
+  treePath?: string[],
 ): RenderingState => {
   // console.log('setInLocalContextState', parameterKey);
-  return setAnyInLocalContextState(state, localContextPath, parameterKey, value, additionnalPath);
+  return setAnyInLocalContextState(state, localContextPath, parameterKey, value, additionnalPath, treePath);
 };
 
 export const setAnyInLocalContextState = (
   state: RenderingState,
   localContextPath,
-  parameterKey: string,
+  parameterKey: string, // pdef.parameterKey
   value: any,
-  additionnalPath?: string,
+  additionnalPath?: string | null,
+  treePath?: string[],
 ): RenderingState => {
   console.log('setInLocalContextState', parameterKey, additionnalPath, value);
 
@@ -446,31 +505,14 @@ export const setAnyInLocalContextState = (
       ...{
         [localContextPath]: {
           parameters: {
-            ...(state.localContextsState[localContextPath]
-              ? {
-                  ...state.localContextsState[localContextPath].parameters,
-                  ...{
-                    [parameterKey]: additionnalPath
-                      ? {
-                          ...(state.localContextsState[localContextPath].parameters[parameterKey]
-                            ? {
-                                ...state.localContextsState[localContextPath].parameters[parameterKey],
-                                ...{ [additionnalPath]: value },
-                              }
-                            : { [additionnalPath]: value }),
-                        }
-                      : value,
-                  },
-                }
-              : {
-                  ...{ [parameterKey]: additionnalPath ? { [additionnalPath]: value } : value },
-                }),
+            ...(state.localContextsState[localContextPath] && state.localContextsState[localContextPath].parameters),
+            ...handleParameters(state.localContextsState[localContextPath], parameterKey, value, additionnalPath, treePath),
           },
         },
       },
     },
   };
-  console.log('aaakkk', parameterKey, additionnalPath, aaa);
+  // console.log('aaakkk', parameterKey, additionnalPath, aaa);
   return aaa;
 };
 

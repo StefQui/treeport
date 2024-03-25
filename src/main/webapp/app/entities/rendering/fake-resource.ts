@@ -220,31 +220,31 @@ const r3: ComponentResource = {
               resourceId: 'rform',
             },
             parameterDefinitions: [
-              {
-                parameterKey: 'siteIdFromSiteList',
-                target: {
-                  targetType: 'currentLocalContextPath',
-                },
-                definition: {
-                  ruleType: 'refToLocalContext',
-                  path: '/layout-content',
-                  sourceParameterKey: 'sid99',
-                },
-              },
-              {
-                parameterKey: 'thesiteFromTheList',
-                target: {
-                  targetType: 'childLocalContextPath',
-                },
-                definition: {
-                  ruleType: 'refToSite',
-                  sourceSiteId: {
-                    ruleType: 'refToLocalContext',
-                    path: '/layout-content',
-                    sourceParameterKey: 'sid99',
-                  },
-                },
-              },
+              // {
+              //   parameterKey: 'siteIdFromSiteList',
+              //   target: {
+              //     targetType: 'currentLocalContextPath',
+              //   },
+              //   definition: {
+              //     ruleType: 'refToLocalContext',
+              //     path: '/layout-content',
+              //     sourceParameterKey: 'sid99',
+              //   },
+              // },
+              // {
+              //   parameterKey: 'thesiteFromTheList',
+              //   target: {
+              //     targetType: 'childLocalContextPath',
+              //   },
+              //   definition: {
+              //     ruleType: 'refToSite',
+              //     sourceSiteId: {
+              //       ruleType: 'refToLocalContext',
+              //       path: '/layout-content',
+              //       sourceParameterKey: 'sid99',
+              //     },
+              //   },
+              // },
             ],
           },
         ],
@@ -1020,31 +1020,31 @@ const rDsWithForm: ComponentResource = {
               resourceId: 'rform',
             },
             parameterDefinitions: [
-              {
-                parameterKey: 'siteIdFromSiteList',
-                target: {
-                  targetType: 'currentLocalContextPath',
-                },
-                definition: {
-                  ruleType: 'refToLocalContext',
-                  path: '/layout-content',
-                  sourceParameterKey: 'sid98',
-                },
-              },
-              {
-                parameterKey: 'thesiteFromTheList',
-                target: {
-                  targetType: 'childLocalContextPath',
-                },
-                definition: {
-                  ruleType: 'refToSite',
-                  sourceSiteId: {
-                    ruleType: 'refToLocalContext',
-                    path: '/layout-content',
-                    sourceParameterKey: 'sid98',
-                  },
-                },
-              },
+              // {
+              //   parameterKey: 'siteIdFromSiteList',
+              //   target: {
+              //     targetType: 'currentLocalContextPath',
+              //   },
+              //   definition: {
+              //     ruleType: 'refToLocalContext',
+              //     path: '/layout-content',
+              //     sourceParameterKey: 'sid98',
+              //   },
+              // },
+              // {
+              //   parameterKey: 'thesiteFromTheListzzzzzz',
+              //   target: {
+              //     targetType: 'childLocalContextPath',
+              //   },
+              //   definition: {
+              //     ruleType: 'refToSite',
+              //     sourceSiteId: {
+              //       ruleType: 'refToLocalContext',
+              //       path: '/layout-content',
+              //       sourceParameterKey: 'sid98',
+              //     },
+              //   },
+              // },
             ],
           },
         ],

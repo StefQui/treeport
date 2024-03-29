@@ -18,6 +18,11 @@ import {
   ParameterTarget,
   ValueInState,
   ActionState,
+  CurrentLocalContextPathTarget,
+  ChildLocalContextPathTarget,
+  PageContextPathTarget,
+  SpecificLocalContextPathTarget,
+  FetchSiteRequestModel,
 } from './type';
 import { handleDataTree } from './datatree';
 
@@ -55,13 +60,10 @@ export const getResourceForPageResources = createAsyncThunk(`rendering/fetch_res
   return axios.get<IResourceWithValue[]>(requestUrl);
 });
 
-export const getSiteForRenderingStateParameters = createAsyncThunk(
-  `rendering/fetch_site`,
-  async ({ siteId }: { siteId: string } & TargetInfo) => {
-    const requestUrl = `${siteApiUrl}/${siteId}`;
-    return axios.get<ISite[]>(requestUrl);
-  },
-);
+export const getSiteForRenderingStateParameters = createAsyncThunk(`rendering/fetch_site`, async ({ siteId }: FetchSiteRequestModel) => {
+  const requestUrl = `${siteApiUrl}/${siteId}`;
+  return axios.get<ISite[]>(requestUrl);
+});
 
 export const getFieldAttributesAndConfig = createAsyncThunk(
   `rendering/fetch_fieldsAttributesAndConfigs`,
@@ -119,56 +121,45 @@ export const RenderingSlice = createSlice({
     setInRenderingStateSelf(state: RenderingState, action): RenderingState {
       return setInComponentsState(state, action.payload.path, action.payload.value, 'self');
     },
-    setInCorrectState(
-      state: RenderingState,
-      action: {
-        payload: { destinationKey: string; localContextPath: string; target: ParameterTarget; childPath?: string; value: ValueInState };
-      },
-    ): RenderingState {
-      return sendValueTo(
-        state,
-        action.payload.localContextPath,
-        action.payload.destinationKey,
-        action.payload.target,
-        action.payload.value,
-      );
-      // return setInLocalContextState(state, action.payload.localContextPath, action.payload.parameterKey, action.payload.value);
-    },
+    // setInCorrectState(
+    //   state: RenderingState,
+    //   action: {
+    //     payload: { destinationKey: string; localContextPath: string; target: ParameterTarget; childPath?: string; value: ValueInState };
+    //   },
+    // ): RenderingState {
+    //   return sendValueTo(
+    //     state,
+    //     action.payload.localContextPath,
+    //     action.payload.destinationKey,
+    //     action.payload.target,
+    //     action.payload.value,
+    //   );
+    //   // return setInLocalContextState(state, action.payload.localContextPath, action.payload.parameterKey, action.payload.value);
+    // },
     setAnyInCorrectState(
       state: RenderingState,
       action: {
         payload: {
-          destinationKey: string;
-          localContextPath: string;
-          targetType: 'currentLocalContextPath';
-          childPath?: string;
+          mainTarget: MainTarget;
+          secondaryTarget: SecondaryTarget;
           value: any;
-          additionnalPath?: string;
         };
       },
     ): RenderingState {
-      // console.log(
-      //   'sendAnyTo',
-      //   action.payload.localContextPath,
-      //   action.payload.destinationKey,
-      //   action.payload.targetType,
-      //   action.payload.value,
-      // );
-      return sendAnyTo(
-        state,
-        action.payload.localContextPath,
-        action.payload.destinationKey,
-        action.payload.targetType,
-        action.payload.value,
-        action.payload.additionnalPath,
-      );
-      // return setInLocalContextState(state, action.payload.localContextPath, action.payload.parameterKey, action.payload.value);
+      return sendValueTo2(state, action.payload.mainTarget, action.payload.secondaryTarget, action.payload.value);
     },
     setInLocalState(
       state: RenderingState,
       action: { payload: { localContextPath: string; parameterKey: string; value: ValueInState } },
     ): RenderingState {
-      return setInLocalContextState(state, action.payload.localContextPath, action.payload.parameterKey, action.payload.value);
+      return setAnyInLocalContextState2(
+        state,
+        action.payload.localContextPath,
+        action.payload.parameterKey,
+        { secondaryTargetType: 'anyValueInTarget' },
+        action.payload.value,
+      );
+      // return setInLocalContextState(state, action.payload.localContextPath, action.payload.parameterKey, action.payload.value);
     },
     setActivePage(state: RenderingState, action): RenderingState {
       const aaa = {};
@@ -194,43 +185,33 @@ export const RenderingSlice = createSlice({
     builder
       .addMatcher(isFulfilled(searchResources), (state: RenderingState, action): RenderingState => {
         const { data, headers } = action.payload;
-        const { searchModel, orgaId, target, treePath } = action.meta.arg;
-
-        console.log('kkkk', action.meta.arg.localContextPath, action.meta.arg.destinationKey, target);
-
-        return sendValueTo(
-          state,
-          action.meta.arg.localContextPath,
-          action.meta.arg.destinationKey, // pdef.parameterKey
-          target,
-          {
-            loading: false,
-            value: {
-              entities: data,
-              totalItems: parseInt(headers['x-total-count'], 10),
-            },
+        const { mainTarget, secondaryTarget } = action.meta.arg;
+        return sendValueTo2(state, mainTarget, secondaryTarget, {
+          loading: false,
+          value: {
+            entities: data,
+            totalItems: parseInt(headers['x-total-count'], 10),
           },
-          treePath ? null : 'listState',
-          treePath,
-        );
+        });
+        // return sendValueTo(
+        //   state,
+        //   action.meta.arg.localContextPath,
+        //   action.meta.arg.destinationKey, // pdef.parameterKey
+        //   target,
+        //   {
+        //     loading: false,
+        //     value: {
+        //       entities: data,
+        //       totalItems: parseInt(headers['x-total-count'], 10),
+        //     },
+        //   },
+        //   treePath ? null : 'listState',
+        //   treePath,
+        // );
       })
       .addMatcher(isPending(searchResources), (state: RenderingState, action): RenderingState => {
-        const { target, treePath } = action.meta.arg;
-
-        return sendValueTo(
-          state,
-          action.meta.arg.localContextPath,
-          action.meta.arg.destinationKey,
-          target,
-          {
-            errorMessage: null,
-            updateSuccess: false,
-            loading: true,
-          },
-
-          treePath ? null : 'listState',
-          treePath,
-        );
+        const { mainTarget, secondaryTarget } = action.meta.arg;
+        return sendValueTo2(state, mainTarget, secondaryTarget, 'loading');
 
         // return putInRenderingStateSelf(state, path, {
         //   paginationState: {
@@ -244,21 +225,11 @@ export const RenderingSlice = createSlice({
         // });
       })
       .addMatcher(isRejected(searchResources), (state: RenderingState, action): RenderingState => {
-        const { target, treePath } = action.meta.arg;
-
-        return sendValueTo(
-          state,
-          action.meta.arg.localContextPath,
-          action.meta.arg.destinationKey,
-          target,
-          {
-            errorMessage: 'Cannot get the search result',
-            loading: false,
-          },
-
-          treePath ? null : 'listState',
-          treePath,
-        );
+        const { mainTarget, secondaryTarget } = action.meta.arg;
+        return sendValueTo2(state, mainTarget, secondaryTarget, {
+          errorMessage: 'Cannot get the search result',
+          loading: false,
+        });
 
         // return putInRenderingStateSelf(state, path, {
         //   paginationState: {
@@ -335,21 +306,21 @@ export const RenderingSlice = createSlice({
         });
       })
       .addMatcher(isFulfilled(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
-        const { target } = action.meta.arg;
-        return sendValueTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, {
+        const { mainTarget, secondaryTarget } = action.meta.arg;
+        return sendValueTo2(state, mainTarget, secondaryTarget, {
           value: action.payload.data,
           loading: false,
         });
       })
       .addMatcher(isPending(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
-        const { target } = action.meta.arg;
-        return sendValueTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, {
+        const { mainTarget, secondaryTarget } = action.meta.arg;
+        return sendValueTo2(state, mainTarget, secondaryTarget, {
           loading: true,
         });
       })
       .addMatcher(isRejected(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
-        const { target } = action.meta.arg;
-        return sendValueTo(state, action.meta.arg.localContextPath, action.meta.arg.destinationKey, target, {
+        const { mainTarget, secondaryTarget } = action.meta.arg;
+        return sendValueTo2(state, mainTarget, secondaryTarget, {
           loading: false,
           error: 'Cannot load site...',
         });
@@ -364,46 +335,47 @@ export const RenderingSlice = createSlice({
   },
 });
 
-const sendValueTo = (
-  state,
-  localContextPath,
-  destinationKey,
-  target: ParameterTarget, // currentLocalContextPath, pageContextPath,...
-  value,
-  additionnalPath?: string | null, // 'listState'
-  treePath?: string[],
-) => {
-  if (target.targetType === 'currentLocalContextPath') {
-    return setInLocalContextState(state, localContextPath, destinationKey, value, additionnalPath, treePath);
-  } else if (target.targetType === 'specificLocalContextPath') {
-    return setInLocalContextState(state, target.targetPath, destinationKey, value, additionnalPath);
-    // } else if (target.targetType === 'childLocalContextPath') {
-    //   return setInLocalContextState(state, applyPath(localContextPath, childPath), destinationKey, value, additionnalPath);
-  } else if (target.targetType === 'pageContextPath') {
-    return setInPageContextState(state, destinationKey, value, additionnalPath);
-  }
-};
+// const sendValueTozzz = (
+//   state,
+//   localContextPath,
+//   destinationKey,
+//   target: ParameterTarget, // currentLocalContextPath, pageContextPath,...
+//   value,
+//   additionnalPath?: string | null, // 'listState'
+//   treePath?: string[],
+// ) => {
+//   if (target.targetType === 'currentLocalContextPath') {
+//     return setInLocalContextState(state, localContextPath, destinationKey, value, additionnalPath, treePath);
+//   } else if (target.targetType === 'specificLocalContextPath') {
+//     return setInLocalContextState(state, target.targetPath, destinationKey, value, additionnalPath);
+//     // } else if (target.targetType === 'childLocalContextPath') {
+//     //   return setInLocalContextState(state, applyPath(localContextPath, childPath), destinationKey, value, additionnalPath);
+//   } else if (target.targetType === 'pageContextPath') {
+//     return setInPageContextState(state, destinationKey, value, additionnalPath);
+//   }
+// };
 
 export type CurrentLocalContextPathMainTarget = {
   mainTargetType: 'currentLocalContextPath';
+  target: CurrentLocalContextPathTarget;
   localContextPath: string;
-  destinationKey: string;
 };
 
 export type ChildLocalContextPathMainTarget = {
   mainTargetType: 'childLocalContextPath';
+  target: ChildLocalContextPathTarget;
   localContextPath: string;
 };
 
 export type PageContextPathMainTarget = {
   mainTargetType: 'pageContextPath';
-  destinationKey: string;
+  target: PageContextPathTarget;
 };
 
 export type SpecificLocalContextPathMainTarget = {
   mainTargetType: 'specificLocalContextPath';
+  target: SpecificLocalContextPathTarget;
   targetPath: string;
-  destinationKey: string;
 };
 
 export type MainTarget =
@@ -412,39 +384,38 @@ export type MainTarget =
   | PageContextPathMainTarget
   | SpecificLocalContextPathMainTarget;
 
-export type ValueSecondaryTarget = {
+export type ValueTarget = {
   secondaryTargetType: 'valueInTarget';
-  value: ValueInState;
 };
-export type AnyValueSecondaryTarget = {
+export type AnyValueTarget = {
   secondaryTargetType: 'anyValueInTarget';
-  value: any;
 };
-export type AnyValueTreeSecondaryTarget = {
+export type AnyValueTreeTarget = {
   secondaryTargetType: 'anyValueTreeInTarget';
-  value: any;
   treePath: string[];
 };
-export type SecondaryTarget = ValueSecondaryTarget | AnyValueSecondaryTarget | AnyValueTreeSecondaryTarget;
-
-// const sendValueTo2 = (state, mainTarget: MainTarget, secondaryTarget: SecondaryTarget) => {
-//   if (mainTarget.mainTargetType === 'currentLocalContextPath') {
-//     return setInLocalContextState(state, mainTarget.localContextPath, mainTarget.destinationKey, secondaryTarget);
-//   } else if (mainTarget.mainTargetType === 'specificLocalContextPath') {
-//     return setInLocalContextState(state, mainTarget.targetPath, mainTarget.destinationKey, secondaryTarget);
-//     // } else if (target.targetType === 'childLocalContextPath') {
-//     //   return setInLocalContextState(state, applyPath(localContextPath, childPath), destinationKey, value, additionnalPath);
-//   } else if (mainTarget.mainTargetType === 'pageContextPath') {
-//     return setInPageContextState(state, mainTarget.destinationKey, secondaryTarget);
-//   }
-// };
-
-const sendAnyTo = (state, localContextPath, destinationKey, targetType: 'currentLocalContextPath', value, additionnalPath?: string) => {
-  if (targetType === 'currentLocalContextPath') {
-    return setAnyInLocalContextState(state, localContextPath, destinationKey, value, additionnalPath);
-  }
-  throw new Error('to implement ...AA' + targetType);
+export type AnyValueFirstLevelTarget = {
+  secondaryTargetType: 'anyValueFirstLevelInTarget';
+  firstLevelPath: string;
 };
+export type SecondaryTarget = ValueTarget | AnyValueTarget | AnyValueTreeTarget | AnyValueFirstLevelTarget;
+
+const sendValueTo2 = (state, mainTarget: MainTarget, secondaryTarget: SecondaryTarget, value: any) => {
+  if (mainTarget.mainTargetType === 'currentLocalContextPath') {
+    return setAnyInLocalContextState2(state, mainTarget.localContextPath, mainTarget.target.parameterKey, secondaryTarget, value);
+  } else if (mainTarget.mainTargetType === 'specificLocalContextPath') {
+    return setAnyInLocalContextState2(state, mainTarget.targetPath, mainTarget.target.parameterKey, secondaryTarget, value);
+  } else if (mainTarget.mainTargetType === 'pageContextPath') {
+    return setInPageContextState2(state, mainTarget.target.parameterKey, secondaryTarget, value);
+  }
+};
+
+// const sendAnyTo = (state, localContextPath, destinationKey, targetType: 'currentLocalContextPath', value, additionnalPath?: string) => {
+//   if (targetType === 'currentLocalContextPath') {
+//     return setAnyInLocalContextState(state, localContextPath, destinationKey, value, additionnalPath);
+//   }
+//   throw new Error('to implement ...AA' + targetType);
+// };
 
 const getStubbedOrNot = (resourceId, data) => {
   const stubbed = true;
@@ -468,6 +439,7 @@ const putInRenderingStateSelf = (state: RenderingState, path, value: any): Rende
 export type TreeNode = {
   content: any;
   isLoading: boolean;
+  isOpened: boolean;
   isRoot: boolean;
   childrenAreLoaded: boolean;
   children: TreeNodeWrapper;
@@ -485,33 +457,65 @@ export type EntitiesValue = {
   };
 };
 
-function treeBuild(result: TreeNode, value: EntitiesValue, treePath: string[], index: number): TreeNode {
-  console.log('treeBuild', result, index, treePath);
+function treeBuild(result: TreeNode, value: EntitiesValue | 'loading' | 'close' | 'open', treePath: string[], index: number): TreeNode {
+  console.log('treeBuild...', result, index, treePath);
   if (index >= treePath.length) {
-    if (value.loading) {
+    console.log('treeBuild111', value);
+    if (value === 'loading') {
       return {
         content: { ...result.content },
         isLoading: true,
+        isOpened: false,
         childrenAreLoaded: false,
         isRoot: index === 0,
         children: { ...result.children },
       };
     }
+    if (value === 'close') {
+      return {
+        content: { ...result.content },
+        isLoading: result.isLoading,
+        isOpened: false,
+        childrenAreLoaded: result.childrenAreLoaded,
+        isRoot: index === 0,
+        children: { ...result.children },
+      };
+    }
+    if (value === 'open') {
+      return {
+        content: { ...result.content },
+        isLoading: result.isLoading,
+        isOpened: true,
+        childrenAreLoaded: result.childrenAreLoaded,
+        isRoot: index === 0,
+        children: { ...result.children },
+      };
+    }
+    console.log('treeBuild222');
     return {
       content: { ...result.content },
       isRoot: index === 0,
       isLoading: false,
+      isOpened: true,
       childrenAreLoaded: true,
       children: value.value.entities.reduce((acc: TreeNodeWrapper, ir: IResource) => {
         return {
           ...acc,
-          [ir.id]: { content: { id: ir.id, name: ir.name }, isLoading: false, isRoot: false, childrenAreLoaded: false, children: {} },
+          [ir.id]: {
+            content: { id: ir.id, name: ir.name },
+            isLoading: false,
+            isRoot: false,
+            childrenAreLoaded: false,
+            isOpened: false,
+            children: {},
+          },
         };
       }, {}),
     };
   }
 
   // return { content: {}, isLoading: true, isRoot: index === 0, children: {} };
+  console.log('treeBuild333');
 
   return {
     ...result,
@@ -519,74 +523,107 @@ function treeBuild(result: TreeNode, value: EntitiesValue, treePath: string[], i
   };
 }
 
-function handleTree(treeNode: TreeNode, value: EntitiesValue, treePath: string[]): TreeNode {
-  // console.log('handle ccc2', treeWrapper, treePath);
-  // let subState = treeWrapper ?? {};
-  let k = 0;
-  // let result = { ...treeWrapper, [treePath[0]]: treeBuild(treeWrapper[treePath[0]], value, treePath, 0) };
-  // while (k < treePath.length) {
-  //   subState = subState[treePath[k]] ? subState[treePath[k]].children : {};
-  //   result = { ...result, root: { isLoading: true, children: {}, content: 'jj' } };
-  //   k++;
-  // }
-  // console.log('handle ccc3', subState);
-  // subState = value.value.entities.reduce((acc: TreeNodeWrapper, ir: IResource) => {
-  //   return { ...acc, [ir.id]: { content: { id: ir.id, name: ir.name }, isLoading: true, children: {} } };
-  // }, {});
-
-  // if (treeWrapper.root) {
-  //   treeWrapper.root.children = subState;
-  // } else {
-  //   // treeWrapper = subState;
-  // }
-
-  return treeBuild(treeNode ?? { content: {}, isLoading: false, isRoot: true, childrenAreLoaded: false, children: {} }, value, treePath, 0);
+function handleTree(treeNode: TreeNode, value: EntitiesValue | 'loading' | 'open' | 'close', treePath: string[]): TreeNode {
+  return treeBuild(
+    treeNode ?? { content: {}, isLoading: false, isRoot: true, childrenAreLoaded: false, isOpened: false, children: {} },
+    value,
+    treePath,
+    0,
+  );
 }
 
-function handleParameters(localContextPath: any, parameterKey: string, value: any, additionnalPath?: string | null, treePath?: string[]) {
-  console.log('handleParameters', parameterKey, value, additionnalPath, treePath);
-  if (additionnalPath) {
+// function handleParameters(localContextPath: any, parameterKey: string, value: any, additionnalPath?: string | null, treePath?: string[]) {
+//   console.log('handleParameters', parameterKey, value, additionnalPath, treePath);
+//   if (additionnalPath) {
+//     const bbb = {
+//       [parameterKey]: {
+//         ...(localContextPath && localContextPath.parameters[parameterKey]),
+//         ...{ [additionnalPath]: value },
+//       },
+//     };
+//     console.log('handle bbb', bbb);
+//     return bbb;
+//   } else if (treePath) {
+//     return {
+//       [parameterKey]: handleTree(localContextPath ? localContextPath.parameters[parameterKey] : {}, value, treePath),
+//     };
+//   } else {
+//     console.log('handle ddd', { [parameterKey]: value });
+//     return { [parameterKey]: value };
+//   }
+// }
+
+function handleParameters2(localContextPath: any, parameterKey: string, target: SecondaryTarget, value: any) {
+  console.log('handleParameters', parameterKey, target);
+  if (target.secondaryTargetType === 'anyValueFirstLevelInTarget') {
     const bbb = {
       [parameterKey]: {
         ...(localContextPath && localContextPath.parameters[parameterKey]),
-        ...{ [additionnalPath]: value },
+        ...{ [target.firstLevelPath]: value },
       },
     };
     console.log('handle bbb', bbb);
     return bbb;
-  } else if (treePath) {
+  } else if (target.secondaryTargetType === 'anyValueTreeInTarget') {
     return {
-      [parameterKey]: handleTree(localContextPath ? localContextPath.parameters[parameterKey] : {}, value, treePath),
+      [parameterKey]: handleTree(localContextPath ? localContextPath.parameters[parameterKey] : {}, value, target.treePath),
     };
   } else {
-    console.log('handle ddd', { [parameterKey]: value });
+    // console.log('handle ddd', { [parameterKey]: value });
     return { [parameterKey]: value };
   }
 }
 
-export const setInLocalContextState = (
-  state: RenderingState,
-  localContextPath,
-  parameterKey: string, // pdef.parameterKey
-  value: ValueInState,
-  additionnalPath?: string | null,
-  treePath?: string[],
-): RenderingState => {
-  // console.log('setInLocalContextState', parameterKey);
-  return setAnyInLocalContextState(state, localContextPath, parameterKey, value, additionnalPath, treePath);
-};
+// export const setInLocalContextState = (
+//   state: RenderingState,
+//   localContextPath,
+//   parameterKey: string, // pdef.parameterKey
+//   value: ValueInState,
+//   additionnalPath?: string | null,
+//   treePath?: string[],
+// ): RenderingState => {
+//   // console.log('setInLocalContextState', parameterKey);
+//   return setAnyInLocalContextState(state, localContextPath, parameterKey, value, additionnalPath, treePath);
+// };
 
-export const setAnyInLocalContextState = (
+// export const setAnyInLocalContextState = (
+//   state: RenderingState,
+//   localContextPath,
+//   parameterKey: string, // pdef.parameterKey
+//   value: any,
+//   additionnalPath?: string | null,
+//   treePath?: string[],
+// ): RenderingState => {
+//   console.log('setInLocalContextState', parameterKey, additionnalPath, value);
+
+//   const aaa = {
+//     ...state,
+//     localContextsState: {
+//       ...state.localContextsState,
+//       ...{
+//         [localContextPath]: {
+//           parameters: {
+//             ...(state.localContextsState[localContextPath] && state.localContextsState[localContextPath].parameters),
+//             ...handleParameters(state.localContextsState[localContextPath], parameterKey, value, additionnalPath, treePath),
+//           },
+//         },
+//       },
+//     },
+//   };
+//   // console.log('aaakkk', parameterKey, additionnalPath, aaa);
+//   return aaa;
+// };
+
+export const setAnyInLocalContextState2 = (
   state: RenderingState,
   localContextPath,
   parameterKey: string, // pdef.parameterKey
+  secondaryTarget: SecondaryTarget,
   value: any,
-  additionnalPath?: string | null,
-  treePath?: string[],
 ): RenderingState => {
-  console.log('setInLocalContextState', parameterKey, additionnalPath, value);
+  console.log('setInLocalContextState', parameterKey, secondaryTarget);
 
-  const aaa = {
+  return {
     ...state,
     localContextsState: {
       ...state.localContextsState,
@@ -594,21 +631,46 @@ export const setAnyInLocalContextState = (
         [localContextPath]: {
           parameters: {
             ...(state.localContextsState[localContextPath] && state.localContextsState[localContextPath].parameters),
-            ...handleParameters(state.localContextsState[localContextPath], parameterKey, value, additionnalPath, treePath),
+            ...handleParameters2(state.localContextsState[localContextPath], parameterKey, secondaryTarget, value),
           },
         },
       },
     },
   };
-  // console.log('aaakkk', parameterKey, additionnalPath, aaa);
-  return aaa;
 };
 
-export const setInPageContextState = (
+// export const setInPageContextState = (
+//   state: RenderingState,
+//   parameterKey: string,
+//   value: ValueInState,
+//   additionnalPath?: string,
+// ): RenderingState => {
+//   // console.log('setInLocalContextState', parameterKey);
+//   return {
+//     ...state,
+//     pageContext: {
+//       ...state.pageContext,
+//       ...{
+//         [parameterKey]: additionnalPath
+//           ? {
+//               ...(state.pageContext[parameterKey]
+//                 ? {
+//                     ...state.pageContext[parameterKey],
+//                     ...{ [additionnalPath]: value },
+//                   }
+//                 : { [additionnalPath]: value }),
+//             }
+//           : value,
+//       },
+//     },
+//   };
+// };
+
+export const setInPageContextState2 = (
   state: RenderingState,
   parameterKey: string,
-  value: ValueInState,
-  additionnalPath?: string,
+  secondaryTarget: SecondaryTarget,
+  value: any,
 ): RenderingState => {
   // console.log('setInLocalContextState', parameterKey);
   return {
@@ -616,16 +678,12 @@ export const setInPageContextState = (
     pageContext: {
       ...state.pageContext,
       ...{
-        [parameterKey]: additionnalPath
-          ? {
-              ...(state.pageContext[parameterKey]
-                ? {
-                    ...state.pageContext[parameterKey],
-                    ...{ [additionnalPath]: value },
-                  }
-                : { [additionnalPath]: value }),
-            }
-          : value,
+        [parameterKey]: {
+          parameters: {
+            ...(state.pageContext && state.pageContext.parameters),
+            ...handleParameters2(state.pageContext, parameterKey, secondaryTarget, value),
+          },
+        },
       },
     },
   };
@@ -671,7 +729,7 @@ export const {
   setInRenderingStateOutputs,
   setInLocalState,
   setAnyInCorrectState,
-  setInCorrectState,
+  // setInCorrectState,
   setInRenderingStateSelf,
   setActivePage,
   setAction,

@@ -1,5 +1,6 @@
 import { IAttributeWithValue } from 'app/shared/model/attribute.model';
 import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
+import { MainTarget, SecondaryTarget } from './rendering.reducer';
 
 export const RENDERING_SLICE_KEY = 'rendering';
 // export const STATE_CURRENT_PAGE_ID_KEY = 'currentPageId';
@@ -170,7 +171,10 @@ export type ValueInState = {
 };
 export type RENDERING_CONTEXT = { [key: string]: ValueInState };
 
-export type TargetInfo = { destinationKey: string; localContextPath: string; target: ParameterTarget; treePath?: string[] };
+export type TargetInfo = { mainTarget: MainTarget; secondaryTarget: SecondaryTarget };
+
+export type SearchResourceRequestModel = { searchModel: ResourceSearchModel; orgaId: string } & TargetInfo;
+export type FetchSiteRequestModel = { siteId: string } & TargetInfo;
 
 // export const ELEM_LAYOUT_ELEMENT = 'layoutElement';
 // export const ELEM_REF_TO_RESOURCE_ELEMENT = 'SmRefToResource';
@@ -264,18 +268,22 @@ export type RuleDefinition =
   | PaginationStateRuleDefinition;
 
 export type CurrentLocalContextPathTarget = {
+  parameterKey: string;
   targetType: 'currentLocalContextPath';
 };
 
 export type ChildLocalContextPathTarget = {
+  parameterKey: string;
   targetType: 'childLocalContextPath';
 };
 
 export type PageContextPathTarget = {
+  parameterKey: string;
   targetType: 'pageContextPath';
 };
 
 export type SpecificLocalContextPathTarget = {
+  parameterKey: string;
   targetType: 'specificLocalContextPath';
   targetPath: string;
 };
@@ -287,7 +295,6 @@ export type ParameterTarget =
   | SpecificLocalContextPathTarget;
 
 export type ParameterDefinition = {
-  parameterKey: string;
   target: ParameterTarget;
   definition?: RuleDefinition;
   definitions?: RuleDefinition[];
@@ -491,6 +498,8 @@ export type OpenNodeAction = {
   source: string;
   actionType: 'openNode';
   treeNodePath: string[];
+  forced: boolean;
+  childrenAreLoaded: boolean;
   targetDataset: string;
 } | null;
 export type CloseNodeAction = {

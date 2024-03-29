@@ -15,7 +15,9 @@ import {
   DatasetDefinition,
   ResourceFilter,
   ValueInState,
+  SearchResourceRequestModel,
 } from './type';
+import { enrichToMainTarget } from './datatree';
 
 export const useSiteList = (props, data) => {
   const dataProp = useFoundValue(props, data);
@@ -69,19 +71,27 @@ const useRefreshDatasetAction = props => {
   return val;
 };
 
-const setPaginationTo = (pagination: PaginationState, props, key, dispatch) => {
+const setPaginationTo = (pagination: PaginationState, props, target: ParameterTarget, dispatch) => {
   dispatch(
+    // setAnyInCorrectState({
+    //   localContextPath: props.localContextPath,
+    //   destinationKey: key,
+    //   targetType: 'currentLocalContextPath',
+    //   value: pagination,
+    //   additionnalPath: 'paginationState',
+    // }),
     setAnyInCorrectState({
-      localContextPath: props.localContextPath,
-      destinationKey: key,
-      targetType: 'currentLocalContextPath',
+      mainTarget: enrichToMainTarget(target, props.localContextPath),
+      secondaryTarget: {
+        secondaryTargetType: 'anyValueFirstLevelInTarget',
+        firstLevelPath: 'paginationState',
+      },
       value: pagination,
-      additionnalPath: 'paginationState',
     }),
   );
 };
 
-export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDefinition: DatasetDefinition, props) => {
+export const handleDataSet = (target: ParameterTarget, refToSiteDefinition: DatasetDefinition, props) => {
   const dispatch = useAppDispatch();
   // const filter = useCalculatedValueState(props, refToSiteDefinition.filter);
   const initialPaginationState = refToSiteDefinition.initialPaginationState;
@@ -94,12 +104,12 @@ export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDef
 
   useEffect(() => {
     if (setCurrentPageAction) {
-      setPaginationTo({ ...paginationProp, activePage: setCurrentPageAction }, props, key, dispatch);
+      setPaginationTo({ ...paginationProp, activePage: setCurrentPageAction }, props, target, dispatch);
     }
   }, [setCurrentPageAction]);
 
   useEffect(() => {
-    setPaginationTo(initialPaginationState, props, key, dispatch);
+    setPaginationTo(initialPaginationState, props, target, dispatch);
   }, []);
 
   // console.log(
@@ -114,7 +124,7 @@ export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDef
   const paginationProp = usePaginationProp(props, {
     ruleType: 'refToLocalContext',
     path: '',
-    sourceParameterKey: key,
+    sourceParameterKey: target.parameterKey,
   });
 
   useEffect(() => {
@@ -123,21 +133,23 @@ export const handleDataSet = (key: string, target: ParameterTarget, refToSiteDef
       return;
     }
 
-    dispatch(
-      searchResources({
-        searchModel: {
-          resourceType: 'SITE',
-          columnDefinitions: refToSiteDefinition.columnDefinitions,
-          filter: changingFilter ? changingFilter.value : null,
-          page: paginationProp.activePage - 1,
-          size: paginationProp.itemsPerPage,
-          sort: `${paginationProp.sort},${paginationProp.order}`,
-        },
-        orgaId: 'coca',
-        destinationKey: key,
-        localContextPath: props.localContextPath,
-        target,
-      }),
-    );
+    const request: SearchResourceRequestModel = {
+      searchModel: {
+        resourceType: 'SITE',
+        columnDefinitions: refToSiteDefinition.columnDefinitions,
+        filter: changingFilter ? changingFilter.value : null,
+        page: paginationProp.activePage - 1,
+        size: paginationProp.itemsPerPage,
+        sort: `${paginationProp.sort},${paginationProp.order}`,
+      },
+      orgaId: 'coca',
+      mainTarget: enrichToMainTarget(target, props.localContextPath),
+      secondaryTarget: {
+        secondaryTargetType: 'anyValueFirstLevelInTarget',
+        firstLevelPath: 'listState',
+      },
+    };
+
+    dispatch(searchResources(request));
   }, [paginationProp, changingFilter, refreshDatasetAction]);
 };

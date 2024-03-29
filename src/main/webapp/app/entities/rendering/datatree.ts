@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
-import { searchResources, setInCorrectState } from 'app/entities/rendering/rendering.reducer';
+import { MainTarget, searchResources, setAnyInCorrectState } from 'app/entities/rendering/rendering.reducer';
 import { useChangingCalculatedFilterState } from './filter';
 import {
   ParameterTarget,
@@ -12,6 +12,10 @@ import {
   RenderingSliceState,
   OpenNodeAction,
   CloseNodeAction,
+  TargetInfo,
+  ResourceSearchModel,
+  CurrentLocalContextPathTarget,
+  SearchResourceRequestModel,
 } from './type';
 import { useFoundValue } from './shared';
 
@@ -35,7 +39,7 @@ const useOpenNodeAction = props => {
     if (action) {
       if (action.actionType === 'openNode') {
         const action1: OpenNodeAction = action;
-        setOpen(action1.treeNodePath);
+        setOpen(action);
       } else if (action.actionType === 'closeNode') {
         const action1: CloseNodeAction = action;
         // console.log('actionOpenNode', action1, val);
@@ -47,7 +51,7 @@ const useOpenNodeAction = props => {
   return { open, close };
 };
 
-export const handleDataTree = (key: string, target: ParameterTarget, refToSiteDefinition: DatatreeDefinition, props) => {
+export const handleDataTree = (target: ParameterTarget, refToSiteDefinition: DatatreeDefinition, props) => {
   const dispatch = useAppDispatch();
   const initialPaginationState = refToSiteDefinition.initialPaginationState;
 
@@ -63,27 +67,42 @@ export const handleDataTree = (key: string, target: ParameterTarget, refToSiteDe
   useEffect(() => {
     if (open) {
       console.log('openNodeAction2', open);
-      dispatch(searchResources(getChildrenSite(open)));
+      const openAction: OpenNodeAction = open;
+      if (openAction.childrenAreLoaded && !openAction.forced) {
+        dispatch(
+          setAnyInCorrectState({
+            mainTarget: enrichToMainTarget(target, props.localContextPath),
+            secondaryTarget: {
+              secondaryTargetType: 'anyValueTreeInTarget',
+              treePath: openAction.treeNodePath,
+            },
+            value: 'open',
+          }),
+        );
+      } else {
+        dispatch(searchResources(getChildrenSite(openAction.treeNodePath)));
+      }
     }
   }, [open]);
 
   useEffect(() => {
     if (close) {
-      // dispatch(
-      //   setInCorrectState({
-      //     destinationKey: key,
-      //     localContextPath: props.localContextPath,
-      //     target,
-      //     childPath: props.path,
-      //     treePath: close,
-      //   }),
-      // );
+      dispatch(
+        setAnyInCorrectState({
+          mainTarget: enrichToMainTarget(target, props.localContextPath),
+          secondaryTarget: {
+            secondaryTargetType: 'anyValueTreeInTarget',
+            treePath: close,
+          },
+          value: 'close',
+        }),
+      );
     }
   }, [close]);
 
   const changingFilter: ValueInState = useChangingCalculatedFilterState(props, dsfDef, target);
 
-  const getChildrenSite = (treePath: string[]): any => {
+  const getChildrenSite = (treePath: string[]): SearchResourceRequestModel => {
     return {
       searchModel: {
         resourceType: 'SITE',
@@ -109,11 +128,21 @@ export const handleDataTree = (key: string, target: ParameterTarget, refToSiteDe
         sort: `${initialPaginationState.sort},${initialPaginationState.order}`,
       },
       orgaId: 'coca',
-      destinationKey: key,
-      localContextPath: props.localContextPath,
-      target,
-      childPath: props.path,
-      treePath,
+      mainTarget: enrichToMainTarget(target, props.localContextPath),
+      secondaryTarget: {
+        secondaryTargetType: 'anyValueTreeInTarget',
+        treePath,
+      },
     };
   };
 };
+export function enrichToMainTarget(target: ParameterTarget, localContextPath?: any): MainTarget {
+  if (target.targetType === 'currentLocalContextPath') {
+    return {
+      mainTargetType: 'currentLocalContextPath',
+      target: target as CurrentLocalContextPathTarget,
+      localContextPath: localContextPath,
+    };
+  }
+  throw new Error('to implement HHHHH');
+}

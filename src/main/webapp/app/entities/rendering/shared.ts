@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { setInCorrectState } from './rendering.reducer';
 import {
   ValueInState,
   RenderingSliceState,
@@ -17,6 +16,8 @@ import {
 } from './type';
 import { generateLabel } from './sm-dataset-table';
 import { useRefToLocalContextValue, useRefToPageContextValue, useConstantValue } from './parameter-definition';
+import { setAnyInCorrectState } from './rendering.reducer';
+import { enrichToMainTarget } from './datatree';
 
 export const PATH_SEPARATOR = '/';
 export const ROOT_PATH_SEPARATOR = '/';
@@ -187,12 +188,21 @@ export const useChangingCalculatedValueState = (props, ruleDefinition: Parameter
     setPreviousResult(result);
     setChanging(result);
 
+    // dispatch(
+    //   setInCorrectState({
+    //     destinationKey: ruleDefinition.target.parameterKey,
+    //     localContextPath: props.localContextPath,
+    //     target,
+    //     childPath: props.path,
+    //     value: result,
+    //   }),
+    // );
     dispatch(
-      setInCorrectState({
-        destinationKey: ruleDefinition.parameterKey,
-        localContextPath: props.localContextPath,
-        target,
-        childPath: props.path,
+      setAnyInCorrectState({
+        mainTarget: enrichToMainTarget(ruleDefinition.target, applyPath(props.localContextPath, props.path)),
+        secondaryTarget: {
+          secondaryTargetType: 'anyValueInTarget',
+        },
         value: result,
       }),
     );

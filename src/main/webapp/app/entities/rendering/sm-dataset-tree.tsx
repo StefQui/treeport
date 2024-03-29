@@ -7,7 +7,7 @@ import { buildPath } from './shared';
 import { DataSetListParams, RuleDefinition, RenderingSliceState } from './type';
 import { useSiteList } from './dataset';
 import { useSiteTree } from './datatree';
-import { setAction, setInCorrectState, TreeNode, TreeNodeWrapper } from './rendering.reducer';
+import { setAction, TreeNode, TreeNodeWrapper } from './rendering.reducer';
 import { Button, Row } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -26,13 +26,15 @@ export const SmDatasetTree = (props: {
 
   const siteTree: TreeNode = useSiteTree(props, data);
 
-  const handleOpen = (tn: TreeNode, treePath: string[]) => () => {
+  const handleOpen = (tn: TreeNode, treePath: string[], forced: boolean) => () => {
     dispatch(
       setAction({
         source: builtPath,
         actionType: 'openNode',
         entity: { entityType: 'SITE', entity: 'mmmm' },
         treeNodePath: treePath,
+        childrenAreLoaded: tn.childrenAreLoaded,
+        forced,
         targetDataset: 'mydt',
       }),
     );
@@ -64,29 +66,34 @@ export const SmDatasetTree = (props: {
     }
     return (
       <div key={i}>
-        {!tn.isRoot ? (
+        {!tn.isRoot && (
           <p>
+            {'---'.repeat(treePath.length + 1)}
+            {'> '}
             {tn.content.id} - {tn.content.name}
           </p>
-        ) : (
-          <span>Nothing</span>
         )}
-        {tn.childrenAreLoaded ? (
-          <div>
-            <Button onClick={handleClose(tn, nextTreePath)} color="warn" size="sm">
+        <div className="d-flex justify-content-end">
+          {tn.isOpened && (
+            <Button onClick={handleClose(tn, nextTreePath)} color="danger" size="sm">
               <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Close</span>
             </Button>
-            <Button onClick={handleOpen(tn, nextTreePath)} color="info" size="sm">
-              <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Force reload</span>
+          )}
+          {!tn.isOpened && (
+            <Button onClick={handleOpen(tn, nextTreePath, false)} color="info" size="sm">
+              <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Open</span>
             </Button>
-          </div>
-        ) : (
-          <Button onClick={handleOpen(tn, nextTreePath)} color="info" size="sm">
-            <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Open</span>
-          </Button>
-        )}
-
-        <Row className="border-green padding-4">{renderItems(tn.children, nextTreePath)}</Row>
+          )}
+          {tn.childrenAreLoaded && (
+            <div>
+              <Button onClick={handleOpen(tn, nextTreePath, true)} color="info" size="sm">
+                <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Force reload</span>
+              </Button>
+            </div>
+          )}
+        </div>
+        {tn.isLoading && <span>Children are loading...</span>}
+        {tn.isOpened && <Row>{renderItems(tn.children, nextTreePath)}</Row>}
       </div>
     );
     // return <SmRefToResource props= {props} key={'item-' + i}>{site.name}</SmRefToResource>;

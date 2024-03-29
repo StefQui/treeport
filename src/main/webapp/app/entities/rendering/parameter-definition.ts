@@ -11,7 +11,7 @@ import {
   useCalculatedValueState,
   useChangingCalculatedValueState,
 } from './shared';
-import { getSiteForRenderingStateParameters, setInCorrectState } from './rendering.reducer';
+import { getSiteForRenderingStateParameters, setAnyInCorrectState } from './rendering.reducer';
 import {
   ValueInState,
   Parameters,
@@ -28,7 +28,7 @@ import {
   RefToPageContextRuleDefinition,
   DatatreeDefinition,
 } from './type';
-import { handleDataTree } from './datatree';
+import { enrichToMainTarget, handleDataTree } from './datatree';
 
 export const useRefToLocalContextValue = (currentLocalContextPath, localContextPath, parameterKey, parameterProperty): ValueInState => {
   return useAppSelector((state: RenderingSliceState) => {
@@ -127,7 +127,7 @@ export const initLocalContext = (parameterDefinitions: ParameterDefinition[], pr
 
   if (parameterDefinitions) {
     parameterDefinitions.forEach(pdef => {
-      const key = pdef.parameterKey;
+      const key = pdef.target.parameterKey;
 
       console.log('initLocalContext for ' + pdef.definition.ruleType);
       handleParameterDefinition(pdef, props);
@@ -139,15 +139,15 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
   const dispatch = useAppDispatch();
   const target = pdef.target;
   if (pdef.definition.ruleType === 'refToSite') {
-    handleRefToSite(pdef.parameterKey, target, pdef.definition as RefToSiteDefinition, props);
+    handleRefToSite(target, pdef.definition as RefToSiteDefinition, props);
     // } else if (pdef.definition.ruleType === 'datasetFilter') {
     //   handleDatasetFilter(key, target, pdef.definition as DatasetFilterDefinition, props);
   } else if (pdef.definition.ruleType === 'dataset') {
     const dsDef = pdef.definition as DatasetDefinition;
-    handleDataSet(pdef.parameterKey, target, dsDef, props);
+    handleDataSet(target, dsDef, props);
   } else if (pdef.definition.ruleType === 'datatree') {
     const dsDef = pdef.definition as DatatreeDefinition;
-    handleDataTree(pdef.parameterKey, target, dsDef, props);
+    handleDataTree(target, dsDef, props);
     // } else if (pdef.definition.ruleType === 'itemParamProperty') {
     //   const dsDef = pdef.definition as ItemParamPropertyRuleDefinition;
     //   handleDataSet(pdef.parameterKey, target, dsDef, props);
@@ -184,12 +184,21 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
       console.log('filter.......changed');
       // setPreviousResult(result);
 
+      // dispatch(
+      //   setInCorrectState({
+      //     destinationKey: target.parameterKey,
+      //     localContextPath: props.localContextPath,
+      //     target,
+      //     childPath: props.path,
+      //     value: changing,
+      //   }),
+      // );
       dispatch(
-        setInCorrectState({
-          destinationKey: pdef.parameterKey,
-          localContextPath: props.localContextPath,
-          target,
-          childPath: props.path,
+        setAnyInCorrectState({
+          mainTarget: enrichToMainTarget(target, applyPath(props.localContextPath, props.path)),
+          secondaryTarget: {
+            secondaryTargetType: 'anyValueInTarget',
+          },
           value: changing,
         }),
       );
@@ -324,7 +333,7 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
 //   }, [paginationProp, changingFilter]);
 // };
 
-const handleRefToSite = (key: string, target: ParameterTarget, refToSiteDefinition: RefToSiteDefinition, props) => {
+const handleRefToSite = (target: ParameterTarget, refToSiteDefinition: RefToSiteDefinition, props) => {
   const dispatch = useAppDispatch();
   const siteIdRef = refToSiteDefinition.sourceSiteId;
   if (!siteIdRef) {
@@ -340,9 +349,10 @@ const handleRefToSite = (key: string, target: ParameterTarget, refToSiteDefiniti
       dispatch(
         getSiteForRenderingStateParameters({
           siteId: siteId.value,
-          destinationKey: key,
-          localContextPath: props.localContextPath,
-          target,
+          mainTarget: enrichToMainTarget(target, props.localContextPath),
+          secondaryTarget: {
+            secondaryTargetType: 'anyValueInTarget',
+          },
         }),
       );
       // });

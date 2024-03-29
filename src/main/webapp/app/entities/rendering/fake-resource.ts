@@ -121,8 +121,8 @@ const r3: ComponentResource = {
             },
             parameterDefinitions: [
               {
-                parameterKey: 'const1',
                 target: {
+                  parameterKey: 'const1',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -139,8 +139,8 @@ const r3: ComponentResource = {
               //   },
               // },
               {
-                parameterKey: 'siteIdFromSiteList',
                 target: {
+                  parameterKey: 'siteIdFromSiteList',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -150,8 +150,8 @@ const r3: ComponentResource = {
                 },
               },
               {
-                parameterKey: 'theoutputFromInput',
                 target: {
+                  parameterKey: 'theoutputFromInput',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -161,8 +161,8 @@ const r3: ComponentResource = {
                 },
               },
               {
-                parameterKey: 'thesite44',
                 target: {
+                  parameterKey: 'thesite44',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -175,8 +175,8 @@ const r3: ComponentResource = {
                 },
               },
               {
-                parameterKey: 'thesiteFromTheList',
                 target: {
+                  parameterKey: 'thesiteFromTheList',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -670,8 +670,8 @@ const rDsList: ComponentResource = {
         },
         parameterDefinitions: [
           {
-            parameterKey: 'myds',
             target: {
+              parameterKey: 'myds',
               targetType: 'currentLocalContextPath',
             },
             definition: {
@@ -735,8 +735,8 @@ const rDtTree: ComponentResource = {
         },
         parameterDefinitions: [
           {
-            parameterKey: 'mydt',
             target: {
+              parameterKey: 'mydt',
               targetType: 'currentLocalContextPath',
             },
             definition: {
@@ -828,8 +828,8 @@ const rDsWithForm: ComponentResource = {
             },
             parameterDefinitions: [
               {
-                parameterKey: 'theTerm2',
                 target: {
+                  parameterKey: 'theTerm2',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -838,8 +838,8 @@ const rDsWithForm: ComponentResource = {
                 },
               },
               {
-                parameterKey: 'myds',
                 target: {
+                  parameterKey: 'myds',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -932,8 +932,8 @@ const rDsWithForm: ComponentResource = {
             },
             parameterDefinitions: [
               {
-                parameterKey: 'const1',
                 target: {
+                  parameterKey: 'const1',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -950,8 +950,8 @@ const rDsWithForm: ComponentResource = {
               //   },
               // },
               {
-                parameterKey: 'siteIdFromSiteList',
                 target: {
+                  parameterKey: 'siteIdFromSiteList',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -961,8 +961,8 @@ const rDsWithForm: ComponentResource = {
                 },
               },
               {
-                parameterKey: 'theoutputFromInput',
                 target: {
+                  parameterKey: 'theoutputFromInput',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -972,8 +972,8 @@ const rDsWithForm: ComponentResource = {
                 },
               },
               {
-                parameterKey: 'thesite44',
                 target: {
+                  parameterKey: 'thesite44',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -986,8 +986,8 @@ const rDsWithForm: ComponentResource = {
                 },
               },
               {
-                parameterKey: 'thesiteFromTheList',
                 target: {
+                  parameterKey: 'thesiteFromTheList',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -1110,8 +1110,8 @@ const rds: ComponentResource = {
         },
         parameterDefinitions: [
           {
-            parameterKey: 'theTerm2',
             target: {
+              parameterKey: 'theTerm2',
               targetType: 'currentLocalContextPath',
             },
             definition: {
@@ -1120,8 +1120,8 @@ const rds: ComponentResource = {
             },
           },
           {
-            parameterKey: 'myds',
             target: {
+              parameterKey: 'myds',
               targetType: 'currentLocalContextPath',
             },
             definition: {
@@ -1409,8 +1409,8 @@ const rpage2: ComponentResource = {
     },
     parameterDefinitions: [
       {
-        parameterKey: 'mmmiii',
         target: {
+          parameterKey: 'mmmiii',
           targetType: 'specificLocalContextPath',
           targetPath: '/layout-menutop',
         },

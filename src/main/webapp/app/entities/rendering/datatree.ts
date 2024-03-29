@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
-import { searchResources } from 'app/entities/rendering/rendering.reducer';
+import { searchResources, setInCorrectState } from 'app/entities/rendering/rendering.reducer';
 import { useChangingCalculatedFilterState } from './filter';
 import {
   ParameterTarget,
@@ -11,6 +11,7 @@ import {
   ActionState,
   RenderingSliceState,
   OpenNodeAction,
+  CloseNodeAction,
 } from './type';
 import { useFoundValue } from './shared';
 
@@ -26,18 +27,24 @@ export const useSiteTree = (props, data) => {
   return siteTree;
 };
 
-const useOpenNodeAction = (props, initialValue: string[]) => {
-  const [val, setVal] = useState(null);
+const useOpenNodeAction = props => {
+  const [open, setOpen] = useState(null);
+  const [close, setClose] = useState(null);
   const action: ActionState = useAppSelector((state: RenderingSliceState) => state.rendering.action);
   useEffect(() => {
-    if (action && action.actionType === 'openNode') {
-      const action1: OpenNodeAction = action;
-      console.log('actionOpenNode', action1, val);
-      setVal(action1.treeNodePath);
+    if (action) {
+      if (action.actionType === 'openNode') {
+        const action1: OpenNodeAction = action;
+        setOpen(action1.treeNodePath);
+      } else if (action.actionType === 'closeNode') {
+        const action1: CloseNodeAction = action;
+        // console.log('actionOpenNode', action1, val);
+        setClose(action1.treeNodePath);
+      }
     }
   }, [action]);
 
-  return val;
+  return { open, close };
 };
 
 export const handleDataTree = (key: string, target: ParameterTarget, refToSiteDefinition: DatatreeDefinition, props) => {
@@ -46,7 +53,7 @@ export const handleDataTree = (key: string, target: ParameterTarget, refToSiteDe
 
   const dsfDef = refToSiteDefinition.valueFilter as ResourceFilter;
 
-  const openNodeAction = useOpenNodeAction(props, []);
+  const { open, close } = useOpenNodeAction(props);
 
   useEffect(() => {
     console.log('initialFetchTree');
@@ -54,11 +61,25 @@ export const handleDataTree = (key: string, target: ParameterTarget, refToSiteDe
   }, []);
 
   useEffect(() => {
-    if (openNodeAction) {
-      console.log('openNodeAction2', openNodeAction);
-      dispatch(searchResources(getChildrenSite(openNodeAction)));
+    if (open) {
+      console.log('openNodeAction2', open);
+      dispatch(searchResources(getChildrenSite(open)));
     }
-  }, [openNodeAction]);
+  }, [open]);
+
+  useEffect(() => {
+    if (close) {
+      // dispatch(
+      //   setInCorrectState({
+      //     destinationKey: key,
+      //     localContextPath: props.localContextPath,
+      //     target,
+      //     childPath: props.path,
+      //     treePath: close,
+      //   }),
+      // );
+    }
+  }, [close]);
 
   const changingFilter: ValueInState = useChangingCalculatedFilterState(props, dsfDef, target);
 

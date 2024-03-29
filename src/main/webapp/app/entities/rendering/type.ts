@@ -475,7 +475,7 @@ export type LocalContextsState = {
 export type PageContextState = { [path: string]: any };
 export type PageResourcesState = { [path: string]: any };
 export type CurrentPageIdState = string | null;
-export type ActionState = SetCurrentPageAction | UpdateAttributeAction | RefreshDataSetAction | OpenNodeAction;
+export type ActionState = SetCurrentPageAction | UpdateAttributeAction | RefreshDataSetAction | OpenNodeAction | CloseNodeAction;
 // export type EntityAction = {
 //   source: string;
 //   actionType: 'selectSite' | 'updateAttribute' | 'refreshDataset';
@@ -490,6 +490,12 @@ export type SetCurrentPageAction = {
 export type OpenNodeAction = {
   source: string;
   actionType: 'openNode';
+  treeNodePath: string[];
+  targetDataset: string;
+} | null;
+export type CloseNodeAction = {
+  source: string;
+  actionType: 'closeNode';
   treeNodePath: string[];
   targetDataset: string;
 } | null;

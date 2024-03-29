@@ -112,7 +112,7 @@ export const MyWrapper = ({ children, ...props }) => {
 
   const lc = useRefToLocalContext(targetLocalContextPath);
 
-  const displayPath = true;
+  const displayPath = false;
 
   if (displayPath) {
     return (

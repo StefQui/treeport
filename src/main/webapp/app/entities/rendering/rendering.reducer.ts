@@ -227,7 +227,9 @@ export const RenderingSlice = createSlice({
             updateSuccess: false,
             loading: true,
           },
-          'listState',
+
+          treePath ? null : 'listState',
+          treePath,
         );
 
         // return putInRenderingStateSelf(state, path, {
@@ -382,6 +384,61 @@ const sendValueTo = (
   }
 };
 
+export type CurrentLocalContextPathMainTarget = {
+  mainTargetType: 'currentLocalContextPath';
+  localContextPath: string;
+  destinationKey: string;
+};
+
+export type ChildLocalContextPathMainTarget = {
+  mainTargetType: 'childLocalContextPath';
+  localContextPath: string;
+};
+
+export type PageContextPathMainTarget = {
+  mainTargetType: 'pageContextPath';
+  destinationKey: string;
+};
+
+export type SpecificLocalContextPathMainTarget = {
+  mainTargetType: 'specificLocalContextPath';
+  targetPath: string;
+  destinationKey: string;
+};
+
+export type MainTarget =
+  | CurrentLocalContextPathMainTarget
+  | ChildLocalContextPathMainTarget
+  | PageContextPathMainTarget
+  | SpecificLocalContextPathMainTarget;
+
+export type ValueSecondaryTarget = {
+  secondaryTargetType: 'valueInTarget';
+  value: ValueInState;
+};
+export type AnyValueSecondaryTarget = {
+  secondaryTargetType: 'anyValueInTarget';
+  value: any;
+};
+export type AnyValueTreeSecondaryTarget = {
+  secondaryTargetType: 'anyValueTreeInTarget';
+  value: any;
+  treePath: string[];
+};
+export type SecondaryTarget = ValueSecondaryTarget | AnyValueSecondaryTarget | AnyValueTreeSecondaryTarget;
+
+// const sendValueTo2 = (state, mainTarget: MainTarget, secondaryTarget: SecondaryTarget) => {
+//   if (mainTarget.mainTargetType === 'currentLocalContextPath') {
+//     return setInLocalContextState(state, mainTarget.localContextPath, mainTarget.destinationKey, secondaryTarget);
+//   } else if (mainTarget.mainTargetType === 'specificLocalContextPath') {
+//     return setInLocalContextState(state, mainTarget.targetPath, mainTarget.destinationKey, secondaryTarget);
+//     // } else if (target.targetType === 'childLocalContextPath') {
+//     //   return setInLocalContextState(state, applyPath(localContextPath, childPath), destinationKey, value, additionnalPath);
+//   } else if (mainTarget.mainTargetType === 'pageContextPath') {
+//     return setInPageContextState(state, mainTarget.destinationKey, secondaryTarget);
+//   }
+// };
+
 const sendAnyTo = (state, localContextPath, destinationKey, targetType: 'currentLocalContextPath', value, additionnalPath?: string) => {
   if (targetType === 'currentLocalContextPath') {
     return setAnyInLocalContextState(state, localContextPath, destinationKey, value, additionnalPath);
@@ -411,6 +468,8 @@ const putInRenderingStateSelf = (state: RenderingState, path, value: any): Rende
 export type TreeNode = {
   content: any;
   isLoading: boolean;
+  isRoot: boolean;
+  childrenAreLoaded: boolean;
   children: TreeNodeWrapper;
 };
 
@@ -426,27 +485,43 @@ export type EntitiesValue = {
   };
 };
 
-function treeBuild(result: TreeNodeWrapper, value: EntitiesValue, treePath: string[], index: number): TreeNodeWrapper {
-  console.log('treeBuild', index, treePath);
+function treeBuild(result: TreeNode, value: EntitiesValue, treePath: string[], index: number): TreeNode {
+  console.log('treeBuild', result, index, treePath);
   if (index >= treePath.length) {
-    return value.value.entities.reduce((acc: TreeNodeWrapper, ir: IResource) => {
-      return { ...acc, [ir.id]: { content: { id: ir.id, name: ir.name }, isLoading: true, children: {} } };
-    }, {});
+    if (value.loading) {
+      return {
+        content: { ...result.content },
+        isLoading: true,
+        childrenAreLoaded: false,
+        isRoot: index === 0,
+        children: { ...result.children },
+      };
+    }
+    return {
+      content: { ...result.content },
+      isRoot: index === 0,
+      isLoading: false,
+      childrenAreLoaded: true,
+      children: value.value.entities.reduce((acc: TreeNodeWrapper, ir: IResource) => {
+        return {
+          ...acc,
+          [ir.id]: { content: { id: ir.id, name: ir.name }, isLoading: false, isRoot: false, childrenAreLoaded: false, children: {} },
+        };
+      }, {}),
+    };
   }
+
+  // return { content: {}, isLoading: true, isRoot: index === 0, children: {} };
 
   return {
     ...result,
-    [treePath[index]]: {
-      content: result[treePath[index]].content,
-      isLoading: result[treePath[index]].isLoading,
-      children: treeBuild(result[treePath[index]].children, value, treePath, index + 1),
-    },
+    children: { ...result.children, [treePath[index]]: treeBuild(result.children[treePath[index]], value, treePath, index + 1) },
   };
 }
 
-function handleTree(treeWrapper: TreeNodeWrapper, value: EntitiesValue, treePath: string[]): TreeNodeWrapper {
-  console.log('handle ccc2', treeWrapper, treePath);
-  let subState = treeWrapper ?? {};
+function handleTree(treeNode: TreeNode, value: EntitiesValue, treePath: string[]): TreeNode {
+  // console.log('handle ccc2', treeWrapper, treePath);
+  // let subState = treeWrapper ?? {};
   let k = 0;
   // let result = { ...treeWrapper, [treePath[0]]: treeBuild(treeWrapper[treePath[0]], value, treePath, 0) };
   // while (k < treePath.length) {
@@ -465,7 +540,7 @@ function handleTree(treeWrapper: TreeNodeWrapper, value: EntitiesValue, treePath
   //   // treeWrapper = subState;
   // }
 
-  return treeBuild(treeWrapper, value, treePath, 0);
+  return treeBuild(treeNode ?? { content: {}, isLoading: false, isRoot: true, childrenAreLoaded: false, children: {} }, value, treePath, 0);
 }
 
 function handleParameters(localContextPath: any, parameterKey: string, value: any, additionnalPath?: string | null, treePath?: string[]) {
@@ -481,7 +556,7 @@ function handleParameters(localContextPath: any, parameterKey: string, value: an
     return bbb;
   } else if (treePath) {
     return {
-      [parameterKey]: handleTree(localContextPath.parameters[parameterKey], value, treePath),
+      [parameterKey]: handleTree(localContextPath ? localContextPath.parameters[parameterKey] : {}, value, treePath),
     };
   } else {
     console.log('handle ddd', { [parameterKey]: value });

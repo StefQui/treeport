@@ -768,6 +768,17 @@ const rDtTree: ComponentResource = {
           },
         ],
       },
+      {
+        componentType: 'dataSetTree',
+        path: 'datasettree',
+        params: {
+          data: {
+            ruleType: 'refToLocalContext',
+            path: '',
+            sourceParameterKey: 'mydt',
+          },
+        },
+      },
     ],
   },
 };

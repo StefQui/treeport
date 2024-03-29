@@ -14,6 +14,7 @@ import { buildPath, useCalculatedValueState } from './shared';
 import { SmDatasetTable } from './sm-dataset-table';
 import { SmVerticalPanel } from './sm-vertical-panel';
 import { useRefToLocalContext } from './parameter-definition';
+import { SmDatasetTree } from './sm-dataset-tree';
 
 export const initialFilter: ValueInState = { loading: true, value: null };
 
@@ -49,6 +50,8 @@ export const MyElem = props => {
         return <SmDatasetTable {...params}></SmDatasetTable>;
       case 'dataSetList':
         return <SmDatasetList {...params}></SmDatasetList>;
+      case 'dataSetTree':
+        return <SmDatasetTree {...params}></SmDatasetTree>;
       case 'Form':
         return <SmForm {...params}></SmForm>;
       case 'AttributeField':

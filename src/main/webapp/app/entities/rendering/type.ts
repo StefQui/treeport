@@ -77,6 +77,12 @@ export type DataSetListResourceContent = CommonContent & {
   params: DataSetListParams;
 };
 
+export type DataSetTreeType = 'dataSetTree';
+export type DataSetTreeResourceContent = CommonContent & {
+  componentType: DataSetTreeType;
+  params: DataSetTreeParams;
+};
+
 export type SmInputResourceContent = CommonContent & {
   componentType: 'SmInput';
   params: SmInputParams;
@@ -126,6 +132,7 @@ export type ComponentResourceContent =
   | SmTextResourceContent
   | DataSetResourceContent
   | DataSetListResourceContent
+  | DataSetTreeResourceContent
   | SmInputResourceContent
   | SmRefToResourceResourceContent
   | FormResourceContent
@@ -322,6 +329,10 @@ export type DataSetListParams = {
   data: RuleDefinition;
 };
 
+export type DataSetTreeParams = {
+  data: RuleDefinition;
+};
+
 export type ResourcePropertyFilterTargetType = 'name' | 'id' | 'parentId';
 
 export type ResourcePropertyFilterTarget = {
@@ -464,7 +475,7 @@ export type LocalContextsState = {
 export type PageContextState = { [path: string]: any };
 export type PageResourcesState = { [path: string]: any };
 export type CurrentPageIdState = string | null;
-export type ActionState = SetCurrentPageAction | UpdateAttributeAction | RefreshDataSetAction;
+export type ActionState = SetCurrentPageAction | UpdateAttributeAction | RefreshDataSetAction | OpenNodeAction;
 // export type EntityAction = {
 //   source: string;
 //   actionType: 'selectSite' | 'updateAttribute' | 'refreshDataset';
@@ -474,6 +485,12 @@ export type SetCurrentPageAction = {
   source: string;
   actionType: 'setCurrentPage';
   currentPage: number;
+  targetDataset: string;
+} | null;
+export type OpenNodeAction = {
+  source: string;
+  actionType: 'openNode';
+  treeNodePath: string[];
   targetDataset: string;
 } | null;
 export type UpdateAttributeAction = {

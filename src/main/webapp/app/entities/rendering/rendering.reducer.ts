@@ -417,17 +417,17 @@ const putInRenderingStateSelf = (state: RenderingState, path, value: any): Rende
   return setInComponentsState(state, path, value, 'self');
 };
 
-type TreeNode = {
+export type TreeNode = {
   content: any;
   isLoading: boolean;
   children: TreeNodeWrapper;
 };
 
-type TreeNodeWrapper = {
+export type TreeNodeWrapper = {
   [treePath: string]: TreeNode;
 };
 
-type EntitiesValue = {
+export type EntitiesValue = {
   loading: boolean;
   value: {
     entities: IResource[];
@@ -437,22 +437,17 @@ type EntitiesValue = {
 
 function handleTree(treeWrapper: TreeNodeWrapper, value: EntitiesValue, treePath: string[]): TreeNodeWrapper {
   console.log('handle ccc2', treeWrapper['/']);
-  if (!treeWrapper['/']) {
-    return {
-      '/': {
-        content: { kkk: 'mmm' },
-        isLoading: false,
-        children: {},
-      },
-    };
+  let subState = treeWrapper ?? {};
+  let k = 0;
+  while (k < treePath.length) {
+    subState = subState[treePath[k]] ? subState[treePath[k]].children : {};
+    k++;
   }
-  return {
-    '/': {
-      content: {},
-      isLoading: false,
-      children: {},
-    },
-  };
+  subState = value.value.entities.reduce((acc: TreeNodeWrapper, ir: IResource) => {
+    return { ...acc, [ir.id]: { content: { id: ir.id, name: ir.name }, isLoading: true, children: {} } };
+  }, {});
+
+  return subState;
 }
 
 function handleParameters(localContextPath: any, parameterKey: string, value: any, additionnalPath?: string | null, treePath?: string[]) {

@@ -213,20 +213,9 @@ export const RenderingSlice = createSlice({
           treePath ? null : 'listState',
           treePath,
         );
-
-        // return putInRenderingStateSelf(state, path, {
-        //   paginationState: {
-        //     ...state.componentsState[path][STATE_RS_SELF_KEY].paginationState,
-        //   },
-        //   listState: {
-        //     loading: false,
-        //     entities: data,
-        //     totalItems: parseInt(headers['x-total-count'], 10),
-        //   },
-        // });
       })
       .addMatcher(isPending(searchResources), (state: RenderingState, action): RenderingState => {
-        const { target } = action.meta.arg;
+        const { target, treePath } = action.meta.arg;
 
         return sendValueTo(
           state,
@@ -253,7 +242,7 @@ export const RenderingSlice = createSlice({
         // });
       })
       .addMatcher(isRejected(searchResources), (state: RenderingState, action): RenderingState => {
-        const { target } = action.meta.arg;
+        const { target, treePath } = action.meta.arg;
 
         return sendValueTo(
           state,
@@ -264,7 +253,9 @@ export const RenderingSlice = createSlice({
             errorMessage: 'Cannot get the search result',
             loading: false,
           },
-          'listState',
+
+          treePath ? null : 'listState',
+          treePath,
         );
 
         // return putInRenderingStateSelf(state, path, {
@@ -435,19 +426,46 @@ export type EntitiesValue = {
   };
 };
 
+function treeBuild(result: TreeNodeWrapper, value: EntitiesValue, treePath: string[], index: number): TreeNodeWrapper {
+  console.log('treeBuild', index, treePath);
+  if (index >= treePath.length) {
+    return value.value.entities.reduce((acc: TreeNodeWrapper, ir: IResource) => {
+      return { ...acc, [ir.id]: { content: { id: ir.id, name: ir.name }, isLoading: true, children: {} } };
+    }, {});
+  }
+
+  return {
+    ...result,
+    [treePath[index]]: {
+      content: result[treePath[index]].content,
+      isLoading: result[treePath[index]].isLoading,
+      children: treeBuild(result[treePath[index]].children, value, treePath, index + 1),
+    },
+  };
+}
+
 function handleTree(treeWrapper: TreeNodeWrapper, value: EntitiesValue, treePath: string[]): TreeNodeWrapper {
-  console.log('handle ccc2', treeWrapper['/']);
+  console.log('handle ccc2', treeWrapper, treePath);
   let subState = treeWrapper ?? {};
   let k = 0;
-  while (k < treePath.length) {
-    subState = subState[treePath[k]] ? subState[treePath[k]].children : {};
-    k++;
-  }
-  subState = value.value.entities.reduce((acc: TreeNodeWrapper, ir: IResource) => {
-    return { ...acc, [ir.id]: { content: { id: ir.id, name: ir.name }, isLoading: true, children: {} } };
-  }, {});
+  // let result = { ...treeWrapper, [treePath[0]]: treeBuild(treeWrapper[treePath[0]], value, treePath, 0) };
+  // while (k < treePath.length) {
+  //   subState = subState[treePath[k]] ? subState[treePath[k]].children : {};
+  //   result = { ...result, root: { isLoading: true, children: {}, content: 'jj' } };
+  //   k++;
+  // }
+  // console.log('handle ccc3', subState);
+  // subState = value.value.entities.reduce((acc: TreeNodeWrapper, ir: IResource) => {
+  //   return { ...acc, [ir.id]: { content: { id: ir.id, name: ir.name }, isLoading: true, children: {} } };
+  // }, {});
 
-  return subState;
+  // if (treeWrapper.root) {
+  //   treeWrapper.root.children = subState;
+  // } else {
+  //   // treeWrapper = subState;
+  // }
+
+  return treeBuild(treeWrapper, value, treePath, 0);
 }
 
 function handleParameters(localContextPath: any, parameterKey: string, value: any, additionnalPath?: string | null, treePath?: string[]) {

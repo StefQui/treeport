@@ -49,19 +49,20 @@ export const handleDataTree = (key: string, target: ParameterTarget, refToSiteDe
   const openNodeAction = useOpenNodeAction(props, []);
 
   useEffect(() => {
-    dispatch(searchResources(getChildrenSite(null)));
+    console.log('initialFetchTree');
+    dispatch(searchResources(getChildrenSite([])));
   }, []);
 
   useEffect(() => {
     if (openNodeAction) {
       console.log('openNodeAction2', openNodeAction);
-      dispatch(searchResources(getChildrenSite(openNodeAction[0])));
+      dispatch(searchResources(getChildrenSite(openNodeAction)));
     }
   }, [openNodeAction]);
 
   const changingFilter: ValueInState = useChangingCalculatedFilterState(props, dsfDef, target);
 
-  const getChildrenSite = (parentId: string | null): any => {
+  const getChildrenSite = (treePath: string[]): any => {
     return {
       searchModel: {
         resourceType: 'SITE',
@@ -77,7 +78,7 @@ export const handleDataTree = (key: string, target: ParameterTarget, refToSiteDe
               },
               filterRule: {
                 filterRuleType: 'TEXT_EQUALS',
-                terms: parentId,
+                terms: treePath.length === 0 ? null : treePath[treePath.length - 1],
               },
             },
           ],
@@ -91,7 +92,7 @@ export const handleDataTree = (key: string, target: ParameterTarget, refToSiteDe
       localContextPath: props.localContextPath,
       target,
       childPath: props.path,
-      treePath: ['/'],
+      treePath,
     };
   };
 };

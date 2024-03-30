@@ -452,7 +452,7 @@ export type TreeNodeWrapper = {
 export type EntitiesValue = {
   loading: boolean;
   value: {
-    entities: IResource[];
+    entities: IResourceWithValue[];
     totalItems: number;
   };
 };
@@ -498,11 +498,11 @@ function treeBuild(result: TreeNode, value: EntitiesValue | 'loading' | 'close' 
       isLoading: false,
       isOpened: true,
       childrenAreLoaded: true,
-      children: value.value.entities.reduce((acc: TreeNodeWrapper, ir: IResource) => {
+      children: value.value.entities.reduce((acc: TreeNodeWrapper, ir: IResourceWithValue) => {
         return {
           ...acc,
           [ir.id]: {
-            content: { id: ir.id, name: ir.name },
+            content: { id: ir.id, name: ir.name, attributeValues: ir.attributeValues },
             isLoading: false,
             isRoot: false,
             childrenAreLoaded: false,

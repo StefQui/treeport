@@ -736,7 +736,7 @@ const rDtTree: ComponentResource = {
         parameterDefinitions: [
           {
             target: {
-              parameterKey: 'mydt',
+              parameterKey: 'mydt1',
               targetType: 'currentLocalContextPath',
             },
             definition: {
@@ -775,7 +775,7 @@ const rDtTree: ComponentResource = {
           data: {
             ruleType: 'refToLocalContext',
             path: '',
-            sourceParameterKey: 'mydt',
+            sourceParameterKey: 'mydt1',
           },
         },
       },

@@ -144,6 +144,10 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
     } else if (def.propertyDefinition.type === 'PARENT_ID') {
       str = props.itemParam.parentId;
     } else if (def.propertyDefinition.type === 'ATTRIBUTE') {
+      console.log('filterbbb.......changed', props.itemParam);
+      if (!props.itemParam.attributeValues) {
+        return { loading: false, value: '--' };
+      }
       const keys = Object.keys(props.itemParam.attributeValues);
       // const values = props.itemParam.attributeValues;
       // console.log('filterbbb.......changed', values);

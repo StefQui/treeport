@@ -8,8 +8,9 @@ import { DataSetListParams, RuleDefinition, RenderingSliceState } from './type';
 import { useSiteList } from './dataset';
 import { useSiteTree } from './datatree';
 import { setAction, TreeNode, TreeNodeWrapper } from './rendering.reducer';
-import { Button, Row } from 'reactstrap';
+import { Button, Col, Row } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import MyTree from './mytree';
 
 export const SmDatasetTree = (props: {
   params: DataSetListParams;
@@ -65,36 +66,49 @@ export const SmDatasetTree = (props: {
       nextTreePath = [...treePath, tn.content.id];
     }
     return (
-      <div key={i}>
-        {!tn.isRoot && (
-          <p>
-            {'---'.repeat(treePath.length + 1)}
-            {'> '}
-            {tn.content.id} - {tn.content.name}
-          </p>
-        )}
-        <div className="d-flex justify-content-end">
-          {tn.isOpened && (
-            <Button onClick={handleClose(tn, nextTreePath)} color="danger" size="sm">
-              <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Close</span>
-            </Button>
+      <Row md="12" key={i}>
+        <Col md="8">
+          {!tn.isRoot && (
+            <p>
+              {'---'.repeat(treePath.length + 1)}
+              {'> '}
+              <SmRefToResource
+                currentPath=""
+                path=""
+                params={{ resourceId: 'siteDetail' }}
+                itemParam={tn.content}
+                localContextPath=""
+                depth="0"
+              ></SmRefToResource>
+            </p>
           )}
-          {!tn.isOpened && (
-            <Button onClick={handleOpen(tn, nextTreePath, false)} color="info" size="sm">
-              <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Open</span>
-            </Button>
-          )}
-          {tn.childrenAreLoaded && (
-            <div>
-              <Button onClick={handleOpen(tn, nextTreePath, true)} color="info" size="sm">
-                <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Force reload</span>
+        </Col>
+        <Col md="4">
+          <div className="d-flex justify-content-end">
+            {tn.isOpened && (
+              <Button onClick={handleClose(tn, nextTreePath)} color="danger" size="sm">
+                <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Close</span>
               </Button>
-            </div>
-          )}
-        </div>
-        {tn.isLoading && <span>Children are loading...</span>}
-        {tn.isOpened && <Row>{renderItems(tn.children, nextTreePath)}</Row>}
-      </div>
+            )}
+            {!tn.isOpened && (
+              <Button onClick={handleOpen(tn, nextTreePath, false)} color="info" size="sm">
+                <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Open</span>
+              </Button>
+            )}
+            {tn.childrenAreLoaded && (
+              <div>
+                <Button onClick={handleOpen(tn, nextTreePath, true)} color="info" size="sm">
+                  <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Force reload</span>
+                </Button>
+              </div>
+            )}
+          </div>
+        </Col>
+        <Col md="12">
+          {tn.isLoading && <span>Children are loading...</span>}
+          {tn.isOpened && <Row>{renderItems(tn.children, nextTreePath)}</Row>}
+        </Col>
+      </Row>
     );
     // return <SmRefToResource props= {props} key={'item-' + i}>{site.name}</SmRefToResource>;
     // return <h1 key={'item-' + i}>{site.name}</h1>;
@@ -104,5 +118,6 @@ export const SmDatasetTree = (props: {
     return Object.keys(siteTree).map((key, i) => renderItem(siteTree[key], treePath, i));
   };
 
-  return <Row className="border-blue padding-4">{siteTree ? renderItem(siteTree, [], 0) : '----'}</Row>;
+  // return <Row className="border-blue">{siteTree ? renderItem(siteTree, [], 0) : '----'}</Row>;
+  return <MyTree></MyTree>;
 };

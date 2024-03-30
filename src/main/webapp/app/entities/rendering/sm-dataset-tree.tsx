@@ -1,16 +1,12 @@
 import React from 'react';
-import { useAppDispatch, useAppSelector } from 'app/config/store';
+import { useAppDispatch } from 'app/config/store';
 
 import { SmRefToResource } from './sm-resource-content';
-import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
 import { buildPath } from './shared';
-import { DataSetListParams, RuleDefinition, RenderingSliceState } from './type';
-import { useSiteList } from './dataset';
+import { DataSetListParams, RuleDefinition } from './type';
 import { useSiteTree } from './datatree';
 import { setAction, TreeNode, TreeNodeWrapper } from './rendering.reducer';
-import { Button, Col, Collapse, ListGroup, ListGroupItem, Row } from 'reactstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import MyTree from './mytree';
+import { Button, Collapse, ListGroup, ListGroupItem } from 'reactstrap';
 
 export const SmDatasetTree = (props: {
   params: DataSetListParams;

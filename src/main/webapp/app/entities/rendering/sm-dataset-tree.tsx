@@ -3,13 +3,13 @@ import { useAppDispatch } from 'app/config/store';
 
 import { SmRefToResource } from './sm-resource-content';
 import { buildPath } from './shared';
-import { DataSetListParams, RuleDefinition } from './type';
+import { DataSetListParams, DataSetTreeParams, RuleDefinition } from './type';
 import { useSiteTree } from './datatree';
 import { setAction, TreeNode, TreeNodeWrapper } from './rendering.reducer';
 import { Button, Collapse, ListGroup, ListGroupItem } from 'reactstrap';
 
 export const SmDatasetTree = (props: {
-  params: DataSetListParams;
+  params: DataSetTreeParams;
   depth: string;
   currentPath: string;
   path: string;
@@ -20,6 +20,7 @@ export const SmDatasetTree = (props: {
   const builtPath = buildPath(props);
 
   const data: RuleDefinition = props.params.data;
+  const resourceIdForDetail: string = props.params.resourceIdForDetail;
 
   const siteTree: TreeNode = useSiteTree(props, data);
 
@@ -158,14 +159,16 @@ export const SmDatasetTree = (props: {
                     {'(force reload node)'}
                   </Button>
                 )}
-                <SmRefToResource
-                  currentPath=""
-                  path=""
-                  params={{ resourceId: 'siteDetail' }}
-                  itemParam={tn.content}
-                  localContextPath=""
-                  depth="0"
-                ></SmRefToResource>
+                {resourceIdForDetail && (
+                  <SmRefToResource
+                    currentPath=""
+                    path=""
+                    params={{ resourceId: resourceIdForDetail }}
+                    itemParam={tn.content}
+                    localContextPath=""
+                    depth="0"
+                  ></SmRefToResource>
+                )}
               </div>
             }
           </ListGroupItem>

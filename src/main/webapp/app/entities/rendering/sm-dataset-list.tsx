@@ -17,6 +17,7 @@ export const SmDatasetList = (props: {
   const builtPath = buildPath(props);
 
   const data: RuleDefinition = props.params.data;
+  const resourceIdForDetail: string = props.params.resourceIdForDetail;
 
   const siteListProp = useSiteList(props, data);
 
@@ -40,7 +41,7 @@ export const SmDatasetList = (props: {
   };
 
   const renderItem = (site, i) => {
-    return (
+    return resourceIdForDetail ? (
       <SmRefToResource
         currentPath=""
         path=""
@@ -49,7 +50,12 @@ export const SmDatasetList = (props: {
         localContextPath=""
         depth="0"
       ></SmRefToResource>
+    ) : (
+      <p>
+        {site.id} - {site.name}
+      </p>
     );
+
     // return <SmRefToResource props= {props} key={'item-' + i}>{site.name}</SmRefToResource>;
     // return <h1 key={'item-' + i}>{site.name}</h1>;
   };

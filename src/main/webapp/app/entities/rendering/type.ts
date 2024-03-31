@@ -334,10 +334,12 @@ export type DataSetParams = {
 
 export type DataSetListParams = {
   data: RuleDefinition;
+  resourceIdForDetail?: string;
 };
 
 export type DataSetTreeParams = {
   data: RuleDefinition;
+  resourceIdForDetail?: string;
 };
 
 export type ResourcePropertyFilterTargetType = 'name' | 'id' | 'parentId';

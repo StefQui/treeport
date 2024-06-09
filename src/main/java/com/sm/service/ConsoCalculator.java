@@ -49,49 +49,12 @@ public class ConsoCalculator<T> {
         BinaryOperator<T> reducer
     ) {
         try {
-            //            List<Attribute> atts = operands.stream()
-            //                    .map(impacterId -> attributeService.getById(impacterId))
-            //                    .filter(Optional::isPresent)
-            //                    .map(Optional::get).collect(Collectors.toList());
-            //            List<AttributeValue> attVals = attributes.stream()
-            //                    .map(Attribute::getAttributeValue)
-            //                    .map(attValue -> {
-            //                        if (attValue == null) {
-            //                            return NotResolvableValue.builder().value("one item value is missing").build();
-            //                            //                            atLeastOnChildValueIsNotResolvable.set(true);
-            //                        }
-            //                        return attValue;
-            //                    })
-            //                    .collect(Collectors.toList());
-
             AttributeValue errorOrNotResolvable = UtilsValue.handleErrorsAndNotResolvable(vals);
             if (errorOrNotResolvable != null) {
                 return errorOrNotResolvable;
             }
 
             return calculate(builderValue, vals, attributeValueTFunction, startValue, reducer);
-            //            if (AttributeType.DOUBLE.equals(config.getType())) {
-            //                return calculate((AttributeValue<T>) DoubleValue.builder().build(),
-            //                        vals, av -> mapToT(av), startValue, reducer);
-            //            } else if (AttributeType.LONG.equals(config.getType())) {
-            //                ConsoCalculator<Long> consoCalculator = new ConsoCalculator();
-            //                return consoCalculator.calculate(LongValue.builder().build(),
-            //                        vals, UtilsValue::mapToLong, startValue, reducer);
-            //                Double initialValueDouble = Double.valueOf(identity.toString());
-            //                List<Double> doubleVals = attVals.stream().map(UtilsValue::mapToDouble).collect(Collectors.toList());
-            //                attribute.setAttributeValue(DoubleValue.builder()
-            //                        .value(doubleVals.stream()
-            //                                .reduce(initialValueDouble, sum)
-            //                        )
-            //                        .build());
-            //            } else {
-            //                throw new RuntimeException("Should be implemented here " + config.getType());
-            //            }
-            //            AttributeValue ifAnyDoubleNull = UtilsValue.throwNotResolvableIfAnyDoubleIsNull(doubleVals);
-            //            if (ifAnyDoubleNull != null) {
-            //                attribute.setAttributeValue(ifAnyDoubleNull);
-            //                return;
-            //            }
         } catch (Exception e) {
             throw new RuntimeException("should not arrive here");
             //            attribute.setAttributeValue(UtilsValue.generateOtherErrorValue("cannot do sum of doubles", e));

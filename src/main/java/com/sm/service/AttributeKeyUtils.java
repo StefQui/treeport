@@ -1,8 +1,17 @@
 package com.sm.service;
 
-import static com.sm.domain.attribute.Attribute.*;
+import static com.sm.domain.attribute.Attribute.ASSET_ID_FRAGMENT_POSITION;
+import static com.sm.domain.attribute.Attribute.ASSET_TYPE_FRAGMENT_POSITION;
+import static com.sm.domain.attribute.Attribute.ATTRIBUTE_ID_FRAGMENT_POSITION;
+import static com.sm.domain.attribute.Attribute.ATTRIBUTE_PATTERN;
+import static com.sm.domain.attribute.Attribute.ATTRIBUTE_SEPARATOR;
+import static com.sm.domain.attribute.Attribute.CAMPAIGN_FRAGMENT_POSITION;
+import static com.sm.domain.attribute.Attribute.CAMPAIGN_TYPE_FRAGMENT_POSITION;
+import static com.sm.domain.attribute.Attribute.PARTIAL_ATTRIBUTE_PATTERN;
+import static com.sm.domain.attribute.Attribute.SITE_FRAG;
 import static java.lang.String.format;
 
+import com.sm.domain.operation.RefOperation;
 import java.util.List;
 import org.bson.Document;
 
@@ -78,5 +87,46 @@ public class AttributeKeyUtils {
 
     public static String generatePartial(String attributeConfigId, String campaignId) {
         return format(PARTIAL_ATTRIBUTE_PATTERN, attributeConfigId, CampaignType.period, campaignId);
+    }
+
+    public static AttributeKeyAsObj createReferenced(AttributeKeyAsObj attributeKeyAsObj, RefOperation op) {
+        String impacterAssetType = attributeKeyAsObj.getAssetType();
+        String impacterAssetId = null;
+        if (op.getUseCurrentSite()) {
+            impacterAssetId = attributeKeyAsObj.getAssetId();
+        } else {
+            impacterAssetId = op.getFixedSite();
+        }
+
+        CampaignType impacterCampaignType = attributeKeyAsObj.getCampaignType();
+        String impacterCampaign = null;
+        if (op.getDateOffset() != null) {
+            impacterCampaign = applyOffSet(attributeKeyAsObj.getCampaign(), op.getDateOffset());
+        } else {
+            impacterCampaign = attributeKeyAsObj.getCampaign();
+        }
+
+        return AttributeKeyAsObj
+            .builder()
+            .assetType(impacterAssetType)
+            .assetId(impacterAssetId)
+            .attributeId(op.getKey())
+            .campaignType(impacterCampaignType)
+            .campaign(impacterCampaign)
+            .build();
+    }
+
+    public static String applyOffSet(String campaign, Integer dateOffset) {
+        if (dateOffset == 0) {
+            return campaign;
+        }
+        return String.valueOf(Integer.valueOf(campaign) + dateOffset);
+    }
+
+    public static String unApplyOffSet(String campaign, Integer dateOffset) {
+        if (dateOffset == 0) {
+            return campaign;
+        }
+        return String.valueOf(Integer.valueOf(campaign) - dateOffset);
     }
 }

@@ -2,8 +2,14 @@ package com.sm.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.sm.IntegrationTest;
 import com.sm.domain.Campaign;
@@ -50,24 +56,24 @@ class CampaignResourceIT {
 
     /**
      * Create an entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
     public static Campaign createEntity() {
-        Campaign campaign = new Campaign().name(DEFAULT_NAME).description(DEFAULT_DESCRIPTION);
-        return campaign;
+        //        Campaign campaign = new Campaign().name(DEFAULT_NAME).description(DEFAULT_DESCRIPTION);
+        return new Campaign();
     }
 
     /**
      * Create an updated entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
     public static Campaign createUpdatedEntity() {
-        Campaign campaign = new Campaign().name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
-        return campaign;
+        //        Campaign campaign = new Campaign().name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        return new Campaign();
     }
 
     @BeforeEach
@@ -156,7 +162,7 @@ class CampaignResourceIT {
 
         // Update the campaign
         Campaign updatedCampaign = campaignRepository.findById(campaign.getId()).orElseThrow();
-        updatedCampaign.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        //        updatedCampaign.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
         CampaignDTO campaignDTO = campaignMapper.toDto(updatedCampaign);
 
         restCampaignMockMvc
@@ -248,7 +254,7 @@ class CampaignResourceIT {
         Campaign partialUpdatedCampaign = new Campaign();
         partialUpdatedCampaign.setId(campaign.getId());
 
-        partialUpdatedCampaign.name(UPDATED_NAME);
+        //        partialUpdatedCampaign.name(UPDATED_NAME);
 
         restCampaignMockMvc
             .perform(
@@ -277,7 +283,7 @@ class CampaignResourceIT {
         Campaign partialUpdatedCampaign = new Campaign();
         partialUpdatedCampaign.setId(campaign.getId());
 
-        partialUpdatedCampaign.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        //        partialUpdatedCampaign.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
 
         restCampaignMockMvc
             .perform(

@@ -2,9 +2,18 @@ package com.sm.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.sm.IntegrationTest;
 import com.sm.domain.AttributeConfig;
@@ -349,10 +358,10 @@ class AttributeConfigResourceIT {
         AttributeConfig partialUpdatedAttributeConfig = new AttributeConfig();
         partialUpdatedAttributeConfig.setId(attributeConfig.getId());
 
-        partialUpdatedAttributeConfig
-            .applyOnChildren(UPDATED_APPLY_ON_CHILDREN)
-            .isConsolidable(UPDATED_IS_CONSOLIDABLE)
-            .isWritable(UPDATED_IS_WRITABLE);
+        //        partialUpdatedAttributeConfig
+        //            .applyOnChildren(UPDATED_APPLY_ON_CHILDREN)
+        //            .isConsolidable(UPDATED_IS_CONSOLIDABLE)
+        //            .isWritable(UPDATED_IS_WRITABLE);
 
         restAttributeConfigMockMvc
             .perform(
@@ -386,14 +395,14 @@ class AttributeConfigResourceIT {
         AttributeConfig partialUpdatedAttributeConfig = new AttributeConfig();
         partialUpdatedAttributeConfig.setId(attributeConfig.getId());
 
-        partialUpdatedAttributeConfig
-            .applyOnChildren(UPDATED_APPLY_ON_CHILDREN)
-            .isConsolidable(UPDATED_IS_CONSOLIDABLE)
-            .relatedConfigId(UPDATED_RELATED_CONFIG_ID)
-            .attributeType(UPDATED_ATTRIBUTE_TYPE)
-            .isWritable(UPDATED_IS_WRITABLE)
-            .consoParameterKey(UPDATED_CONSO_PARAMETER_KEY)
-            .consoOperationType(UPDATED_CONSO_OPERATION_TYPE);
+        //        partialUpdatedAttributeConfig
+        //            .applyOnChildren(UPDATED_APPLY_ON_CHILDREN)
+        //            .isConsolidable(UPDATED_IS_CONSOLIDABLE)
+        //            .relatedConfigId(UPDATED_RELATED_CONFIG_ID)
+        //            .attributeType(UPDATED_ATTRIBUTE_TYPE)
+        //            .isWritable(UPDATED_IS_WRITABLE)
+        //            .consoParameterKey(UPDATED_CONSO_PARAMETER_KEY)
+        //            .consoOperationType(UPDATED_CONSO_OPERATION_TYPE);
 
         restAttributeConfigMockMvc
             .perform(

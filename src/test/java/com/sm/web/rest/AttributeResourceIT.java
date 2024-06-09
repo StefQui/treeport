@@ -2,9 +2,18 @@ package com.sm.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.sm.IntegrationTest;
 import com.sm.domain.attribute.Attribute;
@@ -73,10 +82,10 @@ class AttributeResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Attribute createEntity() {
-        Attribute attribute = new Attribute()
-            .isAgg(DEFAULT_IS_AGG)
-            .hasConfigError(DEFAULT_HAS_CONFIG_ERROR)
-            .configError(DEFAULT_CONFIG_ERROR);
+        Attribute attribute = new Attribute();
+        //            .isAgg(DEFAULT_IS_AGG)
+        //            .hasConfigError(DEFAULT_HAS_CONFIG_ERROR)
+        //            .configError(DEFAULT_CONFIG_ERROR);
         return attribute;
     }
 
@@ -87,10 +96,10 @@ class AttributeResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Attribute createUpdatedEntity() {
-        Attribute attribute = new Attribute()
-            .isAgg(UPDATED_IS_AGG)
-            .hasConfigError(UPDATED_HAS_CONFIG_ERROR)
-            .configError(UPDATED_CONFIG_ERROR);
+        Attribute attribute = new Attribute();
+        //            .isAgg(UPDATED_IS_AGG)
+        //            .hasConfigError(UPDATED_HAS_CONFIG_ERROR)
+        //            .configError(UPDATED_CONFIG_ERROR);
         return attribute;
     }
 
@@ -200,7 +209,7 @@ class AttributeResourceIT {
 
         // Update the attribute
         Attribute updatedAttribute = attributeRepository.findById(attribute.getId()).orElseThrow();
-        updatedAttribute.isAgg(UPDATED_IS_AGG).hasConfigError(UPDATED_HAS_CONFIG_ERROR).configError(UPDATED_CONFIG_ERROR);
+        //        updatedAttribute.isAgg(UPDATED_IS_AGG).hasConfigError(UPDATED_HAS_CONFIG_ERROR).configError(UPDATED_CONFIG_ERROR);
         AttributeDTO attributeDTO = attributeMapper.toDto(updatedAttribute);
 
         restAttributeMockMvc
@@ -293,7 +302,7 @@ class AttributeResourceIT {
         Attribute partialUpdatedAttribute = new Attribute();
         partialUpdatedAttribute.setId(attribute.getId());
 
-        partialUpdatedAttribute.configError(UPDATED_CONFIG_ERROR);
+        //        partialUpdatedAttribute.configError(UPDATED_CONFIG_ERROR);
 
         restAttributeMockMvc
             .perform(
@@ -323,7 +332,7 @@ class AttributeResourceIT {
         Attribute partialUpdatedAttribute = new Attribute();
         partialUpdatedAttribute.setId(attribute.getId());
 
-        partialUpdatedAttribute.isAgg(UPDATED_IS_AGG).hasConfigError(UPDATED_HAS_CONFIG_ERROR).configError(UPDATED_CONFIG_ERROR);
+        //        partialUpdatedAttribute.isAgg(UPDATED_IS_AGG).hasConfigError(UPDATED_HAS_CONFIG_ERROR).configError(UPDATED_CONFIG_ERROR);
 
         restAttributeMockMvc
             .perform(

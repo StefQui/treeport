@@ -1,7 +1,6 @@
 package com.sm.service;
 
 import static com.sm.domain.attribute.Attribute.PERIOD_FRAG;
-import static com.sm.domain.attribute.Attribute.SITE_FRAG;
 import static com.sm.domain.operation.OperationType.AVG;
 import static com.sm.domain.operation.OperationType.CHILDREN_AVG;
 import static com.sm.domain.operation.OperationType.CHILDREN_COUNT;
@@ -23,16 +22,14 @@ import static java.util.Optional.of;
 import com.sm.domain.*;
 import com.sm.domain.attribute.AggInfo;
 import com.sm.domain.attribute.Attribute;
-import com.sm.domain.attribute.AttributeValue;
-import com.sm.domain.attribute.ErrorValue;
 import com.sm.domain.operation.*;
 import com.sm.service.dto.attribute.AttributeDTO;
 import com.sm.service.mapper.AttributeValueMapper;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -59,27 +56,33 @@ public class ComputeService {
     @Autowired
     AttributeService attributeService;
 
+    @Autowired
+    DirtierService dirtierService;
+
     ConsoCalculator<Double> doubleCalculator = new ConsoCalculator();
     ConsoCalculator<Long> longCalculator = new ConsoCalculator();
 
-    public void applyCampaigns(@NonNull String orgaId) {
-        campaignService.findAllCampaigns().stream().forEach(c -> this.applyCampaign(c, orgaId));
+    public void applyCampaigns(@NonNull String orgaId, List<String> ids) {
+        campaignService.findAllByIdsAndOrgaId(ids, orgaId).stream().forEach(c -> this.applyCampaign(c, orgaId));
+        //        campaignService.findAllCampaigns().stream().forEach(c -> this.applyCampaign(c, orgaId));
     }
 
     private void applyCampaign(Campaign campaign, @NonNull String orgaId) {
-        Map<String, List<AttributeConfig>> keyConfigsMaps = attributeConfigService
+        Map<String, List<AttributeConfig>> keyOrderedConfigsMaps = attributeConfigService
             .findAllConfigs(orgaId)
             .stream()
-            .collect(Collectors.groupingBy(AttributeConfig::getId));
+            .filter(config -> config.getCampaignId().equals(campaign.getId()))
+            .collect(Collectors.groupingBy(AttributeConfig::getKey));
+        keyOrderedConfigsMaps.forEach((key, configs) -> configs.stream().sorted(Comparator.comparingInt(AttributeConfig::getConfigOrder)));
         siteService
             .findAllRootSites(orgaId)
             .stream()
             .forEach(root -> {
-                this.applyCampaignForSiteAndKeyConfigsMap(campaign, root, keyConfigsMaps, orgaId);
+                this.applyCampaignForSiteAndKeyConfigsMap(campaign, root, keyOrderedConfigsMaps, orgaId);
                 this.validateForCampaignAndSite(campaign, root, orgaId);
             });
 
-        treeShake(keyConfigsMaps, campaign, orgaId);
+        treeShake(keyOrderedConfigsMaps, campaign, orgaId);
     }
 
     private void validateForCampaignAndSite(Campaign campaign, Site site, @NonNull String orgaId) {
@@ -128,12 +131,12 @@ public class ComputeService {
 
     private void applyCampaignForSiteAndKeyConfigsMap(
         Campaign campaign,
-        Site root,
-        Map<String, List<AttributeConfig>> keyConfigsMap,
+        Site site,
+        Map<String, List<AttributeConfig>> keyOrderedConfigsMaps,
         @NonNull String orgaId
     ) {
-        keyConfigsMap.forEach((configKey, configs) ->
-            this.applyCampaignForSiteAndKeyConfigs(campaign, root, configKey, configs, null, orgaId)
+        keyOrderedConfigsMaps.forEach((configKey, configs) ->
+            this.applyCampaignForSiteAndKeyConfigs(campaign, site, configKey, configs, orgaId)
         );
     }
 
@@ -141,26 +144,87 @@ public class ComputeService {
         Campaign campaign,
         Site site,
         String configKey,
-        List<AttributeConfig> configs,
-        AttributeConfig applyableConfig,
+        List<AttributeConfig> orderedConfigs,
         @NonNull String orgaId
     ) {
-        AttributeConfig configForSite = configs
-            .stream()
-            .filter(c -> c.getId().equals(configKey) && site.getId().equals(c.getSiteId()))
-            .findAny()
-            .orElse(null);
-        if (configForSite == null) {
-            if (applyableConfig != null) {
-                this.createOrUpdateAttribute(site, configKey, campaign, applyableConfig, orgaId);
+        boolean found = false;
+        int i = 0;
+        while (!found && i < orderedConfigs.size()) {
+            AttributeConfig config = orderedConfigs.get(i);
+            if (isEligible(site, config, campaign)) {
+                this.createOrUpdateAttribute(site, configKey, campaign, config, orgaId);
+                found = true;
             }
-        } else {
-            this.createOrUpdateAttribute(site, configKey, campaign, configForSite, orgaId);
+            i++;
         }
-        AttributeConfig nextApplyableConfig = fetchNextApplyableConfig(configForSite, applyableConfig);
+        //        AttributeConfig configForSite = configs
+        //            .stream()
+        //            .filter(c -> c.getId().equals(configKey) && site.getId().equals(c.getSiteId()))
+        //            .findAny()
+        //            .orElse(null);
+        //        if (configForSite == null) {
+        //            if (applyableConfig != null) {
+        //                this.createOrUpdateAttribute(site, configKey, campaign, applyableConfig, orgaId);
+        //            }
+        //        } else {
+        //            this.createOrUpdateAttribute(site, configKey, campaign, configForSite, orgaId);
+        //        }
+        //        AttributeConfig nextApplyableConfig = fetchNextApplyableConfig(configForSite, applyableConfig);
 
         List<Site> children = siteService.getChildren(site, orgaId);
-        children.stream().forEach(s -> applyCampaignForSiteAndKeyConfigs(campaign, s, configKey, configs, nextApplyableConfig, orgaId));
+        children.stream().forEach(s -> applyCampaignForSiteAndKeyConfigs(campaign, s, configKey, orderedConfigs, orgaId));
+    }
+
+    private boolean isEligible(Site site, AttributeConfig config, Campaign campaign) {
+        if (config.getConfigOrder() == null) {
+            throw new RuntimeException("config order can't be null");
+        }
+
+        // sitesCheck
+        boolean sitesCheck = false;
+        if (CollectionUtils.isEmpty(config.getSiteIds())) {
+            sitesCheck = true;
+        } else {
+            if (config.getSiteIds().contains(site.getId())) {
+                sitesCheck = true;
+            }
+        }
+
+        // parentsCheck
+        boolean parentsCheck;
+        if (CollectionUtils.isEmpty(config.getParentSiteIds())) {
+            parentsCheck = true;
+        } else {
+            Set<String> intersection = config
+                .getParentSiteIds()
+                .stream()
+                .distinct()
+                .filter(psId -> site.getAncestorIds().contains(psId))
+                .collect(Collectors.toSet());
+            parentsCheck = !CollectionUtils.isEmpty(intersection);
+        }
+
+        // childrenTagsOneOfCheck
+        boolean childrenTagsOneOfCheck;
+        if (CollectionUtils.isEmpty(config.getChildrenTagsOneOf())) {
+            childrenTagsOneOfCheck = true;
+        } else {
+            Set<Tag> intersection = config
+                .getChildrenTagsOneOf()
+                .stream()
+                .distinct()
+                .filter(site.getChildrenTags()::contains)
+                .collect(Collectors.toSet());
+            childrenTagsOneOfCheck = !CollectionUtils.isEmpty(intersection);
+        }
+
+        // tags
+        boolean tagsCheck = CollectionUtils.isEmpty(config.getTags()) || this.matchAtLeastOneTag(site.getTags(), config.getTags());
+
+        // campaignCheck
+        boolean campaignCheck = campaign.getId().equals(config.getCampaignId());
+
+        return (sitesCheck && parentsCheck && campaignCheck && tagsCheck && childrenTagsOneOfCheck);
     }
 
     private AttributeConfig fetchNextApplyableConfig(AttributeConfig configForSite, AttributeConfig applyableConfig) {
@@ -175,25 +239,23 @@ public class ComputeService {
     }
 
     private void createOrUpdateAttribute(Site site, String configKey, Campaign campaign, AttributeConfig config, @NonNull String orgaId) {
-        if (CollectionUtils.isEmpty(config.getTags()) || this.matchAtLeastOneTag(site.getTags(), config.getTags())) {
-            String attKey = AttributeKeyUtils.key(SITE_FRAG, site.getId(), configKey, PERIOD_FRAG, campaign.getId());
-            Attribute attribute = attributeService.findByIdAndOrgaId(attKey, orgaId).orElse(null);
-            if (attribute == null) {
-                attribute = Attribute.builder().orgaId(orgaId).siteId(site.getId()).id(attKey).build();
-            } else {
-                attribute.setHasConfigError(false);
-                attribute.setConfigError(null);
-            }
-            addImpacters(attribute, config, site, campaign, orgaId);
-            attribute.setConfigId(config.getId());
-            attribute.setCampaignId(campaign.getId());
-            if (config.getIsConsolidable()) {
-                attribute.setIsAgg(true);
-                attribute.setAggInfo(AggInfo.builder().build());
-            }
-            attribute.setTags(site.getTags());
-            attributeService.save(attribute);
+        String attKey = AttributeKeyUtils.siteKey(site.getId(), configKey, PERIOD_FRAG, campaign.getId());
+        Attribute attribute = attributeService.findByIdAndOrgaId(attKey, orgaId).orElse(null);
+        if (attribute == null) {
+            attribute = Attribute.builder().orgaId(orgaId).siteId(site.getId()).id(attKey).build();
+        } else {
+            attribute.setHasConfigError(false);
+            attribute.setConfigError(null);
         }
+        addImpacters(attribute, config, site, campaign, orgaId);
+        attribute.setConfigId(config.getId());
+        attribute.setCampaignId(campaign.getId());
+        if (config.getIsConsolidable()) {
+            attribute.setIsAgg(true);
+            attribute.setAggInfo(AggInfo.builder().build());
+        }
+        attribute.setTags(site.getTags());
+        attributeService.save(attribute);
     }
 
     private void addImpacters(Attribute attribute, AttributeConfig config, Site site, Campaign campaign, @NonNull String orgaId) {
@@ -239,73 +301,100 @@ public class ComputeService {
         log.info("ReCalculating for : " + attributeIds);
         log.info("-------------------------------------");
 
-        Set<Attribute> impactedAttributes = new HashSet<>();
-        attributeIds.stream().forEach(attKey -> fetchImpactedAttributes(attKey, impactedAttributes, orgaId));
+        Set<Attribute> attributes = attributeIds
+            .stream()
+            .map(attId -> attributeService.findByIdAndOrgaId(attId, orgaId).orElse(null))
+            .collect(Collectors.toSet());
 
-        List<Attribute> orderedImpactedAttributes = ComputeSortingService.sortImpacteds(impactedAttributes);
+        dirtierService.dirtyTrees(attributes, orgaId);
 
-        if (!CollectionUtils.isEmpty(impactedAttributes)) {
-            calculateImpacts(orderedImpactedAttributes, orgaId);
-            return orderedImpactedAttributes;
-        }
+        calculateImpactsFor(attributeIds, orgaId);
 
         return new ArrayList<>();
     }
 
-    private void fetchImpactedAttributes(String attKey, Set<Attribute> impactedAttributes, @NonNull String orgaId) {
-        Attribute att = attributeService.findByIdAndOrgaId(attKey, orgaId).orElse(null);
-        if (att != null) {
-            impactedAttributes.add(att);
+    private void calculateImpactsFor(Set<String> attributeIds, String orgaId) {
+        if (attributeIds.isEmpty()) {
+            return;
         }
-
-        //        impactedAttributes.add(attributeService.findByIdAndOrgaId(attKey, orgaId).get());
-        Set<Attribute> impacteds = attributeService.findImpacted(attKey, orgaId);
-        //        impactedAttributes.addAll(impacteds);
-        //        impacteds.forEach(att1 -> fetchImpactedAttributes(att1.getId(), impactedAttributes));
-        impacteds.forEach(att1 -> {
-            if (!impactedAttributes.contains(att1)) {
-                impactedAttributes.add(att1);
-                fetchImpactedAttributes(att1.getId(), impactedAttributes, orgaId);
-            }
-        });
+        AtomicBoolean shouldBeProcessed = new AtomicBoolean(true);
+        while (shouldBeProcessed.get()) {
+            shouldBeProcessed.set(false);
+            attributeService
+                .getAttributesFromKeys(attributeIds, orgaId)
+                .stream()
+                .forEach(attribute -> process(attribute, orgaId, shouldBeProcessed));
+        }
     }
 
-    private void calculateImpacts(List<Attribute> attributes, String orgaId) {
-        attributes
-            .stream()
-            .forEach(attribute -> {
-                if (attribute.getHasConfigError()) {
-                    attribute.setAttributeValue(ErrorValue.builder().value(attribute.getConfigError()).build());
-                    return;
-                }
-                AttributeConfig config = attributeConfigService.findByOrgaIdAndId(attribute.getConfigId(), orgaId).orElse(null);
-                if (config == null) {
-                    attribute.setAttributeValue(
-                        ErrorValue
-                            .builder()
-                            .value("Attribute is referencing a config that can't be found : " + attribute.getConfigId())
-                            .build()
-                    );
-                    return;
-                }
-                if (config.getIsWritable()) {
-                    return;
-                }
-                if (config.getOperation() == null) {
-                    log.info("jhh");
-                }
-                Pair<AttributeValue, AggInfo> v = calculatorService.calculateAttribute(
-                    orgaId,
-                    attribute.getId(),
-                    attribute.getTags(),
-                    attribute.getImpacterIds(),
-                    config
-                );
-                attribute.setAttributeValue(v.getLeft());
-                attribute.setAggInfo(v.getRight());
+    private void process(Attribute attribute, String orgaId, AtomicBoolean shouldBeProcessed) {
+        if (!attribute.getDirty()) {
+            handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed);
+            return;
+        }
+        AttributeConfig config = attributeConfigService.findByOrgaIdAndId(attribute.getConfigId(), orgaId).orElse(null);
+        if (!config.getIsWritable()) {
+            CalculationResult v = calculatorService.calculateAttribute(orgaId, attribute, attribute.getImpacterIds(), config);
+            if (v.getSuccess()) {
+                attribute.setAttributeValue(v.getResultValue());
+                attribute.setAggInfo(v.getAggInfo());
+                attribute.setDirty(false);
+                attribute.setImpacterIds(v.getImpacterIds());
                 attributeService.save(attribute);
-            });
+
+                handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed);
+            } else {
+                shouldBeProcessed.set(true);
+            }
+        } else {
+            attribute.setDirty(false);
+            attributeService.save(attribute);
+            handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed);
+        }
     }
+
+    private void handleImpacteds(String attId, String orgaId, AtomicBoolean shouldBeProcessed) {
+        Set<Attribute> impacteds = attributeService.findImpacted(attId, orgaId);
+
+        impacteds.forEach(impacted -> process(impacted, orgaId, shouldBeProcessed));
+    }
+
+    //    private void calculateImpacts(List<Attribute> attributes, String orgaId) {
+    //        attributes
+    //            .stream()
+    //            .forEach(attribute -> {
+    //                if (attribute.getHasConfigError()) {
+    //                    attribute.setAttributeValue(ErrorValue.builder().value(attribute.getConfigError()).build());
+    //                    return;
+    //                }
+    //                AttributeConfig config = attributeConfigService.findByOrgaIdAndId(attribute.getConfigId(), orgaId).orElse(null);
+    //                if (config == null) {
+    //                    attribute.setAttributeValue(
+    //                        ErrorValue
+    //                            .builder()
+    //                            .value("Attribute is referencing a config that can't be found : " + attribute.getConfigId())
+    //                            .build()
+    //                    );
+    //                    return;
+    //                }
+    //                if (config.getIsWritable()) {
+    //                    return;
+    //                }
+    //                if (config.getOperation() == null) {
+    //                    log.info("jhh");
+    //                }
+    //                Pair<AttributeValue, AggInfo> v = calculatorService.calculateAttribute(
+    //                    orgaId,
+    //                    attribute.getId(),
+    //                    attribute.getTags(),
+    //                    attribute.getImpacterIds(),
+    //                    config
+    //                );
+    //                attribute.setAttributeValue(v.getLeft());
+    //                attribute.setAggInfo(v.getRight());
+    //                attributeService.save(attribute);
+    //            });
+    //    }
 
     private void fetchImpactsForConfigs(String id, List<AttributeConfig> configs, List<Impact> impacts, @NonNull String orgaId) {
         configs.stream().forEach(config -> this.fetchImpactsForConfig(id, config, impacts, configs, orgaId));

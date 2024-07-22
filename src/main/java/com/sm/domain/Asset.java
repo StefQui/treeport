@@ -55,9 +55,17 @@ public abstract class Asset implements Serializable {
     @Field("childrenIds")
     private List<String> childrenIds = new ArrayList<>();
 
+    @Builder.Default
+    @Field("ancestorIds")
+    private List<String> ancestorIds = new ArrayList<>();
+
     @Field("tags")
     @Builder.Default
     private Set<Tag> tags = new HashSet<>();
+
+    @Field("childrenTags")
+    @Builder.Default
+    private Set<Tag> childrenTags = new HashSet<>();
 
     public Asset(AssetType type) {
         this.type = type;

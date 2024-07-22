@@ -4,6 +4,7 @@ import com.sm.domain.AttributeConfig;
 import com.sm.domain.attribute.*;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -85,8 +86,9 @@ public class ConsoCalculator<T> {
         return Pair.of(calculateMultiVals(attId, attVals, config, builderValue, attributeValueTFunction, startValue, reducer), null);
     }
 
-    public Pair<AttributeValue, AggInfo> calculateConsolidatedAttribute(
+    public CalculationResult calculateConsolidatedAttribute(
         String attId,
+        Set<String> inmpacterIds,
         List<Attribute> atts,
         AttributeConfig config,
         AttributeValue<T> builderValue,
@@ -95,6 +97,10 @@ public class ConsoCalculator<T> {
         BinaryOperator<T> reducer
     ) {
         try {
+            if (atts.stream().anyMatch(att -> att.getDirty())) {
+                return CalculationResult.builder().success(false).build();
+            }
+
             AggInfo aggInfo = AggInfo.builder().build();
             Optional<Attribute> consolidatedOpt = atts.stream().filter(att -> !att.getIsAgg()).findAny();
             Boolean consolidatedValueIsMissing = false;
@@ -153,7 +159,13 @@ public class ConsoCalculator<T> {
                         DoubleValue.builder().value(Double.valueOf(config.getDefaultValueForNotResolvableItem().toString())).build()
                     );
                 } else {
-                    return Pair.of(UtilsValue.generateNotResolvableValue("value to consolidate is null or not resolvable"), aggInfo);
+                    return CalculationResult
+                        .builder()
+                        .success(true)
+                        .resultValue(UtilsValue.generateNotResolvableValue("value to consolidate is null or not resolvable"))
+                        .impacterIds(inmpacterIds)
+                        .aggInfo(aggInfo)
+                        .build();
                 }
             }
 
@@ -161,40 +173,26 @@ public class ConsoCalculator<T> {
                 attVals.add(consolidatedAttribute.getAttributeValue());
             }
 
-            //            if (atLeastOnChildValueIsNotResolvable.get()) {
-            //                attribute.setAttributeValue(UtilsValue
-            //                        .generateNotResolvableValue("at least one child value is not resolvable"));
-            //                return;
-            //            }
             AttributeValue errorOrNotResolvable = UtilsValue.handleErrorsAndNotResolvable(attVals);
             if (errorOrNotResolvable != null) {
-                return Pair.of(errorOrNotResolvable, aggInfo);
+                return CalculationResult
+                    .builder()
+                    .success(true)
+                    .resultValue(UtilsValue.handleErrorsAndNotResolvable(attVals))
+                    .impacterIds(inmpacterIds)
+                    .aggInfo(aggInfo)
+                    .build();
             }
 
-            return Pair.of(calculate(builderValue, attVals, attributeValueTFunction, startValue, reducer), aggInfo);
-            //            if (AttributeType.DOUBLE.equals(config.getType())) {
-            ////                ConsoCalculator<Double> consoCalculator = new ConsoCalculator<Double>();
-            //                return Pair.of(calculate(builderValue,
-            //                                attVals, attributeValueTFunction, startValue, reducer),
-            //                        aggInfo);
-            ////                Double initialValueDouble = Double.valueOf(identity.toString());
-            ////                List<Double> doubleVals = attVals.stream().map(UtilsValue::mapToDouble).collect(Collectors.toList());
-            ////                attribute.setAttributeValue(DoubleValue.builder()
-            ////                        .value(doubleVals.stream()
-            ////                                .reduce(initialValueDouble, sum)
-            ////                        )
-            ////                        .build());
-            //            } else {
-            //                throw new RuntimeException("Should be implemented here " + config.getType());
-            //            }
-            //            AttributeValue ifAnyDoubleNull = UtilsValue.throwNotResolvableIfAnyDoubleIsNull(doubleVals);
-            //            if (ifAnyDoubleNull != null) {
-            //                attribute.setAttributeValue(ifAnyDoubleNull);
-            //                return;
-            //            }
+            return CalculationResult
+                .builder()
+                .success(true)
+                .resultValue(calculate(builderValue, attVals, attributeValueTFunction, startValue, reducer))
+                .impacterIds(inmpacterIds)
+                .aggInfo(aggInfo)
+                .build();
         } catch (Exception e) {
             throw new RuntimeException("should not arrive here " + attId);
-            //            attribute.setAttributeValue(UtilsValue.generateOtherErrorValue("cannot do sum of doubles", e));
         }
     }
 }

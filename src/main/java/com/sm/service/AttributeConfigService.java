@@ -42,6 +42,14 @@ public class AttributeConfigService {
         return attributeConfigMapper.toDto(attributeConfig);
     }
 
+    public AttributeConfig save(AttributeConfig attributeConfig) {
+        if (attributeConfig.getConfigOrder() == null) {
+            throw new RuntimeException("config order can't be null");
+        }
+
+        return attributeConfigRepository.save(attributeConfig);
+    }
+
     /**
      * Update a attributeConfig.
      *

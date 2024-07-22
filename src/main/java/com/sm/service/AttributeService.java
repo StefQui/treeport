@@ -158,9 +158,22 @@ public class AttributeService {
         attributeRepository.save(attribute);
     }
 
+    public void saveAll(List<Attribute> attributes) {
+        attributeRepository.saveAll(attributes);
+    }
+
     public Set<Attribute> findImpacted(String attKey, @NonNull String orgaId) {
         List<Attribute> atts = findAllAttributes(orgaId);
         return atts.stream().filter(a -> a.getImpacterIds().contains(attKey)).collect(Collectors.toSet());
+    }
+
+    public List<Attribute> getAttributesFromKeys(Set<String> keys, @NonNull String orgaId) {
+        return keys
+            .stream()
+            .map(impacterId -> findByIdAndOrgaId(impacterId, orgaId))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
     }
 
     public Optional<Map<String, AttributeDTO>> fetchFieldAttributes(String orgaId, Map<String, String> fieldsAttributeIdsMap) {

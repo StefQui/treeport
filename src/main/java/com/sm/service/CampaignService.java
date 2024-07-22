@@ -94,6 +94,11 @@ public class CampaignService {
         return campaignRepository.findAll().stream().collect(Collectors.toList());
     }
 
+    public List<Campaign> findAllByIdsAndOrgaId(List<String> ids, String orgaId) {
+        log.debug("Request to get all Campaigns");
+        return campaignRepository.findAllByIdInAndOrgaId(ids, orgaId);
+    }
+
     /**
      * Get one campaign by id.
      *

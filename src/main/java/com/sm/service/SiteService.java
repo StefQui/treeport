@@ -5,15 +5,13 @@ import static com.sm.service.dto.filter.ColumnType.ATTRIBUTE;
 
 import com.sm.domain.Site;
 import com.sm.domain.SiteWithValues;
+import com.sm.domain.Tag;
 import com.sm.repository.SiteRepository;
 import com.sm.service.dto.SiteDTO;
 import com.sm.service.dto.SiteWithValuesDTO;
 import com.sm.service.dto.filter.*;
 import com.sm.service.mapper.SiteMapper;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -396,5 +394,54 @@ public class SiteService {
                 targets.add((AttributePropertyFilterTargetDTO) pf.getProperty());
             }
         }
+    }
+
+    public void deleteAll() {
+        siteRepository.deleteAll();
+    }
+
+    public Site save(Site site, String orgaId) {
+        if (site.getObjectId() == null) {
+            site.setChildrenTags(site.getTags());
+        } else {
+            List<Site> allChildren = new ArrayList<>();
+            getAllChildren(site, orgaId, allChildren);
+            site.setChildrenTags(allChildren.stream().flatMap(s -> s.getChildrenTags().stream()).collect(Collectors.toSet()));
+        }
+        Site saved = siteRepository.save(site);
+        saved.setAncestorIds(calculateAncestors(orgaId, saved, new ArrayList<>()));
+        saved = siteRepository.save(saved);
+        handleParent(saved, orgaId);
+        return saved;
+    }
+
+    private List<String> calculateAncestors(String orgaId, Site site, ArrayList<String> ancestorIds) {
+        ancestorIds.add(site.getId());
+        if (site.getParentId() == null) {
+            return ancestorIds;
+        }
+        Site parent = siteRepository.findByIdAndOrgaId(site.getParentId(), orgaId).get(0);
+        return calculateAncestors(orgaId, parent, ancestorIds);
+    }
+
+    private void handleParent(Site saved, String orgaId) {
+        if (saved.getParentId() != null) {
+            Site parent = siteRepository.findByIdAndOrgaId(saved.getParentId(), orgaId).get(0);
+            Set<Tag> tags = new HashSet<>(saved.getChildrenTags());
+            tags.addAll(parent.getTags());
+            parent.setChildrenTags(tags);
+            List<String> newChildren = parent.getChildrenIds();
+            if (!newChildren.contains(saved.getId())) {
+                newChildren.add(saved.getId());
+                parent.setChildrenIds(newChildren);
+            }
+            parent = siteRepository.save(parent);
+            handleParent(parent, orgaId);
+        }
+    }
+
+    private void getAllChildren(Site site, String orgaId, List<Site> children) {
+        children.add(site);
+        siteRepository.findByOrgaIdAndParentId(orgaId, site.getId()).forEach(child -> getAllChildren(child, orgaId, children));
     }
 }

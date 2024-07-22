@@ -8,7 +8,7 @@ public enum OperationType {
     PRODUCT,
     CHILDREN_COUNT,
     REF,
-    IF_THEN,
+    IF_THEN_ELSE,
     CONSTANT,
     COMPARISON,
     DIVIDE,

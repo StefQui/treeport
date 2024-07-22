@@ -47,6 +47,9 @@ spring:
         size: 20
   thymeleaf:
     mode: HTML
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/treeporttest
 
 server:
   port: 10344

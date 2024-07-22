@@ -79,6 +79,10 @@ public class Attribute implements Serializable {
     @Field("attributeValue")
     private AttributeValue attributeValue;
 
+    @Field("dirty")
+    @Builder.Default
+    private Boolean dirty = false;
+
     @Field("tags")
     @Builder.Default
     private Set<Tag> tags = new HashSet<>();

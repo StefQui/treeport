@@ -5,6 +5,7 @@ import static com.sm.domain.operation.OperationType.CHILDREN_SUM;
 import static com.sm.domain.operation.OperationType.COMPARISON;
 import static com.sm.domain.operation.OperationType.CONSO_SUM;
 import static com.sm.domain.operation.OperationType.CONSTANT;
+import static com.sm.domain.operation.OperationType.IF_THEN_ELSE;
 import static com.sm.domain.operation.OperationType.PRODUCT;
 import static com.sm.domain.operation.OperationType.REF;
 import static com.sm.domain.operation.OperationType.SUM;
@@ -15,7 +16,6 @@ import static com.sm.service.AttributeKeyUtils.fromString;
 import static com.sm.service.AttributeKeyUtils.objToString;
 
 import com.sm.domain.AttributeConfig;
-import com.sm.domain.Tag;
 import com.sm.domain.attribute.*;
 import com.sm.domain.operation.*;
 import com.sm.service.mapper.AttributeValueMapper;
@@ -52,36 +52,53 @@ public class CalculatorService {
     ConsoCalculator<Double> doubleCalculator = new ConsoCalculator();
     ConsoCalculator<Long> longCalculator = new ConsoCalculator();
 
-    public Pair<AttributeValue, AggInfo> calculateAttribute(
-        String orgaId,
-        String attId,
-        Set<Tag> attTags,
-        Set<String> impacterIds,
-        AttributeConfig config
-    ) {
-        if (config.getIsWritable()) {
-            throw new RuntimeException("cannot have a writable here " + attId + " " + config);
+    public CalculationResult calculateAttribute(String orgaId, Attribute attribute, Set<String> impacterIds, AttributeConfig config) {
+        if (attribute.getHasConfigError()) {
+            return CalculationResult
+                .builder()
+                .resultValue(ErrorValue.builder().value(attribute.getConfigError()).build())
+                .success(true)
+                .build();
         }
-        if (config.getId().equals("site:a12:toConso:period:2023")) {
-            log.info("kkk site:a12:toConso:period:2023");
+        if (config == null) {
+            return CalculationResult
+                .builder()
+                .resultValue(ErrorValue.builder().value("Attribute config was not found : " + attribute.getConfigId()).build())
+                .success(true)
+                .build();
+        }
+        if (config.getIsWritable()) {
+            throw new RuntimeException("cannot have a writable here " + attribute.getId() + " " + config);
         }
         // Handle Novalue NotResolvable Errors
 
         if (CONSTANT.equals(config.getOperationType())) {
             ConstantOperation op = (ConstantOperation) config.getOperation();
             if (op.getConstantType().equals(AggInfo.AttributeType.BOOLEAN)) {
-                return Pair.of(BooleanValue.builder().value(op.getBooleanValue()).build(), null);
+                return CalculationResult
+                    .builder()
+                    .resultValue(BooleanValue.builder().value(op.getBooleanValue()).build())
+                    .success(true)
+                    .build();
             } else if (op.getConstantType().equals(AggInfo.AttributeType.DOUBLE)) {
-                return Pair.of(DoubleValue.builder().value(op.getDoubleValue()).build(), null);
+                return CalculationResult
+                    .builder()
+                    .resultValue(DoubleValue.builder().value(op.getDoubleValue()).build())
+                    .success(true)
+                    .build();
             } else if (op.getConstantType().equals(AggInfo.AttributeType.LONG)) {
-                return Pair.of(LongValue.builder().value(op.getLongValue()).build(), null);
+                return CalculationResult.builder().resultValue(LongValue.builder().value(op.getLongValue()).build()).success(true).build();
             } else {
                 throw new RuntimeException("to be implemented here 44");
             }
         } else if (TAG.equals(config.getOperationType())) {
             TagOperation op = (TagOperation) config.getOperation();
             if (CONTAINS.equals(op.getTagOperationType())) {
-                return Pair.of(BooleanValue.builder().value(op.getTag() == null || attTags.contains(op.getTag())).build(), null);
+                return CalculationResult
+                    .builder()
+                    .resultValue(BooleanValue.builder().value(op.getTag() == null || attribute.getTags().contains(op.getTag())).build())
+                    .success(true)
+                    .build();
             } else {
                 throw new RuntimeException("to implement tagOp " + op.getTagOperationType());
             }
@@ -97,9 +114,10 @@ public class CalculatorService {
                         throw new RuntimeException("pas possible ici");
                     }
 
-                    List<Attribute> attributes = getAttributesFromKeys(impacterIds, orgaId);
+                    List<Attribute> attributes = attributeService.getAttributesFromKeys(impacterIds, orgaId);
                     return doubleCalculator.calculateConsolidatedAttribute(
-                        attId,
+                        attribute.getId(),
+                        impacterIds,
                         attributes,
                         config,
                         DoubleValue.builder().build(),
@@ -126,8 +144,7 @@ public class CalculatorService {
                     .map(item ->
                         calculateAttribute(
                             orgaId,
-                            attId,
-                            attTags,
+                            attribute,
                             new HashSet<>(),
                             AttributeConfig
                                 .builder()
@@ -136,39 +153,45 @@ public class CalculatorService {
                                 .isConsolidable(false)
                                 .operation(item)
                                 .isWritable(false)
-                                .tags(attTags)
+                                .tags(attribute.getTags())
                                 .build()
                         )
                     )
-                    .map(Pair::getLeft)
+                    .map(CalculationResult::getResultValue)
                     .collect(Collectors.toList());
 
                 if (SUM.equals(config.getOperationType())) {
-                    return Pair.of(
-                        doubleCalculator.calculateMultiVals(
-                            attId,
-                            vals,
-                            config,
-                            DoubleValue.builder().build(),
-                            UtilsValue::mapToDouble,
-                            0.,
-                            Double::sum
-                        ),
-                        null
-                    );
+                    return CalculationResult
+                        .builder()
+                        .resultValue(
+                            doubleCalculator.calculateMultiVals(
+                                attribute.getId(),
+                                vals,
+                                config,
+                                DoubleValue.builder().build(),
+                                UtilsValue::mapToDouble,
+                                0.,
+                                Double::sum
+                            )
+                        )
+                        .success(true)
+                        .build();
                 } else if (PRODUCT.equals(config.getOperationType())) {
-                    return Pair.of(
-                        doubleCalculator.calculateMultiVals(
-                            attId,
-                            vals,
-                            config,
-                            DoubleValue.builder().build(),
-                            UtilsValue::mapToDouble,
-                            1.,
-                            (a, b) -> a * b
-                        ),
-                        null
-                    );
+                    return CalculationResult
+                        .builder()
+                        .resultValue(
+                            doubleCalculator.calculateMultiVals(
+                                attribute.getId(),
+                                vals,
+                                config,
+                                DoubleValue.builder().build(),
+                                UtilsValue::mapToDouble,
+                                1.,
+                                (a, b) -> a * b
+                            )
+                        )
+                        .success(true)
+                        .build();
                 } else {
                     throw new RuntimeException("to implement 555");
                 }
@@ -177,10 +200,10 @@ public class CalculatorService {
             }
         } else if (CHILDREN_SUM.equals(config.getOperationType()) || CHILDREN_PRODUCT.equals(config.getOperationType())) {
             if (config.getAttributeType() == AggInfo.AttributeType.DOUBLE) {
-                List<Attribute> attributes = getAttributesFromKeys(impacterIds, orgaId);
+                List<Attribute> attributes = attributeService.getAttributesFromKeys(impacterIds, orgaId);
                 if (CHILDREN_SUM.equals(config.getOperationType())) {
-                    return doubleCalculator.calculateMultiValuesAttribute(
-                        attId,
+                    Pair<AttributeValue, AggInfo> res = doubleCalculator.calculateMultiValuesAttribute(
+                        attribute.getId(),
                         attributes,
                         config,
                         DoubleValue.builder().build(),
@@ -188,11 +211,18 @@ public class CalculatorService {
                         0.,
                         Double::sum
                     );
+                    return CalculationResult
+                        .builder()
+                        .resultValue(res.getLeft())
+                        .success(true)
+                        .impacterIds(impacterIds)
+                        .aggInfo(res.getRight())
+                        .build();
                     //                    return
                     //                            Pair.of(calculateMultiOperandsAttribute(attId, impacterIds, config, 0., Double::sum), null);
                 } else if (CHILDREN_PRODUCT.equals(config.getOperationType())) {
-                    return doubleCalculator.calculateMultiValuesAttribute(
-                        attId,
+                    Pair<AttributeValue, AggInfo> res = doubleCalculator.calculateMultiValuesAttribute(
+                        attribute.getId(),
                         attributes,
                         config,
                         DoubleValue.builder().build(),
@@ -200,14 +230,21 @@ public class CalculatorService {
                         1.,
                         (a, b) -> a * b
                     );
+                    return CalculationResult
+                        .builder()
+                        .resultValue(res.getLeft())
+                        .success(true)
+                        .impacterIds(impacterIds)
+                        .aggInfo(res.getRight())
+                        .build();
                 } else {
                     throw new RuntimeException("to implement 555");
                 }
             } else if (AggInfo.AttributeType.LONG.equals(config.getAttributeType())) {
-                List<Attribute> attributes = getAttributesFromKeys(impacterIds, orgaId);
+                List<Attribute> attributes = attributeService.getAttributesFromKeys(impacterIds, orgaId);
                 if (CHILDREN_SUM.equals(config.getOperationType())) {
-                    return longCalculator.calculateMultiValuesAttribute(
-                        attId,
+                    Pair<AttributeValue, AggInfo> res = longCalculator.calculateMultiValuesAttribute(
+                        attribute.getId(),
                         attributes,
                         config,
                         LongValue.builder().build(),
@@ -215,11 +252,18 @@ public class CalculatorService {
                         0l,
                         Long::sum
                     );
+                    return CalculationResult
+                        .builder()
+                        .resultValue(res.getLeft())
+                        .success(true)
+                        .impacterIds(impacterIds)
+                        .aggInfo(res.getRight())
+                        .build();
                     //                    return
                     //                            Pair.of(calculateMultiOperandsAttribute(attId, impacterIds, config, 0., Double::sum), null);
                 } else if (CHILDREN_PRODUCT.equals(config.getOperationType())) {
-                    return longCalculator.calculateMultiValuesAttribute(
-                        attId,
+                    Pair<AttributeValue, AggInfo> res = longCalculator.calculateMultiValuesAttribute(
+                        attribute.getId(),
                         attributes,
                         config,
                         LongValue.builder().build(),
@@ -227,6 +271,13 @@ public class CalculatorService {
                         1l,
                         (a, b) -> a * b
                     );
+                    return CalculationResult
+                        .builder()
+                        .resultValue(res.getLeft())
+                        .success(true)
+                        .impacterIds(impacterIds)
+                        .aggInfo(res.getRight())
+                        .build();
                 } else {
                     throw new RuntimeException("to implement 555");
                 }
@@ -235,15 +286,29 @@ public class CalculatorService {
             }
         } else if (REF.equals(config.getOperationType())) {
             RefOperation op = (RefOperation) config.getOperation();
-            String attKey = createReferencedKey(attId, op);
-            return Pair.of(getValueFromReferenced(attKey, orgaId), null);
+            String attKey = createReferencedKey(attribute.getId(), op);
+            AttributeValue res = getValueFromReferenced(attKey, orgaId);
+            return CalculationResult.builder().resultValue(res).success(true).impacterIds(impacterIds).aggInfo(null).build();
+        } else if (IF_THEN_ELSE.equals(config.getOperationType())) {
+            IfThenElseOperation op = (IfThenElseOperation) config.getOperation();
+            return calculateIfThenElse(orgaId, attribute, impacterIds, op);
         } else if (COMPARISON.equals(config.getOperationType())) {
             ComparisonOperation op = (ComparisonOperation) config.getOperation();
             if (op.getFirst() == null) {
-                return Pair.of(NotResolvableValue.builder().value("Cannot do comparison, missing first operand").build(), null);
+                return CalculationResult
+                    .builder()
+                    .resultValue(NotResolvableValue.builder().value("Cannot do comparison, missing first operand").build())
+                    .success(true)
+                    .impacterIds(impacterIds)
+                    .build();
             }
             if (op.getSecond() == null) {
-                return Pair.of(NotResolvableValue.builder().value("Cannot do comparison, missing second operand").build(), null);
+                return CalculationResult
+                    .builder()
+                    .resultValue(NotResolvableValue.builder().value("Cannot do comparison, missing second operand").build())
+                    .success(true)
+                    .impacterIds(impacterIds)
+                    .build();
             }
             AttributeConfig firstFakeConfig = AttributeConfig
                 .builder()
@@ -252,7 +317,7 @@ public class CalculatorService {
                 .isConsolidable(false)
                 .operation(op.getFirst())
                 .isWritable(false)
-                .tags(attTags)
+                .tags(attribute.getTags())
                 .build();
             AttributeConfig secondFakeConfig = AttributeConfig
                 .builder()
@@ -261,36 +326,110 @@ public class CalculatorService {
                 .isConsolidable(false)
                 .operation(op.getSecond())
                 .isWritable(false)
-                .tags(attTags)
+                .tags(attribute.getTags())
                 .build();
-            Pair<AttributeValue, AggInfo> first = calculateAttribute(orgaId, attId, attTags, new HashSet<>(), firstFakeConfig);
-            Pair<AttributeValue, AggInfo> second = calculateAttribute(orgaId, attId, attTags, new HashSet<>(), secondFakeConfig);
-            if (first.getLeft().isNotResolvable() || first.getLeft().isError()) {
-                return Pair.of(
-                    NotResolvableValue.builder().value("Cannot do comparison, first operand is error or not resolvable").build(),
-                    null
-                );
+            CalculationResult first = calculateAttribute(orgaId, attribute, new HashSet<>(), firstFakeConfig);
+            CalculationResult second = calculateAttribute(orgaId, attribute, new HashSet<>(), secondFakeConfig);
+            if (first.getResultValue().isNotResolvable() || first.getResultValue().isError()) {
+                return CalculationResult
+                    .builder()
+                    .resultValue(
+                        NotResolvableValue.builder().value("Cannot do comparison, first operand is error or not resolvable").build()
+                    )
+                    .success(true)
+                    .impacterIds(impacterIds)
+                    .build();
             }
-            if (second.getLeft().isNotResolvable() || second.getLeft().isError()) {
-                return Pair.of(
-                    NotResolvableValue.builder().value("Cannot do comparison, second operand is error or not resolvable").build(),
-                    null
-                );
+            if (second.getResultValue().isNotResolvable() || second.getResultValue().isError()) {
+                return CalculationResult
+                    .builder()
+                    .resultValue(
+                        NotResolvableValue.builder().value("Cannot do comparison, second operand is error or not resolvable").build()
+                    )
+                    .success(true)
+                    .impacterIds(impacterIds)
+                    .build();
             }
-            Double firstDouble = Double.valueOf(first.getLeft().getValue().toString());
-            Double secondDouble = Double.valueOf(second.getLeft().getValue().toString());
-            return Pair.of(BooleanValue.builder().value(firstDouble > secondDouble).build(), null);
+            Double firstDouble = Double.valueOf(first.getResultValue().getValue().toString());
+            Double secondDouble = Double.valueOf(second.getResultValue().getValue().toString());
+            return CalculationResult
+                .builder()
+                .resultValue(BooleanValue.builder().value(firstDouble > secondDouble).build())
+                .success(true)
+                .impacterIds(impacterIds)
+                .build();
         }
         throw new RuntimeException("to implement operation " + config.getOperationType());
     }
 
-    private List<Attribute> getAttributesFromKeys(Set<String> keys, @NonNull String orgaId) {
-        return keys
-            .stream()
-            .map(impacterId -> attributeService.findByIdAndOrgaId(impacterId, orgaId))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toList());
+    private CalculationResult calculateIfThenElse(String orgaId, Attribute attribute, Set<String> impacterIds, IfThenElseOperation op) {
+        int i = 0;
+        Set<String> impacters = new HashSet<>();
+        while (i < op.getIfThens().size()) {
+            i++;
+            IfThen ifThen = op.getIfThens().get(i);
+            if (ifThen.getIfOp() == null) {
+                return createNotResolvable(impacterIds, null, "Cannot check if of if/then because it is null");
+            }
+            CalculationResult ifResult = calculateAttribute(orgaId, attribute, impacters, fakeConfig(orgaId, attribute, ifThen.getIfOp()));
+            Boolean ifValue;
+            if (ifResult.getResultValue() instanceof BooleanValue) {
+                ifValue = ((BooleanValue) ifResult.getResultValue()).getValue();
+            } else if (ifResult.getResultValue() instanceof DoubleValue) {
+                ifValue = ((DoubleValue) ifResult.getResultValue()).getValue() != 0;
+            } else {
+                return createNotResolvable(impacterIds, ifResult.getImpacterIds(), "Cannot resolve if statement");
+            }
+            if (!ifValue) {
+                continue;
+            }
+            if (ifThen.getThenOp() == null) {
+                return createNotResolvable(impacterIds, null, "Cannot check then of if/then because it is null");
+            }
+            CalculationResult thenResult = calculateAttribute(
+                orgaId,
+                attribute,
+                impacters,
+                fakeConfig(orgaId, attribute, ifThen.getThenOp())
+            );
+            if (thenResult.getImpacterIds() != null) {
+                impacterIds.addAll(thenResult.getImpacterIds());
+            }
+            return thenResult;
+        }
+        Operation elseOp = op.getElseOp();
+        if (elseOp == null) {
+            return createNotResolvable(impacterIds, null, "Cannot calculate else of if/then because it is null");
+        }
+        CalculationResult elseResult = calculateAttribute(orgaId, attribute, impacters, fakeConfig(orgaId, attribute, elseOp));
+        if (elseResult.getImpacterIds() != null) {
+            impacterIds.addAll(elseResult.getImpacterIds());
+        }
+        return elseResult;
+    }
+
+    private CalculationResult createNotResolvable(Set<String> impacterIds, Set<String> impacterIdsToAdd, String message) {
+        if (impacterIdsToAdd != null) {
+            impacterIds.addAll(impacterIdsToAdd);
+        }
+        return CalculationResult
+            .builder()
+            .resultValue(NotResolvableValue.builder().value(message).build())
+            .success(true)
+            .impacterIds(impacterIds)
+            .build();
+    }
+
+    private AttributeConfig fakeConfig(String orgaId, Attribute attribute, Operation op) {
+        return AttributeConfig
+            .builder()
+            .id("fakeConfig")
+            .orgaId(orgaId)
+            .isConsolidable(false)
+            .operation(op)
+            .isWritable(false)
+            .tags(attribute.getTags())
+            .build();
     }
 
     private String createReferencedKey(String attributeKey, RefOperation op) {

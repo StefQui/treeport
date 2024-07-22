@@ -7,6 +7,7 @@ import com.sm.domain.operation.OperationType;
 import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import lombok.*;
 import lombok.experimental.NonFinal;
@@ -37,6 +38,31 @@ public class AttributeConfig implements Serializable {
     @NotBlank
     @Field("id")
     String id;
+
+    @NotBlank
+    @Field("key")
+    String key;
+
+    @Field("configOrder")
+    private Integer configOrder;
+
+    // Scope calculation
+    @Field("campaignId") // should not be empty
+    private String campaignId;
+
+    @Field("parentSiteIds")
+    private List<String> parentSiteIds;
+
+    @Field("siteIds")
+    private List<String> siteIds;
+
+    @Field("childrenTagsOneOf")
+    private List<Tag> childrenTagsOneOf;
+
+    // Config
+    @Field("tags")
+    @Builder.Default
+    private Set<Tag> tags = new HashSet<>();
 
     @Field("apply_on_children")
     private Boolean applyOnChildren;
@@ -71,14 +97,21 @@ public class AttributeConfig implements Serializable {
     @Field("siteId")
     private String siteId;
 
-    @Field("tags")
-    @Builder.Default
-    private Set<Tag> tags = new HashSet<>();
-
     private Object defaultValue;
     private Object defaultValueForNotResolvableItem;
 
     public OperationType getOperationType() {
         return getOperation() == null ? null : getOperation().getOperationType();
+    }
+
+    public static String getCampaignKey(AttributeConfig config) {
+        if (config.getCampaignId() == null) {
+            return config.getKey();
+        }
+        return config.getKey() + ":" + config.getCampaignId();
+    }
+
+    public static String getCampaignKey1(AttributeConfig o) {
+        return null;
     }
 }

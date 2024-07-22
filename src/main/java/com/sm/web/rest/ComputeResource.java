@@ -40,7 +40,7 @@ public class ComputeResource {
     public ResponseEntity<List<String>> doCompute() throws URISyntaxException {
         log.debug("REST request to compute");
         //        AttributeConfigDTO result = attributeConfigService.save(attributeConfigDTO);
-        computeService.applyCampaigns(COCA);
+        computeService.applyCampaigns(COCA, List.of("2023"));
         computeService.reCalculateAllAttributes(COCA);
 
         return ResponseEntity.ok(List.of());

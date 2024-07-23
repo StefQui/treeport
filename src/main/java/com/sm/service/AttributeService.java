@@ -1,11 +1,17 @@
 package com.sm.service;
 
+import static com.sm.service.AttributeKeyUtils.createReferenced;
+import static com.sm.service.AttributeKeyUtils.fromString;
+import static com.sm.service.AttributeKeyUtils.objToString;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
+import com.sm.domain.Site;
 import com.sm.domain.attribute.Attribute;
+import com.sm.domain.operation.RefOperation;
 import com.sm.repository.AttributeConfigRepository;
 import com.sm.repository.AttributeRepository;
+import com.sm.repository.SiteRepository;
 import com.sm.service.dto.attribute.AttributeDTO;
 import com.sm.service.mapper.AttributeMapper;
 import com.sm.service.mapper.AttributeValueMapper;
@@ -31,15 +37,18 @@ public class AttributeService {
 
     private final AttributeMapper attributeMapper;
     private final AttributeValueMapper attributeValueMapper;
+    private final SiteRepository siteRepository;
 
     public AttributeService(
         AttributeRepository attributeRepository,
         AttributeConfigRepository attributeConfigRepository,
+        SiteRepository siteRepository,
         AttributeMapper attributeMapper,
         AttributeValueMapper attributeValueMapper
     ) {
         this.attributeRepository = attributeRepository;
         this.attributeConfigRepository = attributeConfigRepository;
+        this.siteRepository = siteRepository;
         this.attributeMapper = attributeMapper;
         this.attributeValueMapper = attributeValueMapper;
     }
@@ -164,7 +173,7 @@ public class AttributeService {
 
     public Set<Attribute> findImpacted(String attKey, @NonNull String orgaId) {
         List<Attribute> atts = findAllAttributes(orgaId);
-        return atts.stream().filter(a -> a.getImpacterIds().contains(attKey)).collect(Collectors.toSet());
+        return atts.stream().filter(a -> a.getImpacterIds() != null && a.getImpacterIds().contains(attKey)).collect(Collectors.toSet());
     }
 
     public List<Attribute> getAttributesFromKeys(Set<String> keys, @NonNull String orgaId) {
@@ -197,5 +206,24 @@ public class AttributeService {
                 }
             });
         return of(result);
+    }
+
+    public List<Attribute> findDirties(Boolean dirty, String orgaId) {
+        return attributeRepository.findByDirtyAndOrgaId(dirty, orgaId);
+    }
+
+    public List<Attribute> getAttributesForSiteChildrenAndConfig(String attId, String configKey, String orgaId) {
+        AttributeKeyAsObj attIdAsObj = fromString(attId);
+        Site site = siteRepository.findByIdAndOrgaId(attIdAsObj.getAssetId(), orgaId).get(0);
+        List<String> keys = site
+            .getChildrenIds()
+            .stream()
+            .map(childrenId ->
+                objToString(
+                    createReferenced(attIdAsObj, RefOperation.builder().useCurrentSite(false).fixedSite(childrenId).key(configKey).build())
+                )
+            )
+            .collect(Collectors.toList());
+        return keys.stream().map(key -> findByIdAndOrgaId(key, orgaId).orElse(null)).filter(Objects::nonNull).collect(Collectors.toList());
     }
 }

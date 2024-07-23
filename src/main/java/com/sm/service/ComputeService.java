@@ -9,6 +9,7 @@ import static com.sm.domain.operation.OperationType.CHILDREN_SUM;
 import static com.sm.domain.operation.OperationType.COMPARISON;
 import static com.sm.domain.operation.OperationType.CONSTANT;
 import static com.sm.domain.operation.OperationType.DIVIDE;
+import static com.sm.domain.operation.OperationType.IF_THEN_ELSE;
 import static com.sm.domain.operation.OperationType.PRODUCT;
 import static com.sm.domain.operation.OperationType.REF;
 import static com.sm.domain.operation.OperationType.SUM;
@@ -114,6 +115,9 @@ public class ComputeService {
     private void treeShakeForSite(Campaign campaign, Site site, @NonNull String orgaId) {
         List<Attribute> attributes = attributeService.findBySite(site.getId(), orgaId);
         attributes.forEach(att -> {
+            if (att.getImpacterIds() == null) {
+                return;
+            }
             List<String> impacters = att.getImpacterIds().stream().collect(Collectors.toList());
             int i = impacters.size();
             while (i > 0) {
@@ -242,12 +246,21 @@ public class ComputeService {
         String attKey = AttributeKeyUtils.siteKey(site.getId(), configKey, PERIOD_FRAG, campaign.getId());
         Attribute attribute = attributeService.findByIdAndOrgaId(attKey, orgaId).orElse(null);
         if (attribute == null) {
-            attribute = Attribute.builder().orgaId(orgaId).siteId(site.getId()).id(attKey).build();
+            attribute =
+                Attribute
+                    .builder()
+                    .orgaId(orgaId)
+                    .siteId(site.getId())
+                    .id(attKey)
+                    .impacterIds(config.getIsWritable() ? null : new HashSet<>())
+                    .build();
         } else {
             attribute.setHasConfigError(false);
             attribute.setConfigError(null);
         }
-        addImpacters(attribute, config, site, campaign, orgaId);
+        //        fetchImpactersForConfigAndApplyToAttribute(config, attribute, orgaId);
+        //        addImpacters(attribute, config, site, campaign, orgaId);
+        attribute.setDirty(!config.getIsWritable());
         attribute.setConfigId(config.getId());
         attribute.setCampaignId(campaign.getId());
         if (config.getIsConsolidable()) {
@@ -259,20 +272,21 @@ public class ComputeService {
     }
 
     private void addImpacters(Attribute attribute, AttributeConfig config, Site site, Campaign campaign, @NonNull String orgaId) {
-        Set<String> impacters = new HashSet<>();
-        if (config.getIsConsolidable()) {
-            impacters.addAll(
-                site
-                    .getChildrenIds()
-                    .stream()
-                    .map(childId -> AttributeKeyUtils.siteKey(childId, config.getId(), PERIOD_FRAG, campaign.getId()))
-                    .collect(Collectors.toSet())
-            );
-            impacters.add(generateConsolidatedAttKey(site, config.getConsoParameterKey(), PERIOD_FRAG, campaign));
-        } else {
-            impacters.addAll(fetchImpactersForConfig(config, attribute.getId(), orgaId));
-        }
-        attribute.setImpacterIds(impacters);
+        //        Set<String> impacters = new HashSet<>();
+        //        if (config.getIsConsolidable()) {
+        //            impacters.addAll(
+        //                site
+        //                    .getChildrenIds()
+        //                    .stream()
+        //                    .map(childId -> AttributeKeyUtils.siteKey(childId, config.getId(), PERIOD_FRAG, campaign.getId()))
+        //                    .collect(Collectors.toSet())
+        //            );
+        //            impacters.add(generateConsolidatedAttKey(site, config.getConsoParameterKey(), PERIOD_FRAG, campaign));
+        //        } else {
+        //            impacters.addAll(fetchImpactersForConfig(config, attribute.getId(), orgaId));
+        //        }
+        //        attribute.setImpacterIds(impacters);
+        //        fetchImpactersForConfigAndApplyToAttribute(config, attribute, orgaId);
     }
 
     private String generateConsolidatedAttKey(Site site, String consoParameterKey, String period, Campaign campaign) {
@@ -334,16 +348,15 @@ public class ComputeService {
         }
         AttributeConfig config = attributeConfigService.findByOrgaIdAndId(attribute.getConfigId(), orgaId).orElse(null);
         if (!config.getIsWritable()) {
-            CalculationResult v = calculatorService.calculateAttribute(orgaId, attribute, attribute.getImpacterIds(), config);
-            if (v.getSuccess()) {
+            try {
+                CalculationResult v = calculatorService.calculateAttribute(orgaId, attribute, attribute.getImpacterIds(), config);
                 attribute.setAttributeValue(v.getResultValue());
                 attribute.setAggInfo(v.getAggInfo());
                 attribute.setDirty(false);
                 attribute.setImpacterIds(v.getImpacterIds());
                 attributeService.save(attribute);
-
                 handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed);
-            } else {
+            } catch (IsDirtyValueException e) {
                 shouldBeProcessed.set(true);
             }
         } else {
@@ -530,7 +543,29 @@ public class ComputeService {
         return List.of(objToString(impacted.build()));
     }
 
-    private Set<String> fetchImpactersForConfig(AttributeConfig config, String impacted, @NonNull String orgaId) {
+    //    public void fetchImpactersForConfigAndApplyToAttribute(AttributeConfig config, Attribute attribute, String orgaId) {
+    //        FetchImpactResult result = fetchImpactersForConfig(config, attribute, orgaId);
+    //        attribute.setDirty(result.getIsDirty());
+    //        attribute.setHasDynamicImpacters(result.getHasDynamicImpacters());
+    //        attribute.setImpacterIds(result.getImpacters());
+    //    }
+
+    public FetchImpactResult fetchImpactersForConfig(AttributeConfig config, Attribute attribute, String orgaId) {
+        if (config.getOperation() instanceof WithDynamicImpactors) {
+            attribute.setImpacterIds(new HashSet<>());
+            //            attribute.setHasDynamicImpacters(true);
+            return FetchImpactResult.builder().isDirty(true).hasDynamicImpacters(true).impacters(new HashSet<>()).build();
+        }
+
+        return FetchImpactResult
+            .builder()
+            .isDirty(true)
+            .hasDynamicImpacters(false)
+            .impacters(fetchImpactersForConfig(config, attribute.getId(), orgaId))
+            .build();
+    }
+
+    public Set<String> fetchImpactersForConfig(AttributeConfig config, String impacted, @NonNull String orgaId) {
         Set<String> impacters = new HashSet<>();
         if (config.getOperation() != null) {
             fetchImpactersForOperation(config.getOperation(), impacted, impacters, orgaId);
@@ -570,8 +605,10 @@ public class ComputeService {
             fetchImpactersForOperation(op.getFirst(), impacted, impacters, orgaId);
             fetchImpactersForOperation(op.getSecond(), impacted, impacters, orgaId);
         } else if (CONSTANT.equals(operation.getOperationType())) {} else if (TAG.equals(operation.getOperationType())) {} else if (
-            REF.equals(operation.getOperationType())
+            IF_THEN_ELSE.equals(operation.getOperationType())
         ) {
+            // Dynamic impacters, will be computed at calculation
+        } else if (REF.equals(operation.getOperationType())) {
             RefOperation op = (RefOperation) operation;
             impacters.add(objToString(createReferenced(attributeKeyAsObj, op)));
         } else {

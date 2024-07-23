@@ -98,7 +98,8 @@ public class ConsoCalculator<T> {
     ) {
         try {
             if (atts.stream().anyMatch(att -> att.getDirty())) {
-                return CalculationResult.builder().success(false).build();
+                throw new IsDirtyValueException();
+                //                return CalculationResult.builder().success(false).build();
             }
 
             AggInfo aggInfo = AggInfo.builder().build();

@@ -4,20 +4,34 @@ import static com.sm.domain.attribute.AggInfo.AttributeType.BOOLEAN;
 import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.attribute.AggInfo.AttributeType.LONG;
 import static com.sm.domain.operation.TagOperationType.CONTAINS;
+import static com.sm.service.ComputeTestUtils.childrenSumConfig;
+import static com.sm.service.ComputeTestUtils.consoSumConfig;
+import static com.sm.service.ComputeTestUtils.constant;
+import static com.sm.service.ComputeTestUtils.dirtyValue;
+import static com.sm.service.ComputeTestUtils.doubleValueAttribute;
+import static com.sm.service.ComputeTestUtils.ifThen;
+import static com.sm.service.ComputeTestUtils.ifThenElseConfig;
+import static com.sm.service.ComputeTestUtils.refOp;
+import static com.sm.service.ComputeTestUtils.sumConfig;
+import static com.sm.service.InitialLoadService.COCA;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import com.sm.domain.AttributeConfig;
 import com.sm.domain.Tag;
-import com.sm.domain.attribute.AggInfo;
 import com.sm.domain.attribute.Attribute;
-import com.sm.domain.operation.ConstantOperation;
-import com.sm.domain.operation.Operation;
-import com.sm.domain.operation.SumOperation;
+import com.sm.domain.attribute.BooleanValue;
+import com.sm.domain.attribute.DoubleValue;
+import com.sm.domain.attribute.NotResolvableValue;
 import com.sm.domain.operation.TagOperation;
 import com.sm.service.mapper.AttributeValueMapper;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import org.assertj.core.api.Assertions;
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -78,9 +92,9 @@ class CalculatorServiceTest {
         .operation(constant(DOUBLE, 2.36))
         .build();
 
-    public static final AttributeConfig CONFIG_TAG_SITE_WORK = AttributeConfig
+    public static final AttributeConfig CONFIG_TAG_SITE = AttributeConfig
         .builder()
-        .id("configTagSiteWork")
+        .id("configTagSite")
         .isWritable(false)
         .operation(TagOperation.builder().tagOperationType(CONTAINS).tag(SITE_TAG).build())
         .build();
@@ -93,122 +107,293 @@ class CalculatorServiceTest {
         .build();
 
     @Test
+    @SneakyThrows
     public void testConfigWritable() {
         Exception exception = assertThrows(
             RuntimeException.class,
-            () -> calculatorService.calculateAttribute("coca", Attribute.builder().build(), Set.of(""), READABLE_CONFIG)
+            () -> calculatorService.calculateAttribute(COCA, Attribute.builder().build(), Set.of(""), READABLE_CONFIG)
         );
     }
 
     @Test
+    @SneakyThrows
     public void testConstConfigTrue() {
-        CalculationResult calc = calculatorService.calculateAttribute("coca", Attribute.builder().build(), Set.of(""), CONST_CONFIG_TRUE);
-        Assertions.assertThat(calc.getResultValue().getValue()).isEqualTo(true);
+        CalculationResult calc = calculatorService.calculateAttribute(COCA, Attribute.builder().build(), Set.of(""), CONST_CONFIG_TRUE);
+        assertThat(calc.getResultValue().getValue()).isEqualTo(true);
     }
 
     @Test
+    @SneakyThrows
     public void testConstConfigFalse() {
-        CalculationResult calc = calculatorService.calculateAttribute("coca", Attribute.builder().build(), Set.of(""), CONST_CONFIG_FALSE);
-        Assertions.assertThat(calc.getResultValue().getValue()).isEqualTo(false);
+        CalculationResult calc = calculatorService.calculateAttribute(COCA, Attribute.builder().build(), Set.of(""), CONST_CONFIG_FALSE);
+        assertThat(calc.getResultValue().getValue()).isEqualTo(false);
     }
 
     @Test
+    @SneakyThrows
     public void testConstConfig15l() {
-        CalculationResult calc = calculatorService.calculateAttribute("coca", Attribute.builder().build(), Set.of(""), CONST_CONFIG_15L);
-        Assertions.assertThat(calc.getResultValue().getValue()).isEqualTo(15l);
+        CalculationResult calc = calculatorService.calculateAttribute(COCA, Attribute.builder().build(), Set.of(""), CONST_CONFIG_15L);
+        assertThat(calc.getResultValue().getValue()).isEqualTo(15l);
     }
 
     @Test
+    @SneakyThrows
     public void testConstConfigDouble() {
-        CalculationResult calc = calculatorService.calculateAttribute("coca", Attribute.builder().build(), Set.of(""), CONST_CONFIG_DOUBLE);
-        Assertions.assertThat(calc.getResultValue().getValue()).isEqualTo(2.36);
+        CalculationResult calc = calculatorService.calculateAttribute(COCA, Attribute.builder().build(), Set.of(""), CONST_CONFIG_DOUBLE);
+        assertThat(calc.getResultValue().getValue()).isEqualTo(2.36);
     }
 
     @Test
+    @SneakyThrows
     public void testConfigTag() {
         CalculationResult calc = calculatorService.calculateAttribute(
-            "coca",
+            COCA,
             Attribute.builder().tags(Set.of(SITE_TAG, WORK_TAG)).build(),
-            Set.of(""),
-            CONFIG_TAG_SITE_WORK
+            new HashSet<>(List.of("")),
+            CONFIG_TAG_SITE
         );
-        Assertions.assertThat(calc.getResultValue().getValue()).isEqualTo(true);
+        assertThat(calc.getResultValue().getValue()).isEqualTo(true);
 
         CalculationResult calc2 = calculatorService.calculateAttribute(
-            "coca",
+            COCA,
             Attribute.builder().tags(Set.of(WORK_TAG)).build(),
-            Set.of(""),
-            CONFIG_TAG_SITE_WORK
+            new HashSet<>(List.of("")),
+            CONFIG_TAG_SITE
         );
 
-        Assertions.assertThat(calc2.getResultValue().getValue()).isEqualTo(false);
+        assertThat(calc2.getResultValue().getValue()).isEqualTo(false);
 
         CalculationResult calc3 = calculatorService.calculateAttribute(
-            "coca",
+            COCA,
             Attribute.builder().tags(Set.of()).build(),
-            Set.of(""),
-            CONFIG_TAG_SITE_WORK
+            new HashSet<>(List.of("")),
+            CONFIG_TAG_SITE
         );
-        Assertions.assertThat(calc3.getResultValue().getValue()).isEqualTo(false);
+        assertThat(calc3.getResultValue().getValue()).isEqualTo(false);
 
         CalculationResult calc4 = calculatorService.calculateAttribute(
-            "coca",
+            COCA,
             Attribute.builder().tags(Set.of(WORK_TAG)).build(),
-            Set.of(""),
+            new HashSet<>(List.of("")),
             CONFIG_NO_TAG
         );
 
-        Assertions.assertThat(calc4.getResultValue().getValue()).isEqualTo(true);
+        assertThat(calc4.getResultValue().getValue()).isEqualTo(true);
     }
 
-    @Test
-    public void testConfigConsoSum() {
-        CalculationResult calc = calculatorService.calculateAttribute(
-            "coca",
-            Attribute.builder().build(),
-            Set.of(""),
-            sumConfig(constant(DOUBLE, 20.), constant(DOUBLE, 15.))
-        );
-        Assertions.assertThat(calc.getResultValue().getValue()).isEqualTo(35.);
+    @Nested
+    class SumOperation {
 
-        CalculationResult calc2 = calculatorService.calculateAttribute(
-            "coca",
-            Attribute.builder().build(),
-            Set.of(""),
-            sumConfig(constant(DOUBLE, 20.), constant(LONG, 14l))
-        );
-        Assertions.assertThat(calc2.getResultValue().getValue()).isEqualTo(34.);
+        @Test
+        @SneakyThrows
+        public void sumOperation_happyflow() {
+            CalculationResult calc = doCalculateAttribute(
+                "site:s1:toSum:period:2023",
+                sumConfig(constant(DOUBLE, 20.), constant(DOUBLE, 15.))
+            );
 
-        CalculationResult calc3 = calculatorService.calculateAttribute(
-            "coca",
-            Attribute.builder().build(),
-            Set.of(""),
-            sumConfig(constant(BOOLEAN, true), constant(LONG, 10l), constant(BOOLEAN, false))
-        );
+            assertThat(calc.getResultValue().getValue()).isEqualTo(35.);
+            assertThat(calc.getImpacterIds()).isEmpty();
 
-        Assertions.assertThat(calc3.getResultValue().getValue()).isEqualTo(11.);
+            CalculationResult calc2 = doCalculateAttribute(
+                "site:s1:toSum:period:2023",
+                sumConfig(constant(DOUBLE, 20.), constant(LONG, 14l))
+            );
+
+            assertThat(calc2.getResultValue().getValue()).isEqualTo(34.);
+            assertThat(calc2.getImpacterIds()).isEmpty();
+
+            CalculationResult calc3 = doCalculateAttribute(
+                "site:s1:toSum:period:2023",
+                sumConfig(constant(BOOLEAN, true), constant(LONG, 10l), constant(BOOLEAN, false))
+            );
+
+            assertThat(calc3.getResultValue().getValue()).isEqualTo(11.);
+            assertThat(calc3.getImpacterIds()).isEmpty();
+        }
+
+        @Test
+        @SneakyThrows
+        public void sumOperation_withRef() {
+            when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA)).thenReturn(Optional.of(doubleValueAttribute(10.)));
+
+            CalculationResult calc4 = doCalculateAttribute(
+                "site:s1:toSum:period:2023",
+                sumConfig(constant(DOUBLE, 4.2), refOp("toSite"), constant(BOOLEAN, false))
+            );
+
+            assertThat(calc4.getResultValue().getValue()).isEqualTo(14.2);
+            assertThat(calc4.getImpacterIds()).containsExactlyInAnyOrder("site:s1:toSite:period:2023");
+        }
+
+        @Test
+        @SneakyThrows
+        public void sumOperation_withDirty() {
+            when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA))
+                .thenReturn(Optional.of(Attribute.builder().dirty(true).build()));
+
+            assertThrows(
+                IsDirtyValueException.class,
+                () ->
+                    doCalculateAttribute(
+                        "site:s1:toSum:period:2023",
+                        sumConfig(constant(DOUBLE, 4.2), refOp("toSite"), constant(BOOLEAN, false))
+                    )
+            );
+        }
     }
 
-    private AttributeConfig sumConfig(Operation... operations) {
-        return AttributeConfig
-            .builder()
-            .id("configSum")
-            .isWritable(false)
-            .attributeType(DOUBLE)
-            .operation(SumOperation.builder().items(List.of(operations)).build())
-            .build();
+    @Nested
+    class ChildrenSumOperation {
+
+        @Test
+        @SneakyThrows
+        public void childrenSumOperation_happyflow() {
+            when(attributeService.getAttributesForSiteChildrenAndConfig("site:s1:toSum:period:2023", "toSite", COCA))
+                .thenReturn(
+                    List.of(
+                        doubleValueAttribute(5.).toBuilder().id("site:s1-1:toSite:period:2023").build(),
+                        doubleValueAttribute(7.).toBuilder().id("site:s1-2:toSite:period:2023").build()
+                    )
+                );
+
+            CalculationResult calc = doCalculateAttribute("site:s1:toSum:period:2023", childrenSumConfig("toSite"));
+            assertThat(calc.getResultValue().getValue()).isEqualTo(12.);
+            assertThat(calc.getImpacterIds()).containsExactlyInAnyOrder("site:s1-1:toSite:period:2023", "site:s1-2:toSite:period:2023");
+        }
+
+        @Test
+        @SneakyThrows
+        public void childrenSumOperation_dirtyValue() {
+            when(attributeService.getAttributesForSiteChildrenAndConfig("site:s1:toSum:period:2023", "toSite", COCA))
+                .thenReturn(List.of(doubleValueAttribute(5.), dirtyValue()));
+
+            assertThrows(IsDirtyValueException.class, () -> doCalculateAttribute("site:s1:toSum:period:2023", childrenSumConfig("toSite")));
+        }
     }
 
-    private static ConstantOperation constant(AggInfo.AttributeType type, Object val) {
-        if (type.equals(DOUBLE)) {
-            return ConstantOperation.builder().constantType(type).doubleValue((Double) val).build();
+    @Nested
+    class ConsoSumOperation {
+
+        @Test
+        @SneakyThrows
+        public void consoSumOperation_happyflow() {
+            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumConfig("toSite"));
+            assertThat(calc.getResultValue().getValue()).isEqualTo(12.);
+            assertThat(calc.getImpacterIds()).containsExactlyInAnyOrder("site:s1-1:toSite:period:2023", "site:s1-2:toSite:period:2023");
         }
-        if (type.equals(LONG)) {
-            return ConstantOperation.builder().constantType(type).longValue((Long) val).build();
+    }
+
+    @Nested
+    class IfThenElse {
+
+        @Test
+        @SneakyThrows
+        public void ifThenElse() {
+            CalculationResult calc = doCalculateAttribute(
+                "site:s2:toTra:period:2023",
+                ifThenElseConfig(
+                    List.of(ifThen(constant(BOOLEAN, false), constant(DOUBLE, 2.8)), ifThen(constant(BOOLEAN, true), refOp("k1"))),
+                    constant(DOUBLE, 3.5)
+                )
+            );
+
+            assertThat(calc.getResultValue()).isInstanceOf(NotResolvableValue.class);
+            assertThat(calc.getImpacterIds()).containsExactlyInAnyOrder("site:s2:k1:period:2023");
         }
-        if (type.equals(BOOLEAN)) {
-            return ConstantOperation.builder().constantType(type).booleanValue((Boolean) val).build();
+
+        @Test
+        @SneakyThrows
+        public void ifThenElse_WithThen() {
+            when(attributeService.findByIdAndOrgaId("site:s2:ifCond1False:period:2023", COCA))
+                .thenReturn(Optional.of(Attribute.builder().attributeValue(BooleanValue.builder().value(false).build()).build()));
+            when(attributeService.findByIdAndOrgaId("site:s2:ifCond2True:period:2023", COCA))
+                .thenReturn(Optional.of(Attribute.builder().attributeValue(BooleanValue.builder().value(true).build()).build()));
+
+            CalculationResult calc = doCalculateAttribute(
+                "site:s2:toTra:period:2023",
+                ifThenElseConfig(
+                    List.of(
+                        ifThen(constant(BOOLEAN, false), constant(DOUBLE, 2.8)),
+                        ifThen(refOp("ifCond1False"), refOp("thenCond1")),
+                        ifThen(refOp("ifCond2True"), refOp("thenCond2"))
+                    ),
+                    constant(DOUBLE, 3.5)
+                )
+            );
+
+            assertThat(calc.getSuccess()).isTrue();
+            assertThat(calc.getResultValue()).isInstanceOf(NotResolvableValue.class);
+            assertThat(calc.getImpacterIds())
+                .containsExactlyInAnyOrder(
+                    "site:s2:ifCond1False:period:2023",
+                    "site:s2:ifCond2True:period:2023",
+                    "site:s2:thenCond2:period:2023"
+                );
         }
-        return null;
+
+        @Test
+        @SneakyThrows
+        public void ifThenElse_WithElse() {
+            when(attributeService.findByIdAndOrgaId("site:s2:ifCond1False:period:2023", COCA))
+                .thenReturn(Optional.of(Attribute.builder().attributeValue(BooleanValue.builder().value(false).build()).build()));
+            when(attributeService.findByIdAndOrgaId("site:s2:elseCond:period:2023", COCA))
+                .thenReturn(Optional.of(Attribute.builder().attributeValue(DoubleValue.builder().value(2.4).build()).build()));
+            CalculationResult calc = doCalculateAttribute(
+                "site:s2:toTra:period:2023",
+                ifThenElseConfig(List.of(ifThen(refOp("ifCond1False"), refOp("thenCond1"))), refOp("elseCond"))
+            );
+            assertThat(calc.getSuccess()).isTrue();
+            assertThat(calc.getResultValue()).isInstanceOf(DoubleValue.class);
+            assertThat(calc.getResultValue().getValue()).isEqualTo(2.4);
+            assertThat(calc.getImpacterIds()).containsExactlyInAnyOrder("site:s2:ifCond1False:period:2023", "site:s2:elseCond:period:2023");
+        }
+
+        @SneakyThrows
+        @Test
+        public void ifThenElse_WithIfDirty() {
+            when(attributeService.findByIdAndOrgaId("site:s2:ifCond1False:period:2023", COCA))
+                .thenReturn(Optional.of(Attribute.builder().dirty(true).build()));
+            assertThrows(
+                IsDirtyValueException.class,
+                () ->
+                    doCalculateAttribute(
+                        "site:s2:toTra:period:2023",
+                        ifThenElseConfig(
+                            List.of(
+                                ifThen(constant(BOOLEAN, false), constant(DOUBLE, 2.8)),
+                                ifThen(refOp("ifCond1False"), refOp("thenCond1"))
+                            ),
+                            constant(DOUBLE, 3.5)
+                        )
+                    )
+            );
+        }
+
+        @Test
+        public void ifThenElse_WithThenDirty() {
+            when(attributeService.findByIdAndOrgaId("site:s2:ifCond1False:period:2023", COCA))
+                .thenReturn(Optional.of(Attribute.builder().attributeValue(BooleanValue.builder().value(false).build()).build()));
+            when(attributeService.findByIdAndOrgaId("site:s2:elseCond:period:2023", COCA))
+                .thenReturn(Optional.of(Attribute.builder().dirty(true).build()));
+            assertThrows(
+                IsDirtyValueException.class,
+                () ->
+                    doCalculateAttribute(
+                        "site:s2:toTra:period:2023",
+                        ifThenElseConfig(
+                            List.of(
+                                ifThen(constant(BOOLEAN, false), constant(DOUBLE, 2.8)),
+                                ifThen(refOp("ifCond1False"), refOp("thenCond1"))
+                            ),
+                            refOp("elseCond")
+                        )
+                    )
+            );
+        }
+    }
+
+    private CalculationResult doCalculateAttribute(String attId, AttributeConfig config) throws IsDirtyValueException {
+        return calculatorService.calculateAttribute(COCA, Attribute.builder().id(attId).build(), new HashSet<>(), config);
     }
 }

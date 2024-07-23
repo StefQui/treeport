@@ -46,6 +46,11 @@ public class AttributeConfigService {
         if (attributeConfig.getConfigOrder() == null) {
             throw new RuntimeException("config order can't be null");
         }
+        if (attributeConfig.getIsWritable() == null || attributeConfig.getIsWritable()) {
+            if (attributeConfig.getOperation() != null) {
+                throw new RuntimeException("config can't be writable and have an operation");
+            }
+        }
 
         return attributeConfigRepository.save(attributeConfig);
     }

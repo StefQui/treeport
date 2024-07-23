@@ -83,6 +83,9 @@ public class Attribute implements Serializable {
     @Builder.Default
     private Boolean dirty = false;
 
+    //    @Field("hasDynamicImpacters")
+    //    private Boolean hasDynamicImpacters;
+
     @Field("tags")
     @Builder.Default
     private Set<Tag> tags = new HashSet<>();

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class IfThenElseOperation implements Operation {
+public class IfThenElseOperation implements Operation, WithDynamicImpactors {
 
     @Builder.Default
     private OperationType operationType = OperationType.IF_THEN_ELSE;

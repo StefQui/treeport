@@ -9,6 +9,11 @@ import java.util.Optional;
 
 public class UtilsValue {
 
+    public static final String ERROR_CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_IN_ERROR =
+        "error:cannot do multi-op of doubles, at least one item is in error";
+    public static final String CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_NOT_RESOLVABLE =
+        "cannot do multi-op of doubles, at least one item is not resolvable";
+
     public static Double mapToDouble(AttributeValue av) {
         if (av == null) {
             return null;
@@ -70,11 +75,11 @@ public class UtilsValue {
     public static AttributeValue handleErrorsAndNotResolvable(List<AttributeValue> attValues) {
         Optional<AttributeValue> error = attValues.stream().filter(ErrorValue.class::isInstance).findAny();
         if (error.isPresent()) {
-            return UtilsValue.generateErrorValue("error:cannot do multi-op of doubles, at least one item is in error");
+            return UtilsValue.generateErrorValue(ERROR_CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_IN_ERROR);
         }
         Optional<AttributeValue> notResolvable = attValues.stream().filter(NotResolvableValue.class::isInstance).findAny();
         if (notResolvable.isPresent()) {
-            return UtilsValue.generateNotResolvableValue("cannot do multi-op of doubles, at least one item is not resolvable");
+            return UtilsValue.generateNotResolvableValue(CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_NOT_RESOLVABLE);
         }
         return null;
     }

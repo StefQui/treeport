@@ -7,6 +7,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
 import com.sm.domain.Site;
+import com.sm.domain.attribute.AggInfo;
 import com.sm.domain.attribute.Attribute;
 import com.sm.domain.operation.RefOperation;
 import com.sm.repository.AttributeConfigRepository;
@@ -224,6 +225,20 @@ public class AttributeService {
                 )
             )
             .collect(Collectors.toList());
-        return keys.stream().map(key -> findByIdAndOrgaId(key, orgaId).orElse(null)).filter(Objects::nonNull).collect(Collectors.toList());
+
+        return keys
+            .stream()
+            .map(key ->
+                findByIdAndOrgaId(key, orgaId)
+                    .orElse(
+                        Attribute
+                            .builder()
+                            .attributeValue(UtilsValue.generateNotResolvableValue("No attribute found for " + key))
+                            .aggInfo(AggInfo.builder().build())
+                            .id(key)
+                            .build()
+                    )
+            )
+            .collect(Collectors.toList());
     }
 }

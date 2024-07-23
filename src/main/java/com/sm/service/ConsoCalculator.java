@@ -10,9 +10,13 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
+@Slf4j
 public class ConsoCalculator<T> {
+
+    public static final String VALUE_TO_CONSOLIDATE_IS_NULL_OR_NOT_RESOLVABLE = "value to consolidate is null or not resolvable";
 
     public AttributeValue calculate(
         AttributeValue<T> value,
@@ -88,8 +92,9 @@ public class ConsoCalculator<T> {
 
     public CalculationResult calculateConsolidatedAttribute(
         String attId,
-        Set<String> inmpacterIds,
+        Set<String> impacterIds,
         List<Attribute> atts,
+        Optional<Attribute> consolidated,
         AttributeConfig config,
         AttributeValue<T> builderValue,
         Function<AttributeValue, T> attributeValueTFunction,
@@ -97,19 +102,13 @@ public class ConsoCalculator<T> {
         BinaryOperator<T> reducer
     ) {
         try {
-            if (atts.stream().anyMatch(att -> att.getDirty())) {
-                throw new IsDirtyValueException();
-                //                return CalculationResult.builder().success(false).build();
-            }
-
             AggInfo aggInfo = AggInfo.builder().build();
-            Optional<Attribute> consolidatedOpt = atts.stream().filter(att -> !att.getIsAgg()).findAny();
             Boolean consolidatedValueIsMissing = false;
             Boolean consolidatedValueIsNotResolvable = false;
             Attribute consolidatedAttribute = null;
             AtomicBoolean atLeastOnChildValueIsNotResolvable = new AtomicBoolean(false);
-            if (consolidatedOpt.isPresent()) {
-                consolidatedAttribute = consolidatedOpt.get();
+            if (consolidated.isPresent()) {
+                consolidatedAttribute = consolidated.get();
                 if (consolidatedAttribute.getAttributeValue() == null) {
                     aggInfo.getNotResolvables().add(consolidatedAttribute.getId());
                     consolidatedValueIsMissing = true;
@@ -124,7 +123,9 @@ public class ConsoCalculator<T> {
             }
             List<AttributeValue> attVals = atts
                 .stream()
-                .filter(att -> att.getIsAgg())
+                .peek(att -> {
+                    impacterIds.add(att.getId());
+                })
                 .peek(att -> {
                     aggInfo.getErrors().addAll(att.getAggInfo().getErrors());
                     aggInfo.getNotResolvables().addAll(att.getAggInfo().getNotResolvables());
@@ -163,8 +164,8 @@ public class ConsoCalculator<T> {
                     return CalculationResult
                         .builder()
                         .success(true)
-                        .resultValue(UtilsValue.generateNotResolvableValue("value to consolidate is null or not resolvable"))
-                        .impacterIds(inmpacterIds)
+                        .resultValue(UtilsValue.generateNotResolvableValue(VALUE_TO_CONSOLIDATE_IS_NULL_OR_NOT_RESOLVABLE))
+                        .impacterIds(impacterIds)
                         .aggInfo(aggInfo)
                         .build();
                 }
@@ -180,7 +181,7 @@ public class ConsoCalculator<T> {
                     .builder()
                     .success(true)
                     .resultValue(UtilsValue.handleErrorsAndNotResolvable(attVals))
-                    .impacterIds(inmpacterIds)
+                    .impacterIds(impacterIds)
                     .aggInfo(aggInfo)
                     .build();
             }
@@ -189,10 +190,11 @@ public class ConsoCalculator<T> {
                 .builder()
                 .success(true)
                 .resultValue(calculate(builderValue, attVals, attributeValueTFunction, startValue, reducer))
-                .impacterIds(inmpacterIds)
+                .impacterIds(impacterIds)
                 .aggInfo(aggInfo)
                 .build();
         } catch (Exception e) {
+            log.error("errur 2344 " + e.getMessage());
             throw new RuntimeException("should not arrive here " + attId);
         }
     }

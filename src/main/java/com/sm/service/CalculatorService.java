@@ -108,7 +108,7 @@ public class CalculatorService {
                 }
                 List<Attribute> attributes = attributeService.getAttributesForSiteChildrenAndConfig(
                     attribute.getId(),
-                    config.getConsoParameterKey(),
+                    config.getKey(),
                     orgaId
                 );
                 if (attributes.stream().anyMatch(att -> att == null)) {
@@ -117,11 +117,23 @@ public class CalculatorService {
                 if (attributes.stream().anyMatch(att -> att.getDirty())) {
                     throw new IsDirtyValueException();
                 }
+                impacterIds.addAll(attributes.stream().map(att -> att.getId()).collect(Collectors.toList()));
+
+                AttributeKeyAsObj attIdAsObj = fromString(attribute.getId());
+                String consolidatedId = objToString(
+                    createReferenced(attIdAsObj, RefOperation.builder().useCurrentSite(true).key(config.getConsoParameterKey()).build())
+                );
+                impacterIds.add(consolidatedId);
+                Optional<Attribute> consolidated = attributeService.findByIdAndOrgaId(consolidatedId, orgaId);
+                if (consolidated.isPresent() && consolidated.get().getDirty()) {
+                    throw new IsDirtyValueException();
+                }
 
                 return doubleCalculator.calculateConsolidatedAttribute(
                     attribute.getId(),
                     impacterIds,
                     attributes,
+                    consolidated,
                     config,
                     DoubleValue.builder().build(),
                     UtilsValue::mapToDouble,

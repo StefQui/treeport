@@ -3,7 +3,7 @@ package com.sm.service;
 import static com.sm.domain.attribute.AggInfo.AttributeType.BOOLEAN;
 import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.enumeration.AssetType.SITE;
-import static com.sm.domain.operation.OperationType.CONSO_SUM;
+import static com.sm.domain.operation.OperationType.CONSO_SUM_BY_KEY;
 import static com.sm.service.InitialLoadService.CAR;
 import static com.sm.service.InitialLoadService.COCA;
 import static com.sm.service.InitialLoadService.HQ;
@@ -279,7 +279,7 @@ class AbstractComputeServiceTest {
                 .label("Tonnage consolidé")
                 .isConsolidable(true)
                 .consoParameterKey(TO_SITE)
-                .consoOperationType(CONSO_SUM)
+                .consoOperationType(CONSO_SUM_BY_KEY)
                 .defaultValueForNotResolvableItem(0.)
                 .isWritable(false)
                 .tags(Set.of(Tag.builder().id(CAR).build()))

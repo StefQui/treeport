@@ -16,7 +16,9 @@ public class RefOperation implements Operation {
     @Builder.Default
     private OperationType operationType = OperationType.REF;
 
-    private Boolean useCurrentSite;
+    @Builder.Default
+    private Boolean useCurrentSite = true;
+
     private String fixedSite;
     private String key;
     private Integer dateOffset;

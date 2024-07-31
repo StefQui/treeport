@@ -106,11 +106,13 @@ public class AttributeKeyUtils {
             impacterCampaign = attributeKeyAsObj.getCampaign();
         }
 
+        String key = op.getKey() != null ? op.getKey() : attributeKeyAsObj.getAttributeId();
+
         return AttributeKeyAsObj
             .builder()
             .assetType(impacterAssetType)
             .assetId(impacterAssetId)
-            .attributeId(op.getKey())
+            .attributeId(key)
             .campaignType(impacterCampaignType)
             .campaign(impacterCampaign)
             .build();

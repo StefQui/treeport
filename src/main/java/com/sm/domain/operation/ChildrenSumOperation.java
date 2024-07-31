@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class ChildrenSumOperation implements Operation, HasItemsKey {
 
     @Builder.Default
-    private OperationType operationType = OperationType.CHILDREN_SUM;
+    private OperationType operationType = OperationType.CHILDREN_SUM_BY_KEY;
 
     private String itemsKey;
 

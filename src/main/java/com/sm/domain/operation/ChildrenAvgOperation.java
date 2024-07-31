@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class ChildrenAvgOperation implements Operation, HasItemsKey {
 
     @Builder.Default
-    private OperationType operationType = OperationType.CHILDREN_AVG;
+    private OperationType operationType = OperationType.CHILDREN_AVG_BY_KEY;
 
     private String itemsKey;
 

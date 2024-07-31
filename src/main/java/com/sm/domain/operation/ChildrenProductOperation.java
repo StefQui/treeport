@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class ChildrenProductOperation implements Operation, HasItemsKey {
 
     @Builder.Default
-    private OperationType operationType = OperationType.CHILDREN_PRODUCT;
+    private OperationType operationType = OperationType.CHILDREN_PRODUCT_BY_KEY;
 
     private String itemsKey;
 

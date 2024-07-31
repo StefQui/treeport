@@ -1,18 +1,19 @@
 package com.sm.domain.operation;
 
 public enum OperationType {
-    CHILDREN_SUM,
+    CHILDREN_SUM_BY_KEY,
+    CHILDREN_PRODUCT_BY_KEY,
+    CHILDREN_COUNT_BY_COUNT,
+    CHILDREN_AVG_BY_KEY,
+    CONSO_SUM_BY_KEY,
     CONSO_SUM,
     SUM,
-    CHILDREN_PRODUCT,
     PRODUCT,
-    CHILDREN_COUNT,
     REF,
     IF_THEN_ELSE,
     CONSTANT,
     COMPARISON,
     DIVIDE,
-    CHILDREN_AVG,
     AVG,
     TAG,
 }

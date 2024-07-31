@@ -5,6 +5,7 @@ import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.attribute.AggInfo.AttributeType.LONG;
 import static com.sm.domain.operation.TagOperationType.CONTAINS;
 import static com.sm.service.ComputeTestUtils.childrenSumConfig;
+import static com.sm.service.ComputeTestUtils.consoSumBykeyConfig;
 import static com.sm.service.ComputeTestUtils.consoSumConfig;
 import static com.sm.service.ComputeTestUtils.constant;
 import static com.sm.service.ComputeTestUtils.dirtyValue;
@@ -195,7 +196,7 @@ class CalculatorServiceTest {
                 sumConfig(constant(DOUBLE, 20.), constant(DOUBLE, 15.))
             );
 
-            assertThat(calc.getResultValue().getValue()).isEqualTo(35.);
+            assertAttValueIsLike(calc, 35., DoubleValue.class, null);
             assertThat(calc.getImpacterIds()).isEmpty();
 
             CalculationResult calc2 = doCalculateAttribute(
@@ -203,7 +204,7 @@ class CalculatorServiceTest {
                 sumConfig(constant(DOUBLE, 20.), constant(LONG, 14l))
             );
 
-            assertThat(calc2.getResultValue().getValue()).isEqualTo(34.);
+            assertAttValueIsLike(calc2, 34., DoubleValue.class, null);
             assertThat(calc2.getImpacterIds()).isEmpty();
 
             CalculationResult calc3 = doCalculateAttribute(
@@ -211,7 +212,7 @@ class CalculatorServiceTest {
                 sumConfig(constant(BOOLEAN, true), constant(LONG, 10l), constant(BOOLEAN, false))
             );
 
-            assertThat(calc3.getResultValue().getValue()).isEqualTo(11.);
+            assertAttValueIsLike(calc3, 11., DoubleValue.class, null);
             assertThat(calc3.getImpacterIds()).isEmpty();
         }
 
@@ -225,7 +226,7 @@ class CalculatorServiceTest {
                 sumConfig(constant(DOUBLE, 4.2), refOp("toSite"), constant(BOOLEAN, false))
             );
 
-            assertThat(calc4.getResultValue().getValue()).isEqualTo(14.2);
+            assertAttValueIsLike(calc4, 14.2, DoubleValue.class, null);
             assertThat(calc4.getImpacterIds()).containsExactlyInAnyOrder("site:s1:toSite:period:2023");
         }
 
@@ -261,7 +262,7 @@ class CalculatorServiceTest {
                 );
 
             CalculationResult calc = doCalculateAttribute("site:s1:toSum:period:2023", childrenSumConfig("toSite"));
-            assertThat(calc.getResultValue().getValue()).isEqualTo(12.);
+            assertAttValueIsLike(calc, 12., DoubleValue.class, null);
             assertThat(calc.getImpacterIds()).containsExactlyInAnyOrder("site:s1-1:toSite:period:2023", "site:s1-2:toSite:period:2023");
         }
 
@@ -276,27 +277,29 @@ class CalculatorServiceTest {
     }
 
     @Nested
-    class ConsoSumOperation {
+    class ConsoSumByKeyOperation {
 
         @Test
         @SneakyThrows
-        public void consoSumOperation_happyflow() {
+        public void consoSumByKeyOperation_happyflow() {
             givenSomeChildrenValues();
 
             when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA))
                 .thenReturn(Optional.of(doubleValueAttribute(2.).toBuilder().id("site:s1:toSite:period:2023").build()));
 
-            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumConfig("toSite"));
-            assertThat(calc.getResultValue().getValue()).isEqualTo(14.);
-            assertThat(calc.getAggInfo().getWithValues()).isEqualTo(6);
-            assertThat(calc.getAggInfo().getErrors()).containsExactly("err1", "err2", "err3");
-            assertThat(calc.getAggInfo().getNotResolvables()).containsExactly("nr1", "nr2", "nr3");
+            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumBykeyConfig("toSite"));
+            assertAttValueIsLike(
+                calc,
+                14.,
+                DoubleValue.class,
+                AggInfo.builder().withValues(6).notResolvables(List.of("nr1", "nr2", "nr3")).errors(List.of("err1", "err2", "err3")).build()
+            );
             assertImpactersAreOk(calc);
         }
 
         @Test
         @SneakyThrows
-        public void consoSumOperation_toSiteIsInError() {
+        public void consoSumByKeyOperation_toSiteIsInError() {
             givenSomeChildrenValues();
 
             when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA))
@@ -310,19 +313,24 @@ class CalculatorServiceTest {
                     )
                 );
 
-            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumConfig("toSite"));
-            assertThat(calc.getResultValue()).isInstanceOf(ErrorValue.class);
-            assertThat(((ErrorValue) calc.getResultValue()).getValue())
-                .isEqualTo(ERROR_CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_IN_ERROR);
-            assertThat(calc.getAggInfo().getWithValues()).isEqualTo(5);
-            assertThat(calc.getAggInfo().getErrors()).containsExactly("site:s1:toSite:period:2023", "err1", "err2", "err3");
-            assertThat(calc.getAggInfo().getNotResolvables()).containsExactly("nr1", "nr2", "nr3");
+            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumBykeyConfig("toSite"));
+            assertAttValueIsLike(
+                calc,
+                ERROR_CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_IN_ERROR,
+                ErrorValue.class,
+                AggInfo
+                    .builder()
+                    .withValues(5)
+                    .notResolvables(List.of("nr1", "nr2", "nr3"))
+                    .errors(List.of("site:s1:toConso:period:2023", "err1", "err2", "err3"))
+                    .build()
+            );
             assertImpactersAreOk(calc);
         }
 
         @Test
         @SneakyThrows
-        public void consoSumOperation_toSiteIsNotResolvable() {
+        public void consoSumByKeyOperation_toSiteIsNotResolvable() {
             givenSomeChildrenValues();
 
             when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA))
@@ -336,17 +344,58 @@ class CalculatorServiceTest {
                     )
                 );
 
-            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumConfig("toSite"));
-            assertThat(((NotResolvableValue) calc.getResultValue()).getValue()).isEqualTo(VALUE_TO_CONSOLIDATE_IS_NULL_OR_NOT_RESOLVABLE);
-            assertThat(calc.getAggInfo().getWithValues()).isEqualTo(5);
-            assertThat(calc.getAggInfo().getErrors()).containsExactly("err1", "err2", "err3");
-            assertThat(calc.getAggInfo().getNotResolvables()).containsExactly("site:s1:toSite:period:2023", "nr1", "nr2", "nr3");
+            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumBykeyConfig("toSite"));
+            assertAttValueIsLike(
+                calc,
+                VALUE_TO_CONSOLIDATE_IS_NULL_OR_NOT_RESOLVABLE,
+                NotResolvableValue.class,
+                AggInfo
+                    .builder()
+                    .withValues(5)
+                    .notResolvables(List.of("site:s1:toConso:period:2023", "nr1", "nr2", "nr3"))
+                    .errors(List.of("err1", "err2", "err3"))
+                    .build()
+            );
             assertImpactersAreOk(calc);
         }
 
         @Test
         @SneakyThrows
-        public void consoSumOperation_oneChildrenValueIsInError() {
+        public void consoSumByKeyOperation_toSiteIsNotResolvable_withDefaultValueForNotResolvable() {
+            givenSomeChildrenValues();
+
+            when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA))
+                .thenReturn(
+                    of(
+                        Attribute
+                            .builder()
+                            .attributeValue(UtilsValue.generateNotResolvableValue("nrToSite"))
+                            .id("site:s1:toSite:period:2023")
+                            .build()
+                    )
+                );
+
+            CalculationResult calc = doCalculateAttribute(
+                "site:s1:toConso:period:2023",
+                consoSumBykeyConfig("toSite").toBuilder().defaultValueForNotResolvableItem(0.).build()
+            );
+            assertAttValueIsLike(
+                calc,
+                12.,
+                DoubleValue.class,
+                AggInfo
+                    .builder()
+                    .withValues(5)
+                    .notResolvables(List.of("site:s1:toConso:period:2023", "nr1", "nr2", "nr3"))
+                    .errors(List.of("err1", "err2", "err3"))
+                    .build()
+            );
+            assertImpactersAreOk(calc);
+        }
+
+        @Test
+        @SneakyThrows
+        public void consoSumByKeyOperation_oneChildrenValueIsInError() {
             when(attributeService.getAttributesForSiteChildrenAndConfig("site:s1:toConso:period:2023", "toConso", COCA))
                 .thenReturn(
                     List.of(
@@ -367,19 +416,19 @@ class CalculatorServiceTest {
             when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA))
                 .thenReturn(Optional.of(doubleValueAttribute(2.).toBuilder().id("site:s1:toSite:period:2023").build()));
 
-            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumConfig("toSite"));
-            assertThat(calc.getResultValue()).isInstanceOf(ErrorValue.class);
-            assertThat(((ErrorValue) calc.getResultValue()).getValue())
-                .isEqualTo(ERROR_CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_IN_ERROR);
-            assertThat(calc.getAggInfo().getWithValues()).isEqualTo(6);
-            assertThat(calc.getAggInfo().getErrors()).containsExactly("err1", "err2", "err3");
-            assertThat(calc.getAggInfo().getNotResolvables()).containsExactly("nr1", "nr2", "nr3");
+            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumBykeyConfig("toSite"));
+            assertAttValueIsLike(
+                calc,
+                ERROR_CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_IN_ERROR,
+                ErrorValue.class,
+                AggInfo.builder().withValues(6).notResolvables(List.of("nr1", "nr2", "nr3")).errors(List.of("err1", "err2", "err3")).build()
+            );
             assertImpactersAreOk(calc);
         }
 
         @Test
         @SneakyThrows
-        public void consoSumOperation_oneChildrenValueIsNotResolvable() {
+        public void consoSumByKeyOperation_oneChildrenValueIsNotResolvable() {
             when(attributeService.getAttributesForSiteChildrenAndConfig("site:s1:toConso:period:2023", "toConso", COCA))
                 .thenReturn(
                     List.of(
@@ -400,14 +449,77 @@ class CalculatorServiceTest {
             when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA))
                 .thenReturn(Optional.of(doubleValueAttribute(2.).toBuilder().id("site:s1:toSite:period:2023").build()));
 
-            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumConfig("toSite"));
-            assertThat(calc.getResultValue()).isInstanceOf(NotResolvableValue.class);
-            assertThat(((NotResolvableValue) calc.getResultValue()).getValue())
-                .isEqualTo(CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_NOT_RESOLVABLE);
-            assertThat(calc.getAggInfo().getWithValues()).isEqualTo(6);
-            assertThat(calc.getAggInfo().getErrors()).containsExactly("err1", "err2", "err3");
-            assertThat(calc.getAggInfo().getNotResolvables()).containsExactly("nr1", "nr2", "nr3");
+            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumBykeyConfig("toSite"));
+            assertAttValueIsLike(
+                calc,
+                CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_NOT_RESOLVABLE,
+                NotResolvableValue.class,
+                AggInfo.builder().withValues(6).notResolvables(List.of("nr1", "nr2", "nr3")).errors(List.of("err1", "err2", "err3")).build()
+            );
             assertImpactersAreOk(calc);
+        }
+
+        @Test
+        @SneakyThrows
+        public void consoSumByKeyOperation_oneChildrenValueIsNotResolvable_withDefaultValueForNotResolvable() {
+            when(attributeService.getAttributesForSiteChildrenAndConfig("site:s1:toConso:period:2023", "toConso", COCA))
+                .thenReturn(
+                    List.of(
+                        doubleValueAttribute(5.)
+                            .toBuilder()
+                            .id("site:s1-1:toConso:period:2023")
+                            .aggInfo(AggInfo.builder().withValues(3).errors(List.of("err1")).notResolvables(List.of("nr1", "nr2")).build())
+                            .build(),
+                        Attribute
+                            .builder()
+                            .id("site:s1-2:toConso:period:2023")
+                            .attributeValue(generateNotResolvableValue("nr4"))
+                            .aggInfo(AggInfo.builder().withValues(2).errors(List.of("err2", "err3")).notResolvables(List.of("nr3")).build())
+                            .build()
+                    )
+                );
+
+            when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA))
+                .thenReturn(Optional.of(doubleValueAttribute(2.).toBuilder().id("site:s1:toSite:period:2023").build()));
+
+            CalculationResult calc = doCalculateAttribute(
+                "site:s1:toConso:period:2023",
+                consoSumBykeyConfig("toSite").toBuilder().defaultValueForNotResolvableItem(0.).build()
+            );
+            assertAttValueIsLike(
+                calc,
+                7.,
+                DoubleValue.class,
+                AggInfo.builder().withValues(6).notResolvables(List.of("nr1", "nr2", "nr3")).errors(List.of("err1", "err2", "err3")).build()
+            );
+            assertImpactersAreOk(calc);
+        }
+
+        @Nested
+        class ConsoSumOperation {
+
+            @Test
+            @SneakyThrows
+            public void consoSumOperation_happyflow() {
+                givenSomeChildrenValues();
+
+                when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA))
+                    .thenReturn(Optional.of(doubleValueAttribute(2.).toBuilder().id("site:s1:toSite:period:2023").build()));
+
+                CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumConfig(refOp("toSite")));
+                assertAttValueIsLike(
+                    calc,
+                    14.,
+                    DoubleValue.class,
+                    AggInfo
+                        .builder()
+                        .withValues(6)
+                        .notResolvables(List.of("nr1", "nr2", "nr3"))
+                        .errors(List.of("err1", "err2", "err3"))
+                        .build()
+                );
+                assertImpactersAreOk(calc);
+            }
         }
 
         private void assertImpactersAreOk(CalculationResult calc) {
@@ -431,6 +543,16 @@ class CalculatorServiceTest {
                             .build()
                     )
                 );
+        }
+    }
+
+    private void assertAttValueIsLike(CalculationResult calc, Object v, Class calcClass, AggInfo info) {
+        assertThat(calc.getResultValue().getValue()).isEqualTo(v);
+        assertThat(calc.getResultValue().getClass()).isEqualTo(calcClass);
+        if (info != null) {
+            assertThat(calc.getAggInfo().getWithValues()).isEqualTo(info.getWithValues());
+            assertThat(calc.getAggInfo().getErrors()).containsExactlyElementsOf(info.getErrors());
+            assertThat(calc.getAggInfo().getNotResolvables()).containsExactlyElementsOf(info.getNotResolvables());
         }
     }
 

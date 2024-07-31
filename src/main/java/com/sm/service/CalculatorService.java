@@ -1,9 +1,10 @@
 package com.sm.service;
 
-import static com.sm.domain.operation.OperationType.CHILDREN_PRODUCT;
-import static com.sm.domain.operation.OperationType.CHILDREN_SUM;
+import static com.sm.domain.operation.OperationType.CHILDREN_PRODUCT_BY_KEY;
+import static com.sm.domain.operation.OperationType.CHILDREN_SUM_BY_KEY;
 import static com.sm.domain.operation.OperationType.COMPARISON;
 import static com.sm.domain.operation.OperationType.CONSO_SUM;
+import static com.sm.domain.operation.OperationType.CONSO_SUM_BY_KEY;
 import static com.sm.domain.operation.OperationType.CONSTANT;
 import static com.sm.domain.operation.OperationType.IF_THEN_ELSE;
 import static com.sm.domain.operation.OperationType.PRODUCT;
@@ -101,53 +102,28 @@ public class CalculatorService {
             } else {
                 throw new RuntimeException("to implement tagOp " + op.getTagOperationType());
             }
+        } else if (CONSO_SUM_BY_KEY.equals(config.getConsoOperationType())) {
+            if (config.getAttributeType() != AggInfo.AttributeType.DOUBLE) {
+                throw new RuntimeException("to implement 566");
+            }
+            if (config.getConsoParameterKey() == null) {
+                throw new RuntimeException("pas possible ici 588");
+            }
+            return calculateConsoAtt(
+                orgaId,
+                attribute,
+                impacterIds,
+                config,
+                RefOperation.builder().key(config.getConsoParameterKey()).build()
+            );
         } else if (CONSO_SUM.equals(config.getConsoOperationType())) {
-            if (config.getAttributeType() == AggInfo.AttributeType.DOUBLE) {
-                if (config.getConsoParameterKey() == null) {
-                    throw new RuntimeException("pas possible ici 56");
-                }
-                List<Attribute> attributes = attributeService.getAttributesForSiteChildrenAndConfig(
-                    attribute.getId(),
-                    config.getKey(),
-                    orgaId
-                );
-                if (attributes.stream().anyMatch(att -> att == null)) {
-                    throw new RuntimeException("pas possible ici 56");
-                }
-                if (attributes.stream().anyMatch(att -> att.getDirty())) {
-                    throw new IsDirtyValueException();
-                }
-                impacterIds.addAll(attributes.stream().map(att -> att.getId()).collect(Collectors.toList()));
-
-                AttributeKeyAsObj attIdAsObj = fromString(attribute.getId());
-                String consolidatedId = objToString(
-                    createReferenced(attIdAsObj, RefOperation.builder().useCurrentSite(true).key(config.getConsoParameterKey()).build())
-                );
-                impacterIds.add(consolidatedId);
-                Optional<Attribute> consolidated = attributeService.findByIdAndOrgaId(consolidatedId, orgaId);
-                if (consolidated.isPresent() && consolidated.get().getDirty()) {
-                    throw new IsDirtyValueException();
-                }
-
-                return doubleCalculator.calculateConsolidatedAttribute(
-                    attribute.getId(),
-                    impacterIds,
-                    attributes,
-                    consolidated,
-                    config,
-                    DoubleValue.builder().build(),
-                    UtilsValue::mapToDouble,
-                    0.,
-                    Double::sum
-                );
-                //                    return
-                //                            calculateConsolidatedAttribute(attId, impacterIds, config, 0., Double::sum);
-                //                } else {
-                //                    throw new RuntimeException("to implement 999");
-                //                }
-            } else {
+            if (config.getAttributeType() != AggInfo.AttributeType.DOUBLE) {
                 throw new RuntimeException("to implement 555");
             }
+            if (config.getConsoOperation() == null) {
+                throw new RuntimeException("pas possible ici 57");
+            }
+            return calculateConsoAtt(orgaId, attribute, impacterIds, config, config.getConsoOperation());
         } else if (SUM.equals(config.getOperationType()) || PRODUCT.equals(config.getOperationType())) {
             HasItems op = (HasItems) config.getOperation();
             if (config.getAttributeType() == AggInfo.AttributeType.LONG) {
@@ -223,7 +199,7 @@ public class CalculatorService {
             } else {
                 throw new RuntimeException("to implement 555");
             }
-        } else if (CHILDREN_SUM.equals(config.getOperationType()) || CHILDREN_PRODUCT.equals(config.getOperationType())) {
+        } else if (CHILDREN_SUM_BY_KEY.equals(config.getOperationType()) || CHILDREN_PRODUCT_BY_KEY.equals(config.getOperationType())) {
             if (config.getAttributeType() == AggInfo.AttributeType.DOUBLE) {
                 HasItemsKey op = (HasItemsKey) config.getOperation();
                 List<Attribute> attributes = attributeService.getAttributesForSiteChildrenAndConfig(
@@ -235,7 +211,7 @@ public class CalculatorService {
                     throw new IsDirtyValueException();
                 }
                 //                List<Attribute> attributes = attributeService.getAttributesFromKeys(impacterIds, orgaId);
-                if (CHILDREN_SUM.equals(config.getOperationType())) {
+                if (CHILDREN_SUM_BY_KEY.equals(config.getOperationType())) {
                     Pair<AttributeValue, AggInfo> res = doubleCalculator.calculateMultiValuesAttribute(
                         attribute.getId(),
                         attributes,
@@ -255,7 +231,7 @@ public class CalculatorService {
                         .build();
                     //                    return
                     //                            Pair.of(calculateMultiOperandsAttribute(attId, impacterIds, config, 0., Double::sum), null);
-                } else if (CHILDREN_PRODUCT.equals(config.getOperationType())) {
+                } else if (CHILDREN_PRODUCT_BY_KEY.equals(config.getOperationType())) {
                     Pair<AttributeValue, AggInfo> res = doubleCalculator.calculateMultiValuesAttribute(
                         attribute.getId(),
                         attributes,
@@ -278,7 +254,7 @@ public class CalculatorService {
                 }
             } else if (AggInfo.AttributeType.LONG.equals(config.getAttributeType())) {
                 List<Attribute> attributes = attributeService.getAttributesFromKeys(impacterIds, orgaId);
-                if (CHILDREN_SUM.equals(config.getOperationType())) {
+                if (CHILDREN_SUM_BY_KEY.equals(config.getOperationType())) {
                     Pair<AttributeValue, AggInfo> res = longCalculator.calculateMultiValuesAttribute(
                         attribute.getId(),
                         attributes,
@@ -297,7 +273,7 @@ public class CalculatorService {
                         .build();
                     //                    return
                     //                            Pair.of(calculateMultiOperandsAttribute(attId, impacterIds, config, 0., Double::sum), null);
-                } else if (CHILDREN_PRODUCT.equals(config.getOperationType())) {
+                } else if (CHILDREN_PRODUCT_BY_KEY.equals(config.getOperationType())) {
                     Pair<AttributeValue, AggInfo> res = longCalculator.calculateMultiValuesAttribute(
                         attribute.getId(),
                         attributes,
@@ -334,6 +310,46 @@ public class CalculatorService {
             return calculateComparison(orgaId, attribute, impacterIds, op);
         }
         throw new RuntimeException("to implement operation " + config.getOperationType());
+    }
+
+    private CalculationResult calculateConsoAtt(
+        String orgaId,
+        Attribute attribute,
+        Set<String> impacterIds,
+        AttributeConfig config,
+        Operation consoOperation
+    ) throws IsDirtyValueException {
+        List<Attribute> attributes = attributeService.getAttributesForSiteChildrenAndConfig(attribute.getId(), config.getKey(), orgaId);
+        if (attributes.stream().anyMatch(att -> att == null)) {
+            throw new RuntimeException("pas possible ici 86");
+        }
+        if (attributes.stream().anyMatch(att -> att.getDirty())) {
+            throw new IsDirtyValueException();
+        }
+        impacterIds.addAll(attributes.stream().map(att -> att.getId()).collect(Collectors.toList()));
+
+        AttributeConfig consoFakeConfig = AttributeConfig
+            .builder()
+            .id("consoConfig")
+            .orgaId(orgaId)
+            .isConsolidable(false)
+            .operation(consoOperation)
+            .isWritable(false)
+            .tags(attribute.getTags())
+            .build();
+        CalculationResult consolidated = calculateAttribute(orgaId, attribute, impacterIds, consoFakeConfig);
+
+        return doubleCalculator.calculateConsolidatedAttribute(
+            attribute.getId(),
+            impacterIds,
+            attributes,
+            consolidated.getResultValue(),
+            config,
+            DoubleValue.builder().build(),
+            UtilsValue::mapToDouble,
+            0.,
+            Double::sum
+        );
     }
 
     private CalculationResult calculateComparison(String orgaId, Attribute attribute, Set<String> impacterIds, ComparisonOperation op)

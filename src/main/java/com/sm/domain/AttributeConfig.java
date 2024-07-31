@@ -94,6 +94,9 @@ public class AttributeConfig implements Serializable {
     @Field("operation")
     private Operation operation;
 
+    @Field("consoOperation")
+    private Operation consoOperation;
+
     @Field("siteId")
     private String siteId;
 

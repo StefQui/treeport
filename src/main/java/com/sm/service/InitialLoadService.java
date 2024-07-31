@@ -4,7 +4,7 @@ import static com.sm.domain.attribute.AggInfo.AttributeType.BOOLEAN;
 import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.enumeration.AssetType.RESOURCE;
 import static com.sm.domain.enumeration.AssetType.SITE;
-import static com.sm.domain.operation.OperationType.CONSO_SUM;
+import static com.sm.domain.operation.OperationType.CONSO_SUM_BY_KEY;
 
 import com.sm.domain.*;
 import com.sm.domain.attribute.Attribute;
@@ -495,7 +495,7 @@ public class InitialLoadService {
                 .label("Tonnage consolidé")
                 .isConsolidable(true)
                 .consoParameterKey(TO_SITE)
-                .consoOperationType(CONSO_SUM)
+                .consoOperationType(CONSO_SUM_BY_KEY)
                 .defaultValueForNotResolvableItem(0.)
                 .isWritable(false)
                 .tags(Set.of(Tag.builder().id(CAR).build()))

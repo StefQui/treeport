@@ -3,7 +3,6 @@ package com.sm.service;
 import com.sm.domain.AttributeConfig;
 import com.sm.domain.attribute.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
@@ -94,7 +93,7 @@ public class ConsoCalculator<T> {
         String attId,
         Set<String> impacterIds,
         List<Attribute> atts,
-        Optional<Attribute> consolidated,
+        AttributeValue consolidatedAttributeValue,
         AttributeConfig config,
         AttributeValue<T> builderValue,
         Function<AttributeValue, T> attributeValueTFunction,
@@ -105,21 +104,19 @@ public class ConsoCalculator<T> {
             AggInfo aggInfo = AggInfo.builder().build();
             Boolean consolidatedValueIsMissing = false;
             Boolean consolidatedValueIsNotResolvable = false;
-            Attribute consolidatedAttribute = null;
+            AttributeValue consolidatedAttributeValueToApply = consolidatedAttributeValue;
             AtomicBoolean atLeastOnChildValueIsNotResolvable = new AtomicBoolean(false);
-            if (consolidated.isPresent()) {
-                consolidatedAttribute = consolidated.get();
-                if (consolidatedAttribute.getAttributeValue() == null) {
-                    aggInfo.getNotResolvables().add(consolidatedAttribute.getId());
-                    consolidatedValueIsMissing = true;
-                } else if (consolidatedAttribute.getAttributeValue().isError()) {
-                    aggInfo.getErrors().add(consolidatedAttribute.getId());
-                } else if (consolidatedAttribute.getAttributeValue().isNotResolvable()) {
-                    aggInfo.getNotResolvables().add(consolidatedAttribute.getId());
-                    consolidatedValueIsNotResolvable = true;
-                } else {
-                    aggInfo.setWithValues(aggInfo.getWithValues() + 1);
-                }
+            if (consolidatedAttributeValue == null) {
+                aggInfo.getNotResolvables().add(attId);
+                consolidatedValueIsMissing = true;
+            } else if (consolidatedAttributeValue.isError()) {
+                aggInfo.getErrors().add(attId);
+            } else if (consolidatedAttributeValue.isNotResolvable()) {
+                aggInfo.getNotResolvables().add(attId);
+                consolidatedAttributeValueToApply = applyDefaultValue(config, consolidatedAttributeValue);
+                consolidatedValueIsNotResolvable = true;
+            } else {
+                aggInfo.setWithValues(aggInfo.getWithValues() + 1);
             }
             List<AttributeValue> attVals = atts
                 .stream()
@@ -146,6 +143,7 @@ public class ConsoCalculator<T> {
                     }
                     return attValue;
                 })
+                .map(attValue -> applyDefaultValue(config, attValue))
                 .collect(Collectors.toList());
 
             //            attribute.setAggInfo(aggInfo);
@@ -171,9 +169,9 @@ public class ConsoCalculator<T> {
                 }
             }
 
-            if (consolidatedAttribute != null && consolidatedAttribute.getAttributeValue() != null) {
-                attVals.add(consolidatedAttribute.getAttributeValue());
-            }
+            //            if (consolidatedAttribute != null && consolidatedAttribute.getAttributeValue() != null) {
+            attVals.add(consolidatedAttributeValueToApply);
+            //          }
 
             AttributeValue errorOrNotResolvable = UtilsValue.handleErrorsAndNotResolvable(attVals);
             if (errorOrNotResolvable != null) {
@@ -197,5 +195,16 @@ public class ConsoCalculator<T> {
             log.error("errur 2344 " + e.getMessage());
             throw new RuntimeException("should not arrive here " + attId);
         }
+    }
+
+    private AttributeValue applyDefaultValue(AttributeConfig config, AttributeValue attValue) {
+        if (!(attValue instanceof NotResolvableValue) || config.getDefaultValueForNotResolvableItem() == null) {
+            return attValue;
+        }
+        T defaultValue = (T) config.getDefaultValueForNotResolvableItem();
+        if (!(defaultValue instanceof Double)) {
+            throw new RuntimeException("should be implemented for type " + defaultValue.getClass());
+        }
+        return DoubleValue.builder().value((Double) defaultValue).build();
     }
 }

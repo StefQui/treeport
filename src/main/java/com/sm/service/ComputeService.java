@@ -2,10 +2,10 @@ package com.sm.service;
 
 import static com.sm.domain.attribute.Attribute.PERIOD_FRAG;
 import static com.sm.domain.operation.OperationType.AVG;
-import static com.sm.domain.operation.OperationType.CHILDREN_AVG;
-import static com.sm.domain.operation.OperationType.CHILDREN_COUNT;
-import static com.sm.domain.operation.OperationType.CHILDREN_PRODUCT;
-import static com.sm.domain.operation.OperationType.CHILDREN_SUM;
+import static com.sm.domain.operation.OperationType.CHILDREN_AVG_BY_KEY;
+import static com.sm.domain.operation.OperationType.CHILDREN_COUNT_BY_COUNT;
+import static com.sm.domain.operation.OperationType.CHILDREN_PRODUCT_BY_KEY;
+import static com.sm.domain.operation.OperationType.CHILDREN_SUM_BY_KEY;
 import static com.sm.domain.operation.OperationType.COMPARISON;
 import static com.sm.domain.operation.OperationType.CONSTANT;
 import static com.sm.domain.operation.OperationType.DIVIDE;
@@ -515,7 +515,7 @@ public class ComputeService {
         @NonNull String orgaId
     ) {
         AttributeKeyAsObj.AttributeKeyAsObjBuilder impacted = attObj.toBuilder();
-        if (config.getOperationType().equals(CHILDREN_SUM)) {
+        if (config.getOperationType().equals(CHILDREN_SUM_BY_KEY)) {
             Site site = siteService
                 .getSiteById(attObj.getAssetId(), orgaId)
                 .orElseThrow(() -> new RuntimeException("Should have a site here"));
@@ -577,10 +577,10 @@ public class ComputeService {
         AttributeKeyAsObj attributeKeyAsObj = fromString(impacted);
 
         if (
-            CHILDREN_SUM.equals(operation.getOperationType()) ||
-            CHILDREN_PRODUCT.equals(operation.getOperationType()) ||
-            CHILDREN_AVG.equals(operation.getOperationType()) ||
-            CHILDREN_COUNT.equals(operation.getOperationType())
+            CHILDREN_SUM_BY_KEY.equals(operation.getOperationType()) ||
+            CHILDREN_PRODUCT_BY_KEY.equals(operation.getOperationType()) ||
+            CHILDREN_AVG_BY_KEY.equals(operation.getOperationType()) ||
+            CHILDREN_COUNT_BY_COUNT.equals(operation.getOperationType())
         ) {
             HasItemsKey op = (HasItemsKey) operation;
             Site site = siteService

@@ -66,8 +66,8 @@ class AttributeConfigResourceIT {
     private static final String DEFAULT_CONSO_PARAMETER_KEY = "AAAAAAAAAA";
     private static final String UPDATED_CONSO_PARAMETER_KEY = "BBBBBBBBBB";
 
-    private static final OperationType DEFAULT_CONSO_OPERATION_TYPE = OperationType.CHILDREN_SUM;
-    private static final OperationType UPDATED_CONSO_OPERATION_TYPE = OperationType.CONSO_SUM;
+    private static final OperationType DEFAULT_CONSO_OPERATION_TYPE = OperationType.CHILDREN_SUM_BY_KEY;
+    private static final OperationType UPDATED_CONSO_OPERATION_TYPE = OperationType.CONSO_SUM_BY_KEY;
 
     private static final String ENTITY_API_URL = "/api/attribute-configs";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";

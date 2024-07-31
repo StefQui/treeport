@@ -33,15 +33,27 @@ public class ComputeTestUtils {
             .build();
     }
 
-    public static AttributeConfig consoSumConfig(String itemsKey) {
+    public static AttributeConfig consoSumBykeyConfig(String itemsKey) {
+        return AttributeConfig
+            .builder()
+            .id("configConsoSumByKey")
+            .isWritable(false)
+            .attributeType(DOUBLE)
+            .isConsolidable(true)
+            .consoParameterKey(itemsKey)
+            .consoOperationType(OperationType.CONSO_SUM_BY_KEY)
+            .build();
+    }
+
+    public static AttributeConfig consoSumConfig(Operation op) {
         return AttributeConfig
             .builder()
             .id("configConsoSum")
             .isWritable(false)
             .attributeType(DOUBLE)
             .isConsolidable(true)
-            .consoParameterKey(itemsKey)
             .consoOperationType(OperationType.CONSO_SUM)
+            .consoOperation(op)
             .build();
     }
 

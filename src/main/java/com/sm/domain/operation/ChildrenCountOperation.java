@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class ChildrenCountOperation implements Operation, HasItemsKey {
 
     @Builder.Default
-    private OperationType operationType = OperationType.CHILDREN_COUNT;
+    private OperationType operationType = OperationType.CHILDREN_COUNT_BY_COUNT;
 
     private String itemsKey;
 

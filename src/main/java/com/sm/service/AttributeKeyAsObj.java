@@ -9,6 +9,7 @@ public class AttributeKeyAsObj {
 
     private String assetType;
     private String assetId;
+    private String assetId2;
     private String attributeId;
     private CampaignType campaignType;
     private String campaign;

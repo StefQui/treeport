@@ -2,6 +2,7 @@ package com.sm.service.mapper;
 
 import com.sm.domain.AttributeConfig;
 import com.sm.domain.attribute.Attribute;
+import com.sm.service.AssetKeyUtils;
 import com.sm.service.dto.attribute.AttributeDTO;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ public class AttributeMapper {
     private TagMapper tagMapper;
     private OrganisationMapper organisationMapper;
     private SiteMapper siteMapper;
+    private ResourceMapper resourceMapper;
     private AttributeValueMapper attributeValueMapper;
     private AttributeConfigMapper attributeConfigMapper;
 
@@ -27,7 +29,10 @@ public class AttributeMapper {
             .id(aDTO.getId())
             .tags(tagMapper.toEntity(aDTO.getTags()))
             .orgaId(aDTO.getOrga().getId())
-            .siteId(aDTO.getSite().getId())
+            .assetKey(aDTO.getAssetKey())
+            .siteId(AssetKeyUtils.extractSiteFromDTO(aDTO))
+            .resourceId(AssetKeyUtils.extractResourceFromDTO(aDTO))
+            .resourceId2(AssetKeyUtils.extractResource2FromDTO(aDTO))
             .configError(aDTO.getConfigError())
             .configId(aDTO.getConfig().getId())
             .campaignId(aDTO.getCampaignId())
@@ -47,7 +52,8 @@ public class AttributeMapper {
             .configError(a.getConfigError())
             .hasConfigError(a.getHasConfigError())
             .orga(organisationMapper.toBasicDto(a.getOrgaId()))
-            .site(siteMapper.toBasicDto(a.getSiteId()))
+            .site(siteMapper.toBasicDto(AssetKeyUtils.extractSite(a)))
+            .resource(resourceMapper.toBasicDto(AssetKeyUtils.extractResource(a)))
             .attributeValue(attributeValueMapper.toDto(a.getAttributeValue()))
             .isAgg(a.getIsAgg())
             .aggInfo(a.getAggInfo())

@@ -29,11 +29,21 @@ public class Attribute implements Serializable {
     public static final String ATTRIBUTE_SEPARATOR = ":";
     public static final String PARTIAL_ATTRIBUTE_PATTERN = "%s" + ATTRIBUTE_SEPARATOR + "%s" + ATTRIBUTE_SEPARATOR + "%s";
     public static final String ATTRIBUTE_PATTERN = "%s" + ATTRIBUTE_SEPARATOR + "%s" + ATTRIBUTE_SEPARATOR + PARTIAL_ATTRIBUTE_PATTERN;
-    public static final int ASSET_TYPE_FRAGMENT_POSITION = 0;
-    public static final int ASSET_ID_FRAGMENT_POSITION = 1;
-    public static final int ATTRIBUTE_ID_FRAGMENT_POSITION = 2;
-    public static final int CAMPAIGN_TYPE_FRAGMENT_POSITION = 3;
-    public static final int CAMPAIGN_FRAGMENT_POSITION = 4;
+    public static final String ATTRIBUTE_PATTERN_WITH_2_RESOURCES =
+        "%s" + ATTRIBUTE_SEPARATOR + "%s" + ATTRIBUTE_SEPARATOR + "%s" + ATTRIBUTE_SEPARATOR + PARTIAL_ATTRIBUTE_PATTERN;
+
+    public static final int ASSET_TYPE_FRAGMENT_POSITION_FROM_WITH_ONE = 0;
+    public static final int ASSET_ID_FRAGMENT_POSITION_FROM_WITH_ONE = 1;
+    public static final int ATTRIBUTE_ID_FRAGMENT_POSITION_FROM_WITH_ONE = 2;
+    public static final int CAMPAIGN_TYPE_FRAGMENT_POSITION_FROM_WITH_ONE = 3;
+    public static final int CAMPAIGN_FRAGMENT_POSITION_FROM_WITH_ONE = 4;
+
+    public static final int ASSET_TYPE_FRAGMENT_POSITION_FROM_WITH_TWO = 0;
+    public static final int ASSET_ID_FRAGMENT_POSITION_FROM_WITH_TWO = 1;
+    public static final int ASSET_ID2_FRAGMENT_POSITION_FROM_WITH_TWO = 2;
+    public static final int ATTRIBUTE_ID_FRAGMENT_POSITION_FROM_WITH_TWO = 3;
+    public static final int CAMPAIGN_TYPE_FRAGMENT_POSITION_FROM_WITH_TWO = 4;
+    public static final int CAMPAIGN_FRAGMENT_POSITION_FROM_WITH_TWO = 5;
 
     private static final long serialVersionUID = 1L;
 
@@ -61,8 +71,17 @@ public class Attribute implements Serializable {
     @Field("orgaId")
     private String orgaId;
 
+    @Field("assetKey")
+    private AssetKey assetKey;
+
     @Field("siteId")
     private String siteId;
+
+    @Field("resourceId")
+    private String resourceId;
+
+    @Field("resourceId2")
+    private String resourceId2;
 
     @Field("configId")
     private String configId;
@@ -94,6 +113,6 @@ public class Attribute implements Serializable {
         if (id == null) {
             return "-";
         }
-        return id.split(":")[ASSET_ID_FRAGMENT_POSITION];
+        return id.split(":")[ASSET_ID_FRAGMENT_POSITION_FROM_WITH_ONE];
     }
 }

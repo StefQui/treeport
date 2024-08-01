@@ -46,6 +46,7 @@ import org.springframework.context.annotation.Import;
         DirtierService.class,
         OrganisationMapper.class,
         SiteMapper.class,
+        ResourceMapper.class,
         SiteService.class,
         TagMapper.class,
     }

@@ -22,6 +22,7 @@ import static java.util.Optional.of;
 
 import com.sm.domain.*;
 import com.sm.domain.attribute.AggInfo;
+import com.sm.domain.attribute.AssetKey;
 import com.sm.domain.attribute.Attribute;
 import com.sm.domain.operation.*;
 import com.sm.service.dto.attribute.AttributeDTO;
@@ -156,7 +157,7 @@ public class ComputeService {
         while (!found && i < orderedConfigs.size()) {
             AttributeConfig config = orderedConfigs.get(i);
             if (isEligible(site, config, campaign)) {
-                this.createOrUpdateAttribute(site, configKey, campaign, config, orgaId);
+                this.createOrUpdateAttribute(AssetKey.site, site, null, null, configKey, campaign, config, orgaId);
                 found = true;
             }
             i++;
@@ -242,15 +243,27 @@ public class ComputeService {
         return null;
     }
 
-    private void createOrUpdateAttribute(Site site, String configKey, Campaign campaign, AttributeConfig config, @NonNull String orgaId) {
-        String attKey = AttributeKeyUtils.siteKey(site.getId(), configKey, PERIOD_FRAG, campaign.getId());
+    private void createOrUpdateAttribute(
+        AssetKey assetKey,
+        Site site,
+        Resource resource,
+        Resource resource2,
+        String configKey,
+        Campaign campaign,
+        AttributeConfig config,
+        @NonNull String orgaId
+    ) {
+        String attKey = AttributeKeyUtils.buildKey(assetKey, site, resource, resource2, configKey, PERIOD_FRAG, campaign.getId());
         Attribute attribute = attributeService.findByIdAndOrgaId(attKey, orgaId).orElse(null);
         if (attribute == null) {
             attribute =
                 Attribute
                     .builder()
                     .orgaId(orgaId)
-                    .siteId(site.getId())
+                    .assetKey(assetKey)
+                    .siteId(AssetKeyUtils.getSite(assetKey, site))
+                    .resourceId(AssetKeyUtils.getResource(assetKey, resource))
+                    .resourceId2(AssetKeyUtils.getResource2(assetKey, resource2))
                     .id(attKey)
                     .impacterIds(config.getIsWritable() ? null : new HashSet<>())
                     .build();

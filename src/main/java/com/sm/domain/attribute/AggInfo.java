@@ -23,5 +23,6 @@ public class AggInfo {
         BOOLEAN,
         DOUBLE,
         COMPO,
+        COST,
     }
 }

@@ -16,4 +16,6 @@ public enum OperationType {
     DIVIDE,
     AVG,
     TAG,
+    COST,
+    COST_REF,
 }

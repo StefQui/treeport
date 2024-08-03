@@ -3,11 +3,14 @@ package com.sm.service;
 import static com.sm.domain.attribute.AggInfo.AttributeType.BOOLEAN;
 import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.attribute.AggInfo.AttributeType.LONG;
+import static com.sm.domain.attribute.Unit.kg;
+import static com.sm.domain.attribute.Unit.to;
 import static com.sm.domain.operation.TagOperationType.CONTAINS;
 import static com.sm.service.ComputeTestUtils.childrenSumConfig;
 import static com.sm.service.ComputeTestUtils.consoSumBykeyConfig;
 import static com.sm.service.ComputeTestUtils.consoSumConfig;
 import static com.sm.service.ComputeTestUtils.constant;
+import static com.sm.service.ComputeTestUtils.costRefConfig;
 import static com.sm.service.ComputeTestUtils.dirtyValue;
 import static com.sm.service.ComputeTestUtils.doubleValueAttribute;
 import static com.sm.service.ComputeTestUtils.ifThen;
@@ -30,10 +33,7 @@ import com.sm.domain.Tag;
 import com.sm.domain.attribute.*;
 import com.sm.domain.operation.TagOperation;
 import com.sm.service.mapper.AttributeValueMapper;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -662,6 +662,90 @@ class CalculatorServiceTest {
                         )
                     )
             );
+        }
+    }
+
+    @Nested
+    class VectorCompo {
+
+        @Test
+        @SneakyThrows
+        public void vector() {
+            when(attributeService.findByIdAndOrgaId("site:r1:coutEnv:period:2023", COCA))
+                .thenReturn(
+                    Optional.of(
+                        Attribute
+                            .builder()
+                            .attributeValue(
+                                UnitCostValue
+                                    .builder()
+                                    .value(
+                                        Map.of(
+                                            "co2",
+                                            UnitCostLine.builder().quantity(12.).unit(to).build(),
+                                            "nox",
+                                            UnitCostLine.builder().quantity(15.).unit(kg).build(),
+                                            "ene",
+                                            UnitCostLine.builder().quantity(8.).unit(kg).build()
+                                        )
+                                    )
+                                    .build()
+                            )
+                            .build()
+                    )
+                );
+
+            when(attributeService.findByIdAndOrgaId("site:r2:coutEnv:period:2023", COCA))
+                .thenReturn(
+                    Optional.of(
+                        Attribute
+                            .builder()
+                            .attributeValue(
+                                UnitCostValue
+                                    .builder()
+                                    .value(
+                                        Map.of(
+                                            "co2",
+                                            UnitCostLine.builder().quantity(10.).unit(to).build(),
+                                            "nox",
+                                            UnitCostLine.builder().quantity(25.).unit(kg).build(),
+                                            "ene",
+                                            UnitCostLine.builder().quantity(1.).unit(kg).build()
+                                        )
+                                    )
+                                    .build()
+                            )
+                            .build()
+                    )
+                );
+
+            when(attributeService.findByIdAndOrgaId("site:r:comp:period:2023", COCA))
+                .thenReturn(
+                    Optional.of(
+                        Attribute
+                            .builder()
+                            .attributeValue(
+                                CompoValue
+                                    .builder()
+                                    .value(
+                                        List.of(
+                                            CompoLine.builder().resourceId("r1").quantity(2.).unit(to).build(),
+                                            CompoLine.builder().resourceId("r2").quantity(3.).unit(to).build()
+                                        )
+                                    )
+                                    .build()
+                            )
+                            .build()
+                    )
+                );
+
+            CalculationResult calc = doCalculateAttribute("site:r:refCost:period:2023", costRefConfig(refOp("comp"), "coutEnv"));
+
+            assertThat(calc.getResultValue()).isInstanceOf(CostValue.class);
+            CostValue cv = (CostValue) calc.getResultValue();
+            assertThat(cv.getValue().get("nox").getQuantity()).isEqualTo(105.);
+            assertThat(cv.getValue().get("co2").getQuantity()).isEqualTo(54.);
+            assertThat(cv.getValue().get("ene").getQuantity()).isEqualTo(19.);
         }
     }
 

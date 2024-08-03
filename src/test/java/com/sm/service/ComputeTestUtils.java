@@ -1,6 +1,7 @@
 package com.sm.service;
 
 import static com.sm.domain.attribute.AggInfo.AttributeType.BOOLEAN;
+import static com.sm.domain.attribute.AggInfo.AttributeType.COST;
 import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.attribute.AggInfo.AttributeType.LONG;
 
@@ -106,5 +107,15 @@ public class ComputeTestUtils {
 
     public static IfThen ifThen(Operation ifOp, Operation thenOp) {
         return IfThen.builder().ifOp(ifOp).thenOp(thenOp).build();
+    }
+
+    public static AttributeConfig costRefConfig(RefOperation refOp, String costKey) {
+        return AttributeConfig
+            .builder()
+            .id("compoCost")
+            .isWritable(false)
+            .attributeType(COST)
+            .operation(CostRefOperation.builder().refOperation(refOp).costKey(costKey).build())
+            .build();
     }
 }

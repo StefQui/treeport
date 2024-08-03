@@ -6,6 +6,7 @@ import static com.sm.domain.operation.OperationType.COMPARISON;
 import static com.sm.domain.operation.OperationType.CONSO_SUM;
 import static com.sm.domain.operation.OperationType.CONSO_SUM_BY_KEY;
 import static com.sm.domain.operation.OperationType.CONSTANT;
+import static com.sm.domain.operation.OperationType.COST_REF;
 import static com.sm.domain.operation.OperationType.IF_THEN_ELSE;
 import static com.sm.domain.operation.OperationType.PRODUCT;
 import static com.sm.domain.operation.OperationType.REF;
@@ -20,6 +21,7 @@ import com.sm.domain.AttributeConfig;
 import com.sm.domain.attribute.*;
 import com.sm.domain.operation.*;
 import com.sm.service.mapper.AttributeValueMapper;
+import jakarta.validation.constraints.NotBlank;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -32,6 +34,10 @@ import org.springframework.util.CollectionUtils;
 @Service
 @Slf4j
 public class CalculatorService {
+
+    public static final String CANNOT_RESOLVE_IF_STATEMENT_AS_A_BOOLEAN = "Cannot resolve if statement";
+    public static final String REFERENCED_ATTRIBUTE_HAS_NO_VALUE = "referenced attribute has no value";
+    public static final String CANNOT_RESOLVE_THEN_STATEMENT = "cannot resolve Then statement";
 
     @Autowired
     SiteService siteService;
@@ -207,8 +213,9 @@ public class CalculatorService {
                     op.getItemsKey(),
                     orgaId
                 );
-                if (attributes.stream().anyMatch(att -> att.getDirty())) {
-                    throw new IsDirtyValueException();
+                Optional<Attribute> firstDirty = attributes.stream().filter(att -> att.getDirty()).findFirst();
+                if (firstDirty.isPresent()) {
+                    throw new IsDirtyValueException(firstDirty.get());
                 }
                 //                List<Attribute> attributes = attributeService.getAttributesFromKeys(impacterIds, orgaId);
                 if (CHILDREN_SUM_BY_KEY.equals(config.getOperationType())) {
@@ -302,6 +309,14 @@ public class CalculatorService {
             AttributeValue res = getValueFromReferenced(attKey, orgaId);
             impacterIds.add(attKey);
             return CalculationResult.builder().resultValue(res).success(true).impacterIds(impacterIds).aggInfo(null).build();
+        } else if (COST_REF.equals(config.getOperationType())) {
+            CostRefOperation op = (CostRefOperation) config.getOperation();
+            String attKey = createReferencedKey(attribute.getId(), op.getRefOperation().toBuilder().build());
+            AttributeValue res = getValueFromReferenced(attKey, orgaId);
+            CompoValue compoValue = (CompoValue) res;
+            impacterIds.add(attKey);
+            CostValue cost = calculateCost(attribute.getId(), compoValue, op.getCostKey(), orgaId);
+            return CalculationResult.builder().resultValue(cost).success(true).impacterIds(impacterIds).aggInfo(null).build();
         } else if (IF_THEN_ELSE.equals(config.getOperationType())) {
             IfThenElseOperation op = (IfThenElseOperation) config.getOperation();
             return calculateIfThenElse(orgaId, attribute, impacterIds, op);
@@ -310,6 +325,55 @@ public class CalculatorService {
             return calculateComparison(orgaId, attribute, impacterIds, op);
         }
         throw new RuntimeException("to implement operation " + config.getOperationType());
+    }
+
+    private CostValue calculateCost(@NotBlank String attId, CompoValue compoValue, String costKey, @NonNull String orgaId)
+        throws IsDirtyValueException {
+        Map<String, CostLine> costMap = new HashMap<>();
+        List<CompoLine> compoLines = compoValue.getValue();
+        int i = 0;
+        while (i < compoLines.size()) {
+            CompoLine compoLine = compoLines.get(i);
+            RefOperation unitCostRef = RefOperation
+                .builder()
+                .useCurrentSite(false)
+                .fixedSite(compoLine.getResourceId())
+                .key(costKey)
+                .build();
+
+            String unitCostRefKey = createReferencedKey(attId, unitCostRef);
+            AttributeValue unitCost = getValueFromReferenced(unitCostRefKey, orgaId);
+            UnitCostValue ucv = (UnitCostValue) unitCost;
+            aggregateCost(ucv, compoLine, costMap);
+            compoLine.getResourceId();
+            i++;
+        }
+        return CostValue.builder().value(costMap).build();
+    }
+
+    private void aggregateCost(UnitCostValue ucv, CompoLine compoLine, Map<String, CostLine> costMap) {
+        Map<String, UnitCostLine> ucLines = ucv.getValue();
+        ucLines
+            .keySet()
+            .stream()
+            .forEach(ucComponent -> {
+                if (costMap.containsKey(ucComponent)) {
+                    costMap.put(
+                        ucComponent,
+                        CostLine
+                            .builder()
+                            .quantity(
+                                costMap.get(ucComponent).getQuantity() + compoLine.getQuantity() * ucLines.get(ucComponent).getQuantity()
+                            )
+                            .build()
+                    );
+                } else {
+                    costMap.put(
+                        ucComponent,
+                        CostLine.builder().quantity(compoLine.getQuantity() * ucLines.get(ucComponent).getQuantity()).build()
+                    );
+                }
+            });
     }
 
     private CalculationResult calculateConsoAtt(
@@ -323,8 +387,9 @@ public class CalculatorService {
         if (attributes.stream().anyMatch(att -> att == null)) {
             throw new RuntimeException("pas possible ici 86");
         }
-        if (attributes.stream().anyMatch(att -> att.getDirty())) {
-            throw new IsDirtyValueException();
+        Optional<Attribute> firstDirty = attributes.stream().filter(att -> att.getDirty()).findFirst();
+        if (firstDirty.isPresent()) {
+            throw new IsDirtyValueException(firstDirty.get());
         }
         impacterIds.addAll(attributes.stream().map(att -> att.getId()).collect(Collectors.toList()));
 
@@ -433,7 +498,7 @@ public class CalculatorService {
             } else if (ifResult.getResultValue() instanceof DoubleValue) {
                 ifValue = ((DoubleValue) ifResult.getResultValue()).getValue() != 0;
             } else {
-                return createNotResolvable(impacterIds, ifResult.getImpacterIds(), "Cannot resolve if statement");
+                return createNotResolvable(impacterIds, ifResult.getImpacterIds(), CANNOT_RESOLVE_IF_STATEMENT_AS_A_BOOLEAN);
             }
             if (!ifValue) {
                 continue;
@@ -449,6 +514,14 @@ public class CalculatorService {
             );
             if (thenResult.getImpacterIds() != null) {
                 impacterIds.addAll(thenResult.getImpacterIds());
+            }
+            if (thenResult.getResultValue() instanceof NotResolvableValue) {
+                return createNotResolvable(
+                    (NotResolvableValue) thenResult.getResultValue(),
+                    impacterIds,
+                    null,
+                    CANNOT_RESOLVE_THEN_STATEMENT
+                );
             }
             return thenResult;
         }
@@ -473,6 +546,27 @@ public class CalculatorService {
             .success(true)
             .impacterIds(impacterIds)
             .build();
+    }
+
+    private CalculationResult createNotResolvable(
+        NotResolvableValue wrapped,
+        Set<String> impacterIds,
+        Set<String> impacterIdsToAdd,
+        String message
+    ) {
+        if (impacterIdsToAdd != null) {
+            impacterIds.addAll(impacterIdsToAdd);
+        }
+        return CalculationResult
+            .builder()
+            .resultValue(NotResolvableValue.builder().value(wrapMessage(message, wrapped.getValue())).build())
+            .success(true)
+            .impacterIds(impacterIds)
+            .build();
+    }
+
+    public static String wrapMessage(String message, String wrapped) {
+        return message + " [" + wrapped + "]";
     }
 
     private AttributeConfig fakeConfig(String orgaId, Attribute attribute, Operation op) {
@@ -500,11 +594,11 @@ public class CalculatorService {
         if (attOpt.isPresent()) {
             Attribute att = attOpt.get();
             if (att.getDirty()) {
-                throw new IsDirtyValueException();
+                throw new IsDirtyValueException(att);
             } else if (att.getAttributeValue() != null) {
                 return att.getAttributeValue();
             } else {
-                return NotResolvableValue.builder().value("referenced attribute has no value").build();
+                return NotResolvableValue.builder().value(REFERENCED_ATTRIBUTE_HAS_NO_VALUE).build();
             }
         }
         return NotResolvableValue.builder().value("referenced attribute cannot be found").build();

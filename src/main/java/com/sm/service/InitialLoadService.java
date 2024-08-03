@@ -62,7 +62,7 @@ public class InitialLoadService {
     private final OrganisationRepository organisationRepository;
     private final TagRepository tagRepository;
     private final CampaignRepository campaignRepository;
-    private final SiteRepository siteRepository;
+    private final SiteService siteService;
     private final ResourceRepository resourceRepository;
     private final AttributeConfigRepository attributeConfigRepository;
     private final AttributeRepository attributeRepository;
@@ -130,7 +130,7 @@ public class InitialLoadService {
         OrganisationRepository organisationRepository,
         TagRepository tagRepository,
         CampaignRepository campaignRepository,
-        SiteRepository siteRepository,
+        SiteService siteService,
         ResourceRepository resourceRepository,
         AttributeConfigRepository attributeConfigRepository,
         AttributeRepository attributeRepository,
@@ -140,7 +140,7 @@ public class InitialLoadService {
         this.organisationRepository = organisationRepository;
         this.tagRepository = tagRepository;
         this.campaignRepository = campaignRepository;
-        this.siteRepository = siteRepository;
+        this.siteService = siteService;
         this.resourceRepository = resourceRepository;
         this.attributeConfigRepository = attributeConfigRepository;
         this.attributeRepository = attributeRepository;
@@ -169,11 +169,12 @@ public class InitialLoadService {
     }
 
     public void reloadAssets() {
-        siteRepository.deleteAll();
-        siteRepository.save(
-            Site.builder().id(ROOT).name("Root site").type(SITE).orgaId(COCA).childrenIds(List.of(S_1, S_2)).tags(Set.of()).build()
+        siteService.deleteAll();
+        siteService.save(
+            Site.builder().id(ROOT).name("Root site").type(SITE).orgaId(COCA).childrenIds(List.of(S_1, S_2)).tags(Set.of()).build(),
+            COCA
         );
-        siteRepository.save(
+        siteService.save(
             Site
                 .builder()
                 .id(S_1)
@@ -183,9 +184,10 @@ public class InitialLoadService {
                 .parentId(ROOT)
                 .childrenIds(List.of(S_1_1, S_1_2))
                 .tags(Set.of(Tag.builder().id(CAR).build()))
-                .build()
+                .build(),
+            COCA
         );
-        siteRepository.save(
+        siteService.save(
             Site
                 .builder()
                 .id(S_1_1)
@@ -195,9 +197,10 @@ public class InitialLoadService {
                 .parentId(S_1)
                 .childrenIds(List.of())
                 .tags(Set.of(Tag.builder().id(CAR).build()))
-                .build()
+                .build(),
+            COCA
         );
-        siteRepository.save(
+        siteService.save(
             Site
                 .builder()
                 .id(S_1_2)
@@ -207,9 +210,10 @@ public class InitialLoadService {
                 .parentId(S_1)
                 .childrenIds(List.of())
                 .tags(Set.of(Tag.builder().id(CAR).build()))
-                .build()
+                .build(),
+            COCA
         );
-        siteRepository.save(
+        siteService.save(
             Site
                 .builder()
                 .id(S_2)
@@ -219,9 +223,10 @@ public class InitialLoadService {
                 .parentId(ROOT)
                 .childrenIds(List.of(S_2_1, S_2_2))
                 .tags(Set.of(Tag.builder().id(CAR).build()))
-                .build()
+                .build(),
+            COCA
         );
-        siteRepository.save(
+        siteService.save(
             Site
                 .builder()
                 .id(S_2_1)
@@ -231,9 +236,10 @@ public class InitialLoadService {
                 .parentId(S_2)
                 .childrenIds(List.of())
                 .tags(Set.of(Tag.builder().id(CAR).build()))
-                .build()
+                .build(),
+            COCA
         );
-        siteRepository.save(
+        siteService.save(
             Site
                 .builder()
                 .id(S_2_2)
@@ -243,7 +249,8 @@ public class InitialLoadService {
                 .parentId(S_2)
                 .childrenIds(List.of())
                 .tags(Set.of(Tag.builder().id(CAR).build()))
-                .build()
+                .build(),
+            COCA
         );
 
         resourceRepository.deleteAll();
@@ -464,7 +471,10 @@ public class InitialLoadService {
             AttributeConfig
                 .builder()
                 .id(TO_SITE)
+                .key(TO_SITE)
                 .label("Tonnage du site")
+                .campaignId("2023")
+                .configOrder(0)
                 .isConsolidable(false)
                 .isWritable(true)
                 .tags(Set.of(Tag.builder().id(CAR).build()))
@@ -478,7 +488,10 @@ public class InitialLoadService {
             AttributeConfig
                 .builder()
                 .id(IS_CERT)
+                .key(IS_CERT)
                 .label("Site certifié")
+                .campaignId("2023")
+                .configOrder(0)
                 .isConsolidable(false)
                 .isWritable(true)
                 .tags(Set.of(Tag.builder().id(CAR).build()))
@@ -492,7 +505,10 @@ public class InitialLoadService {
             AttributeConfig
                 .builder()
                 .id("toConso")
+                .key("toConso")
                 .label("Tonnage consolidé")
+                .campaignId("2023")
+                .configOrder(0)
                 .isConsolidable(true)
                 .consoParameterKey(TO_SITE)
                 .consoOperationType(CONSO_SUM_BY_KEY)

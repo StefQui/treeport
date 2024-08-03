@@ -24,6 +24,7 @@ import com.sm.domain.*;
 import com.sm.domain.attribute.AggInfo;
 import com.sm.domain.attribute.AssetKey;
 import com.sm.domain.attribute.Attribute;
+import com.sm.domain.attribute.ErrorValue;
 import com.sm.domain.operation.*;
 import com.sm.service.dto.attribute.AttributeDTO;
 import com.sm.service.mapper.AttributeValueMapper;
@@ -318,7 +319,7 @@ public class ComputeService {
             .stream()
             .forEach(att -> {
                 all.add(att.getId());
-                all.addAll(att.getImpacterIds());
+                //                all.addAll(att.getImpacterIds());
             });
         this.reCalculateSomeAttributes(all, orgaId);
     }
@@ -328,12 +329,12 @@ public class ComputeService {
         log.info("ReCalculating for : " + attributeIds);
         log.info("-------------------------------------");
 
-        Set<Attribute> attributes = attributeIds
-            .stream()
-            .map(attId -> attributeService.findByIdAndOrgaId(attId, orgaId).orElse(null))
-            .collect(Collectors.toSet());
+        //        Set<Attribute> attributes = attributeIds
+        //            .stream()
+        //            .map(attId -> attributeService.findByIdAndOrgaId(attId, orgaId).orElse(null))
+        //            .collect(Collectors.toSet());
 
-        dirtierService.dirtyTrees(attributes, orgaId);
+        //        dirtierService.dirtyTrees(attributes, orgaId);
 
         calculateImpactsFor(attributeIds, orgaId);
 
@@ -345,44 +346,84 @@ public class ComputeService {
             return;
         }
         AtomicBoolean shouldBeProcessed = new AtomicBoolean(true);
-        while (shouldBeProcessed.get()) {
-            shouldBeProcessed.set(false);
-            attributeService
-                .getAttributesFromKeys(attributeIds, orgaId)
-                .stream()
-                .forEach(attribute -> process(attribute, orgaId, shouldBeProcessed));
-        }
+        //        while (shouldBeProcessed.get()) {
+        shouldBeProcessed.set(false);
+        attributeService
+            .getAttributesFromKeys(attributeIds, orgaId)
+            .stream()
+            .forEach(attribute -> {
+                log.info("---start Processing for : " + attribute.getId());
+                process(attribute, orgaId, shouldBeProcessed, false, new ArrayList<>());
+            });
+        //        }
     }
 
-    private void process(Attribute attribute, String orgaId, AtomicBoolean shouldBeProcessed) {
-        if (!attribute.getDirty()) {
+    private void process(Attribute attribute, String orgaId, AtomicBoolean shouldBeProcessed, boolean forced, List<String> currentPath) {
+        log.info("Processing for : " + attribute.getId() + " dirty=" + attribute.getDirty() + " forced=" + forced + " " + currentPath);
+        //        if (currentPath.contains(attribute.getId())) {
+        //            handleInfiniteLoop(currentPath, orgaId, shouldBeProcessed);
+        //            return;
+        //        }
+        currentPath.add(attribute.getId());
+        if (!attribute.getDirty() && !forced) {
             handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed);
             return;
         }
         AttributeConfig config = attributeConfigService.findByOrgaIdAndId(attribute.getConfigId(), orgaId).orElse(null);
         if (!config.getIsWritable()) {
-            try {
-                CalculationResult v = calculatorService.calculateAttribute(orgaId, attribute, attribute.getImpacterIds(), config);
-                attribute.setAttributeValue(v.getResultValue());
-                attribute.setAggInfo(v.getAggInfo());
-                attribute.setDirty(false);
-                attribute.setImpacterIds(v.getImpacterIds());
-                attributeService.save(attribute);
+            boolean isStartOrInError = true;
+            while (isStartOrInError) {
+                try {
+                    CalculationResult v = calculatorService.calculateAttribute(orgaId, attribute, attribute.getImpacterIds(), config);
+                    attribute.setAttributeValue(v.getResultValue());
+                    attribute.setAggInfo(v.getAggInfo());
+                    attribute.setDirty(false);
+                    attribute.setImpacterIds(v.getImpacterIds());
+                    attributeService.save(attribute);
+                    log.info("Good processing of notWritable " + attribute.getId());
+                    isStartOrInError = false;
+                    currentPath.remove(currentPath.size() - 1);
+                } catch (IsDirtyValueException e) {
+                    Attribute att = e.getDirtyAttribute();
+                    isStartOrInError = true;
+                    log.info("IsDirtyValueException : " + att.getId());
+                    //                    currentPath.remove(currentPath.size() - 1);
+                    if (currentPath.contains(att.getId())) {
+                        handleInfiniteLoop(currentPath, orgaId, shouldBeProcessed);
+                        return;
+                    }
+
+                    process(att, orgaId, shouldBeProcessed, true, currentPath);
+                    shouldBeProcessed.set(true);
+                }
                 handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed);
-            } catch (IsDirtyValueException e) {
-                shouldBeProcessed.set(true);
             }
         } else {
+            log.info("Cleaning writable " + attribute.getId());
             attribute.setDirty(false);
             attributeService.save(attribute);
+            currentPath.remove(currentPath.size() - 1);
             handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed);
         }
+    }
+
+    private void handleInfiniteLoop(List<String> infiniteLoopPath, String orgaId, AtomicBoolean shouldBeProcessed) {
+        attributeService
+            .getAttributesFromKeys(infiniteLoopPath.stream().collect(Collectors.toSet()), orgaId)
+            .stream()
+            .forEach(attribute -> {
+                log.info("handleInfiniteLoop for : " + attribute.getId());
+                attribute.setAttributeValue(ErrorValue.builder().value("Infinite loop " + infiniteLoopPath).build());
+                attribute.setDirty(false);
+                attributeService.save(attribute);
+                handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed);
+            });
     }
 
     private void handleImpacteds(String attId, String orgaId, AtomicBoolean shouldBeProcessed) {
         Set<Attribute> impacteds = attributeService.findImpacted(attId, orgaId);
 
-        impacteds.forEach(impacted -> process(impacted, orgaId, shouldBeProcessed));
+        impacteds.forEach(impacted -> process(impacted, orgaId, shouldBeProcessed, true, new ArrayList<>()));
     }
 
     //    private void calculateImpacts(List<Attribute> attributes, String orgaId) {

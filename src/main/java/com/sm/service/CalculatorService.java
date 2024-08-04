@@ -98,6 +98,8 @@ public class CalculatorService {
                     .build();
             } else if (op.getConstantType().equals(AggInfo.AttributeType.COST_TYPE)) {
                 return CalculationResult.builder().resultValue(op.getCostValue()).success(true).build();
+            } else if (op.getConstantType().equals(AggInfo.AttributeType.COMPO)) {
+                return CalculationResult.builder().resultValue(op.getCompoValue()).success(true).build();
             } else if (op.getConstantType().equals(AggInfo.AttributeType.LONG)) {
                 return CalculationResult.builder().resultValue(LongValue.builder().value(op.getLongValue()).build()).success(true).build();
             } else {
@@ -288,7 +290,7 @@ public class CalculatorService {
         if (result.getResultValue() instanceof CompoValue) {
             CompoValue compoValue = (CompoValue) result.getResultValue();
             try {
-                CostValue cost = calculateCost(attId, compoValue, costKey, preferredUnits, orgaId);
+                CostValue cost = calculateCost(attId, compoValue, costKey, preferredUnits, orgaId, impacterIds);
                 return CalculationResult.builder().resultValue(cost).success(true).impacterIds(impacterIds).aggInfo(null).build();
             } catch (NotHomogenousException e) {
                 return CalculationResult
@@ -333,13 +335,19 @@ public class CalculatorService {
             Operation operation = op.getItems().get(i);
             if (AggInfo.AttributeType.COST_TYPE.equals(config.getAttributeType())) {
                 csOp = (CostSumOperation) config.getOperation();
-                operation = CostOperation.builder().operation(operation).preferredUnits(csOp.getPreferredUnits()).build();
+                operation =
+                    CostOperation
+                        .builder()
+                        .operation(operation)
+                        .costKey(csOp.getCostKey())
+                        .preferredUnits(csOp.getPreferredUnits())
+                        .build();
             }
             results.add(
                 calculateAttribute(
                     orgaId,
                     attribute,
-                    new HashSet<>(),
+                    impacterIds,
                     AttributeConfig
                         .builder()
                         .id("fakeConfig")
@@ -432,7 +440,8 @@ public class CalculatorService {
         CompoValue compoValue,
         String costKey,
         Map<String, Unit> preferredUnits,
-        @NonNull String orgaId
+        @NonNull String orgaId,
+        Set<String> impacterIds
     ) throws IsDirtyValueException, NotHomogenousException {
         Map<String, CostLine> costMap = new HashMap<>();
         List<CompoLine> compoLines = compoValue.getValue();
@@ -448,6 +457,7 @@ public class CalculatorService {
 
             String unitCostRefKey = createReferencedKey(attId, unitCostRef);
             AttributeValue unitCost = getValueFromReferenced(unitCostRefKey, orgaId);
+            impacterIds.add(unitCostRefKey);
             UnitCostValue ucv = (UnitCostValue) unitCost;
             aggregateCost(ucv, compoLine, preferredUnits, costMap);
             compoLine.getResourceId();

@@ -1,6 +1,7 @@
 package com.sm.service;
 
 import static com.sm.domain.attribute.AggInfo.AttributeType.BOOLEAN;
+import static com.sm.domain.attribute.AggInfo.AttributeType.COMPO;
 import static com.sm.domain.attribute.AggInfo.AttributeType.COST_TYPE;
 import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.attribute.AggInfo.AttributeType.LONG;
@@ -814,6 +815,125 @@ class CalculatorServiceTest {
             assertCostLineValue(cv, "co2", 5., tCo2);
             assertCostLineValue(cv, "nox", 11000., kgNox);
             assertCostLineValue(cv, "ene", 15000., Unit.j);
+        }
+
+        @Test
+        @SneakyThrows
+        public void costValueWithCostConstAndCompoConst() {
+            when(attributeService.findByIdAndOrgaId("site:r1:coutEnv:period:2023", COCA))
+                .thenReturn(
+                    Optional.of(
+                        Attribute
+                            .builder()
+                            .attributeValue(
+                                UnitCostValue
+                                    .builder()
+                                    .value(
+                                        Map.of(
+                                            "co2",
+                                            UnitCostLine.builder().cost(12.).costUnit(tCo2).resourceUnit(to).build(),
+                                            "nox",
+                                            UnitCostLine.builder().cost(15000.).costUnit(kgNox).resourceUnit(to).build(),
+                                            "ene",
+                                            UnitCostLine.builder().cost(8.).costUnit(kj).resourceUnit(to).build()
+                                        )
+                                    )
+                                    .build()
+                            )
+                            .build()
+                    )
+                );
+
+            when(attributeService.findByIdAndOrgaId("site:r2:coutEnv:period:2023", COCA))
+                .thenReturn(
+                    Optional.of(
+                        Attribute
+                            .builder()
+                            .attributeValue(
+                                UnitCostValue
+                                    .builder()
+                                    .value(
+                                        Map.of(
+                                            "co2",
+                                            UnitCostLine.builder().cost(10000.).costUnit(kgCo2).resourceUnit(to).build(),
+                                            "nox",
+                                            UnitCostLine.builder().cost(0.025).costUnit(tNox).resourceUnit(kg).build(),
+                                            "ene",
+                                            UnitCostLine.builder().cost(.001).costUnit(mj).resourceUnit(to).build()
+                                        )
+                                    )
+                                    .build()
+                            )
+                            .build()
+                    )
+                );
+
+            CalculationResult calc = doCalculateAttribute(
+                "site:r:refCost:period:2023",
+                sumCostRefConfig(
+                    "coutEnv",
+                    Map.of("nox", kgNox, "co2", tCo2, "ene", Unit.j),
+                    ConstantOperation
+                        .builder()
+                        .constantType(COST_TYPE)
+                        .costValue(
+                            CostValue
+                                .builder()
+                                .value(
+                                    Map.of(
+                                        "co2",
+                                        CostLine.builder().unit(tCo2).quantity(2.).build(),
+                                        "nox",
+                                        CostLine.builder().unit(tNox).quantity(3.).build(),
+                                        "ene",
+                                        CostLine.builder().unit(mj).quantity(0.004).build()
+                                    )
+                                )
+                                .build()
+                        )
+                        .build(),
+                    ConstantOperation
+                        .builder()
+                        .constantType(COST_TYPE)
+                        .costValue(
+                            CostValue
+                                .builder()
+                                .value(
+                                    Map.of(
+                                        "co2",
+                                        CostLine.builder().unit(tCo2).quantity(3.).build(),
+                                        "nox",
+                                        CostLine.builder().unit(kgNox).quantity(8000.).build(),
+                                        "ene",
+                                        CostLine.builder().unit(kj).quantity(11.).build()
+                                    )
+                                )
+                                .build()
+                        )
+                        .build(),
+                    ConstantOperation
+                        .builder()
+                        .constantType(COMPO)
+                        .compoValue(
+                            CompoValue
+                                .builder()
+                                .value(
+                                    List.of(
+                                        CompoLine.builder().resourceId("r1").quantity(2.).unit(kg).build(),
+                                        CompoLine.builder().resourceId("r2").quantity(0.003).unit(to).build()
+                                    )
+                                )
+                                .build()
+                        )
+                        .build()
+                )
+            );
+
+            assertThat(calc.getResultValue()).isInstanceOf(CostValue.class);
+            CostValue cv = (CostValue) calc.getResultValue();
+            assertCostLineValue(cv, "co2", 5.054, tCo2);
+            assertCostLineValue(cv, "nox", 11105., kgNox);
+            assertCostLineValue(cv, "ene", 15019., Unit.j);
         }
     }
 

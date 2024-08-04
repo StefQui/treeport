@@ -1,7 +1,7 @@
 package com.sm.service;
 
 import static com.sm.domain.attribute.AggInfo.AttributeType.BOOLEAN;
-import static com.sm.domain.attribute.AggInfo.AttributeType.COST;
+import static com.sm.domain.attribute.AggInfo.AttributeType.COST_TYPE;
 import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.attribute.AggInfo.AttributeType.LONG;
 
@@ -11,6 +11,7 @@ import com.sm.domain.attribute.Attribute;
 import com.sm.domain.attribute.DoubleValue;
 import com.sm.domain.attribute.Unit;
 import com.sm.domain.operation.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -111,13 +112,25 @@ public class ComputeTestUtils {
         return IfThen.builder().ifOp(ifOp).thenOp(thenOp).build();
     }
 
-    public static AttributeConfig costRefConfig(RefOperation refOp, String costKey, Map<String, Unit> preferredUnits) {
+    public static AttributeConfig costConfig(Operation op, String costKey, Map<String, Unit> preferredUnits) {
         return AttributeConfig
             .builder()
             .id("compoCost")
             .isWritable(false)
-            .attributeType(COST)
-            .operation(CostRefOperation.builder().refOperation(refOp).costKey(costKey).preferredUnits(preferredUnits).build())
+            .attributeType(COST_TYPE)
+            .operation(CostOperation.builder().operation(op).costKey(costKey).preferredUnits(preferredUnits).build())
+            .build();
+    }
+
+    public static AttributeConfig sumCostRefConfig(String costKey, Map<String, Unit> preferredUnits, Operation... items) {
+        return AttributeConfig
+            .builder()
+            .id("compoCost")
+            .isWritable(false)
+            .attributeType(COST_TYPE)
+            .operation(
+                CostSumOperation.builder().items(Arrays.stream(items).toList()).costKey(costKey).preferredUnits(preferredUnits).build()
+            )
             .build();
     }
 }

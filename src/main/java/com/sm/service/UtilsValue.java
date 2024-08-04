@@ -5,6 +5,7 @@ import com.sm.domain.attribute.*;
 import com.sm.service.exception.ComputationErrorException;
 import com.sm.service.exception.ComputationNotResolvableException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class UtilsValue {
@@ -66,6 +67,20 @@ public class UtilsValue {
             LongValue v = (LongValue) av;
             if (v.getValue() == null) {
                 throw new RuntimeException("valeur null ici4?");
+            }
+            return v.getValue();
+        }
+        throw new RuntimeException("this should be implemented here : " + av);
+    }
+
+    public static Map<String, CostLine> mapToCost(AttributeValue av) {
+        if (av == null) {
+            return null;
+        }
+        if (av instanceof CostValue) {
+            CostValue v = (CostValue) av;
+            if (v.getValue() == null) {
+                throw new RuntimeException("valeur null ici3?");
             }
             return v.getValue();
         }

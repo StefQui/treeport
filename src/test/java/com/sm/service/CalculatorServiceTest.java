@@ -1,11 +1,13 @@
 package com.sm.service;
 
 import static com.sm.domain.attribute.AggInfo.AttributeType.BOOLEAN;
+import static com.sm.domain.attribute.AggInfo.AttributeType.COST_TYPE;
 import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.attribute.AggInfo.AttributeType.LONG;
 import static com.sm.domain.attribute.Unit.kg;
 import static com.sm.domain.attribute.Unit.kgCo2;
 import static com.sm.domain.attribute.Unit.kgNox;
+import static com.sm.domain.attribute.Unit.kj;
 import static com.sm.domain.attribute.Unit.mj;
 import static com.sm.domain.attribute.Unit.tCo2;
 import static com.sm.domain.attribute.Unit.tNox;
@@ -15,13 +17,14 @@ import static com.sm.service.ComputeTestUtils.childrenSumConfig;
 import static com.sm.service.ComputeTestUtils.consoSumBykeyConfig;
 import static com.sm.service.ComputeTestUtils.consoSumConfig;
 import static com.sm.service.ComputeTestUtils.constant;
-import static com.sm.service.ComputeTestUtils.costRefConfig;
+import static com.sm.service.ComputeTestUtils.costConfig;
 import static com.sm.service.ComputeTestUtils.dirtyValue;
 import static com.sm.service.ComputeTestUtils.doubleValueAttribute;
 import static com.sm.service.ComputeTestUtils.ifThen;
 import static com.sm.service.ComputeTestUtils.ifThenElseConfig;
 import static com.sm.service.ComputeTestUtils.refOp;
 import static com.sm.service.ComputeTestUtils.sumConfig;
+import static com.sm.service.ComputeTestUtils.sumCostRefConfig;
 import static com.sm.service.ConsoCalculator.VALUE_TO_CONSOLIDATE_IS_NULL_OR_NOT_RESOLVABLE;
 import static com.sm.service.InitialLoadService.COCA;
 import static com.sm.service.UtilsValue.CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_NOT_RESOLVABLE;
@@ -36,6 +39,7 @@ import static org.mockito.Mockito.when;
 import com.sm.domain.AttributeConfig;
 import com.sm.domain.Tag;
 import com.sm.domain.attribute.*;
+import com.sm.domain.operation.ConstantOperation;
 import com.sm.domain.operation.TagOperation;
 import com.sm.service.mapper.AttributeValueMapper;
 import java.util.*;
@@ -675,7 +679,7 @@ class CalculatorServiceTest {
 
         @Test
         @SneakyThrows
-        public void costRefValue() {
+        public void costValue() {
             when(attributeService.findByIdAndOrgaId("site:r1:coutEnv:period:2023", COCA))
                 .thenReturn(
                     Optional.of(
@@ -691,7 +695,7 @@ class CalculatorServiceTest {
                                             "nox",
                                             UnitCostLine.builder().cost(15000.).costUnit(kgNox).resourceUnit(to).build(),
                                             "ene",
-                                            UnitCostLine.builder().cost(8.).costUnit(Unit.kj).resourceUnit(to).build()
+                                            UnitCostLine.builder().cost(8.).costUnit(kj).resourceUnit(to).build()
                                         )
                                     )
                                     .build()
@@ -746,7 +750,7 @@ class CalculatorServiceTest {
 
             CalculationResult calc = doCalculateAttribute(
                 "site:r:refCost:period:2023",
-                costRefConfig(refOp("comp"), "coutEnv", Map.of("nox", kgNox, "co2", tCo2, "ene", Unit.j))
+                costConfig(refOp("comp"), "coutEnv", Map.of("nox", kgNox, "co2", tCo2, "ene", Unit.j))
             );
 
             assertThat(calc.getResultValue()).isInstanceOf(CostValue.class);
@@ -754,6 +758,62 @@ class CalculatorServiceTest {
             assertCostLineValue(cv, "co2", 0.054, tCo2);
             assertCostLineValue(cv, "nox", 105., kgNox);
             assertCostLineValue(cv, "ene", 19., Unit.j);
+        }
+
+        @Test
+        @SneakyThrows
+        public void sumCostRefValue() {
+            CalculationResult calc = doCalculateAttribute(
+                "site:r:refCost:period:2023",
+                sumCostRefConfig(
+                    "coutEnv",
+                    Map.of("nox", kgNox, "co2", tCo2, "ene", Unit.j),
+                    ConstantOperation
+                        .builder()
+                        .constantType(COST_TYPE)
+                        .costValue(
+                            CostValue
+                                .builder()
+                                .value(
+                                    Map.of(
+                                        "co2",
+                                        CostLine.builder().unit(tCo2).quantity(2.).build(),
+                                        "nox",
+                                        CostLine.builder().unit(tNox).quantity(3.).build(),
+                                        "ene",
+                                        CostLine.builder().unit(mj).quantity(0.004).build()
+                                    )
+                                )
+                                .build()
+                        )
+                        .build(),
+                    ConstantOperation
+                        .builder()
+                        .constantType(COST_TYPE)
+                        .costValue(
+                            CostValue
+                                .builder()
+                                .value(
+                                    Map.of(
+                                        "co2",
+                                        CostLine.builder().unit(tCo2).quantity(3.).build(),
+                                        "nox",
+                                        CostLine.builder().unit(kgNox).quantity(8000.).build(),
+                                        "ene",
+                                        CostLine.builder().unit(kj).quantity(11.).build()
+                                    )
+                                )
+                                .build()
+                        )
+                        .build()
+                )
+            );
+
+            assertThat(calc.getResultValue()).isInstanceOf(CostValue.class);
+            CostValue cv = (CostValue) calc.getResultValue();
+            assertCostLineValue(cv, "co2", 5., tCo2);
+            assertCostLineValue(cv, "nox", 11000., kgNox);
+            assertCostLineValue(cv, "ene", 15000., Unit.j);
         }
     }
 

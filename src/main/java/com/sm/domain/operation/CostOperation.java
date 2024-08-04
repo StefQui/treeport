@@ -13,19 +13,19 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class CostRefOperation implements Operation {
+public class CostOperation implements Operation {
 
     @Builder.Default
-    private OperationType operationType = OperationType.COST_REF;
+    private OperationType operationType = OperationType.COST_OP;
 
-    private RefOperation refOperation;
+    private Operation operation;
     private String costKey;
     private Map<String, Unit> preferredUnits;
 
     @Override
     public Set<RefOperation> extractAllRefs() {
         Set<RefOperation> result = new HashSet<>();
-        result.add(this.refOperation);
+        //        result.add(this.refOperation);
         return result;
     }
 

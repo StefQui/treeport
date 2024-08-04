@@ -6,7 +6,8 @@ import static com.sm.domain.operation.OperationType.COMPARISON;
 import static com.sm.domain.operation.OperationType.CONSO_SUM;
 import static com.sm.domain.operation.OperationType.CONSO_SUM_BY_KEY;
 import static com.sm.domain.operation.OperationType.CONSTANT;
-import static com.sm.domain.operation.OperationType.COST_REF;
+import static com.sm.domain.operation.OperationType.COST_OP;
+import static com.sm.domain.operation.OperationType.COST_SUM;
 import static com.sm.domain.operation.OperationType.IF_THEN_ELSE;
 import static com.sm.domain.operation.OperationType.PRODUCT;
 import static com.sm.domain.operation.OperationType.REF;
@@ -24,6 +25,7 @@ import com.sm.service.exception.NotHomogenousException;
 import com.sm.service.mapper.AttributeValueMapper;
 import jakarta.validation.constraints.NotBlank;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +59,7 @@ public class CalculatorService {
 
     ConsoCalculator<Double> doubleCalculator = new ConsoCalculator();
     ConsoCalculator<Long> longCalculator = new ConsoCalculator();
+    ConsoCalculator<Map<String, CostLine>> costCalculator = new ConsoCalculator();
 
     public CalculationResult calculateAttribute(String orgaId, Attribute attribute, Set<String> impacterIds, AttributeConfig config)
         throws IsDirtyValueException {
@@ -93,6 +96,8 @@ public class CalculatorService {
                     .resultValue(DoubleValue.builder().value(op.getDoubleValue()).build())
                     .success(true)
                     .build();
+            } else if (op.getConstantType().equals(AggInfo.AttributeType.COST_TYPE)) {
+                return CalculationResult.builder().resultValue(op.getCostValue()).success(true).build();
             } else if (op.getConstantType().equals(AggInfo.AttributeType.LONG)) {
                 return CalculationResult.builder().resultValue(LongValue.builder().value(op.getLongValue()).build()).success(true).build();
             } else {
@@ -131,78 +136,16 @@ public class CalculatorService {
                 throw new RuntimeException("pas possible ici 57");
             }
             return calculateConsoAtt(orgaId, attribute, impacterIds, config, config.getConsoOperation());
-        } else if (SUM.equals(config.getOperationType()) || PRODUCT.equals(config.getOperationType())) {
+        } else if (
+            SUM.equals(config.getOperationType()) || PRODUCT.equals(config.getOperationType()) || COST_SUM.equals(config.getOperationType())
+        ) {
             HasItems op = (HasItems) config.getOperation();
             if (config.getAttributeType() == AggInfo.AttributeType.LONG) {
                 throw new RuntimeException("to be implemented here 66");
-            } else if (config.getAttributeType() == AggInfo.AttributeType.DOUBLE) {
-                List<CalculationResult> results = new ArrayList<>();
-                int i = 0;
-                while (i < op.getItems().size()) {
-                    results.add(
-                        calculateAttribute(
-                            orgaId,
-                            attribute,
-                            new HashSet<>(),
-                            AttributeConfig
-                                .builder()
-                                .id("fakeConfig")
-                                .orgaId(orgaId)
-                                .isConsolidable(false)
-                                .operation(op.getItems().get(i))
-                                .isWritable(false)
-                                .tags(attribute.getTags())
-                                .build()
-                        )
-                    );
-                    i++;
-                }
-                results
-                    .stream()
-                    .forEach(result -> {
-                        if (!CollectionUtils.isEmpty(result.getImpacterIds())) {
-                            impacterIds.addAll(result.getImpacterIds());
-                        }
-                    });
-                List<AttributeValue> vals = results.stream().map(CalculationResult::getResultValue).collect(Collectors.toList());
-
-                if (SUM.equals(config.getOperationType())) {
-                    return CalculationResult
-                        .builder()
-                        .resultValue(
-                            doubleCalculator.calculateMultiVals(
-                                attribute.getId(),
-                                vals,
-                                config,
-                                DoubleValue.builder().build(),
-                                UtilsValue::mapToDouble,
-                                0.,
-                                Double::sum
-                            )
-                        )
-                        .impacterIds(impacterIds)
-                        .success(true)
-                        .build();
-                } else if (PRODUCT.equals(config.getOperationType())) {
-                    return CalculationResult
-                        .builder()
-                        .resultValue(
-                            doubleCalculator.calculateMultiVals(
-                                attribute.getId(),
-                                vals,
-                                config,
-                                DoubleValue.builder().build(),
-                                UtilsValue::mapToDouble,
-                                1.,
-                                (a, b) -> a * b
-                            )
-                        )
-                        .impacterIds(impacterIds)
-                        .success(true)
-                        .build();
-                } else {
-                    throw new RuntimeException("to implement 555");
-                }
+            } else if (
+                config.getAttributeType() == AggInfo.AttributeType.DOUBLE || config.getAttributeType() == AggInfo.AttributeType.COST_TYPE
+            ) {
+                return calculateSum(op, orgaId, attribute, impacterIds, config);
             } else {
                 throw new RuntimeException("to implement 555");
             }
@@ -310,14 +253,42 @@ public class CalculatorService {
             AttributeValue res = getValueFromReferenced(attKey, orgaId);
             impacterIds.add(attKey);
             return CalculationResult.builder().resultValue(res).success(true).impacterIds(impacterIds).aggInfo(null).build();
-        } else if (COST_REF.equals(config.getOperationType())) {
-            CostRefOperation op = (CostRefOperation) config.getOperation();
-            String attKey = createReferencedKey(attribute.getId(), op.getRefOperation().toBuilder().build());
-            AttributeValue res = getValueFromReferenced(attKey, orgaId);
-            CompoValue compoValue = (CompoValue) res;
-            impacterIds.add(attKey);
+        } else if (COST_OP.equals(config.getOperationType())) {
+            CostOperation op = (CostOperation) config.getOperation();
+            AttributeConfig consoFakeConfig = AttributeConfig
+                .builder()
+                .id("consoConfig")
+                .orgaId(orgaId)
+                .isConsolidable(false)
+                .operation(op.getOperation())
+                .isWritable(false)
+                .tags(attribute.getTags())
+                .build();
+            CalculationResult result = calculateAttribute(orgaId, attribute, impacterIds, consoFakeConfig);
+            impacterIds.addAll(result.getImpacterIds());
+            return calculateCostResult(result, orgaId, op.getCostKey(), op.getPreferredUnits(), attribute.getId(), impacterIds);
+        } else if (IF_THEN_ELSE.equals(config.getOperationType())) {
+            IfThenElseOperation op = (IfThenElseOperation) config.getOperation();
+            return calculateIfThenElse(orgaId, attribute, impacterIds, op);
+        } else if (COMPARISON.equals(config.getOperationType())) {
+            ComparisonOperation op = (ComparisonOperation) config.getOperation();
+            return calculateComparison(orgaId, attribute, impacterIds, op);
+        }
+        throw new RuntimeException("to implement operation " + config.getOperationType());
+    }
+
+    private CalculationResult calculateCostResult(
+        CalculationResult result,
+        String orgaId,
+        String costKey,
+        Map<String, Unit> preferredUnits,
+        String attId,
+        Set<String> impacterIds
+    ) throws IsDirtyValueException {
+        if (result.getResultValue() instanceof CompoValue) {
+            CompoValue compoValue = (CompoValue) result.getResultValue();
             try {
-                CostValue cost = calculateCost(attribute.getId(), compoValue, op.getCostKey(), op.getPreferredUnits(), orgaId);
+                CostValue cost = calculateCost(attId, compoValue, costKey, preferredUnits, orgaId);
                 return CalculationResult.builder().resultValue(cost).success(true).impacterIds(impacterIds).aggInfo(null).build();
             } catch (NotHomogenousException e) {
                 return CalculationResult
@@ -328,14 +299,132 @@ public class CalculatorService {
                     .aggInfo(null)
                     .build();
             }
-        } else if (IF_THEN_ELSE.equals(config.getOperationType())) {
-            IfThenElseOperation op = (IfThenElseOperation) config.getOperation();
-            return calculateIfThenElse(orgaId, attribute, impacterIds, op);
-        } else if (COMPARISON.equals(config.getOperationType())) {
-            ComparisonOperation op = (ComparisonOperation) config.getOperation();
-            return calculateComparison(orgaId, attribute, impacterIds, op);
+        } else if (result.getResultValue() instanceof CostValue) {
+            CostValue costValue = (CostValue) result.getResultValue();
+            try {
+                costValue = UtilsCost.applyConversion(costValue, preferredUnits);
+            } catch (NotHomogenousException e) {
+                CalculationResult
+                    .builder()
+                    .resultValue(NotResolvableValue.builder().value("Not homogenous error : " + attId).build())
+                    .success(true)
+                    .build();
+            }
+            return CalculationResult.builder().resultValue(costValue).success(true).impacterIds(impacterIds).aggInfo(null).build();
         }
-        throw new RuntimeException("to implement operation " + config.getOperationType());
+        return CalculationResult
+            .builder()
+            .resultValue(NotResolvableValue.builder().value("Cannot extract cost Value : " + attId).build())
+            .success(true)
+            .build();
+    }
+
+    private CalculationResult calculateSum(
+        HasItems op,
+        String orgaId,
+        Attribute attribute,
+        Set<String> impacterIds,
+        AttributeConfig config
+    ) throws IsDirtyValueException {
+        List<CalculationResult> results = new ArrayList<>();
+        CostSumOperation csOp;
+        int i = 0;
+        while (i < op.getItems().size()) {
+            Operation operation = op.getItems().get(i);
+            if (AggInfo.AttributeType.COST_TYPE.equals(config.getAttributeType())) {
+                csOp = (CostSumOperation) config.getOperation();
+                operation = CostOperation.builder().operation(operation).preferredUnits(csOp.getPreferredUnits()).build();
+            }
+            results.add(
+                calculateAttribute(
+                    orgaId,
+                    attribute,
+                    new HashSet<>(),
+                    AttributeConfig
+                        .builder()
+                        .id("fakeConfig")
+                        .orgaId(orgaId)
+                        .isConsolidable(false)
+                        .operation(operation)
+                        .isWritable(false)
+                        .tags(attribute.getTags())
+                        .build()
+                )
+            );
+            i++;
+        }
+        results
+            .stream()
+            .forEach(result -> {
+                if (!CollectionUtils.isEmpty(result.getImpacterIds())) {
+                    impacterIds.addAll(result.getImpacterIds());
+                }
+            });
+        List<AttributeValue> vals = results.stream().map(CalculationResult::getResultValue).collect(Collectors.toList());
+
+        if (SUM.equals(config.getOperationType())) {
+            return CalculationResult
+                .builder()
+                .resultValue(
+                    doubleCalculator.calculateMultiVals(
+                        attribute.getId(),
+                        vals,
+                        config,
+                        DoubleValue.builder().build(),
+                        UtilsValue::mapToDouble,
+                        0.,
+                        Double::sum
+                    )
+                )
+                .impacterIds(impacterIds)
+                .success(true)
+                .build();
+        } else if (COST_SUM.equals(config.getOperationType())) {
+            Map<String, Unit> preferredUnits = ((CostSumOperation) config.getOperation()).getPreferredUnits();
+            return CalculationResult
+                .builder()
+                .resultValue(
+                    costCalculator.calculateMultiVals(
+                        attribute.getId(),
+                        vals,
+                        config,
+                        CostValue.builder().build(),
+                        UtilsValue::mapToCost,
+                        preferredUnits
+                            .keySet()
+                            .stream()
+                            .collect(
+                                Collectors.toMap(
+                                    Function.identity(),
+                                    key -> CostLine.builder().unit(preferredUnits.get(key)).quantity(0.).build()
+                                )
+                            ),
+                        CostValue::sum
+                    )
+                )
+                .impacterIds(impacterIds)
+                .success(true)
+                .build();
+        } else if (PRODUCT.equals(config.getOperationType())) {
+            return CalculationResult
+                .builder()
+                .resultValue(
+                    doubleCalculator.calculateMultiVals(
+                        attribute.getId(),
+                        vals,
+                        config,
+                        DoubleValue.builder().build(),
+                        UtilsValue::mapToDouble,
+                        1.,
+                        (a, b) -> a * b
+                    )
+                )
+                .impacterIds(impacterIds)
+                .success(true)
+                .build();
+        } else {
+            throw new RuntimeException("to implement 555");
+        }
     }
 
     private CostValue calculateCost(

@@ -8,6 +8,7 @@ public enum OperationType {
     CONSO_SUM_BY_KEY,
     CONSO_SUM,
     SUM,
+    COST_SUM,
     PRODUCT,
     REF,
     IF_THEN_ELSE,
@@ -17,5 +18,5 @@ public enum OperationType {
     AVG,
     TAG,
     COST,
-    COST_REF,
+    COST_OP,
 }

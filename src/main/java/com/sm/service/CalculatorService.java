@@ -20,6 +20,7 @@ import static com.sm.service.AttributeKeyUtils.objToString;
 import com.sm.domain.AttributeConfig;
 import com.sm.domain.attribute.*;
 import com.sm.domain.operation.*;
+import com.sm.service.exception.NotHomogenousException;
 import com.sm.service.mapper.AttributeValueMapper;
 import jakarta.validation.constraints.NotBlank;
 import java.util.*;
@@ -315,8 +316,18 @@ public class CalculatorService {
             AttributeValue res = getValueFromReferenced(attKey, orgaId);
             CompoValue compoValue = (CompoValue) res;
             impacterIds.add(attKey);
-            CostValue cost = calculateCost(attribute.getId(), compoValue, op.getCostKey(), orgaId);
-            return CalculationResult.builder().resultValue(cost).success(true).impacterIds(impacterIds).aggInfo(null).build();
+            try {
+                CostValue cost = calculateCost(attribute.getId(), compoValue, op.getCostKey(), op.getPreferredUnits(), orgaId);
+                return CalculationResult.builder().resultValue(cost).success(true).impacterIds(impacterIds).aggInfo(null).build();
+            } catch (NotHomogenousException e) {
+                return CalculationResult
+                    .builder()
+                    .resultValue(ErrorValue.builder().value("Not homogenous").build())
+                    .success(true)
+                    .impacterIds(impacterIds)
+                    .aggInfo(null)
+                    .build();
+            }
         } else if (IF_THEN_ELSE.equals(config.getOperationType())) {
             IfThenElseOperation op = (IfThenElseOperation) config.getOperation();
             return calculateIfThenElse(orgaId, attribute, impacterIds, op);
@@ -327,8 +338,13 @@ public class CalculatorService {
         throw new RuntimeException("to implement operation " + config.getOperationType());
     }
 
-    private CostValue calculateCost(@NotBlank String attId, CompoValue compoValue, String costKey, @NonNull String orgaId)
-        throws IsDirtyValueException {
+    private CostValue calculateCost(
+        @NotBlank String attId,
+        CompoValue compoValue,
+        String costKey,
+        Map<String, Unit> preferredUnits,
+        @NonNull String orgaId
+    ) throws IsDirtyValueException, NotHomogenousException {
         Map<String, CostLine> costMap = new HashMap<>();
         List<CompoLine> compoLines = compoValue.getValue();
         int i = 0;
@@ -344,36 +360,36 @@ public class CalculatorService {
             String unitCostRefKey = createReferencedKey(attId, unitCostRef);
             AttributeValue unitCost = getValueFromReferenced(unitCostRefKey, orgaId);
             UnitCostValue ucv = (UnitCostValue) unitCost;
-            aggregateCost(ucv, compoLine, costMap);
+            aggregateCost(ucv, compoLine, preferredUnits, costMap);
             compoLine.getResourceId();
             i++;
         }
         return CostValue.builder().value(costMap).build();
     }
 
-    private void aggregateCost(UnitCostValue ucv, CompoLine compoLine, Map<String, CostLine> costMap) {
-        Map<String, UnitCostLine> ucLines = ucv.getValue();
-        ucLines
-            .keySet()
-            .stream()
-            .forEach(ucComponent -> {
-                if (costMap.containsKey(ucComponent)) {
-                    costMap.put(
-                        ucComponent,
-                        CostLine
-                            .builder()
-                            .quantity(
-                                costMap.get(ucComponent).getQuantity() + compoLine.getQuantity() * ucLines.get(ucComponent).getQuantity()
-                            )
-                            .build()
-                    );
-                } else {
-                    costMap.put(
-                        ucComponent,
-                        CostLine.builder().quantity(compoLine.getQuantity() * ucLines.get(ucComponent).getQuantity()).build()
-                    );
-                }
-            });
+    private void aggregateCost(UnitCostValue ucv, CompoLine compoLine, Map<String, Unit> preferredUnits, Map<String, CostLine> costMap)
+        throws NotHomogenousException {
+        Map<String, UnitCostLine> ucMap = ucv.getValue();
+        int i = 0;
+        List<String> keys = ucMap.keySet().stream().collect(Collectors.toList());
+        while (i < ucMap.size()) {
+            String ucComponent = keys.get(i);
+            Double initialQuantity = costMap.containsKey(ucComponent) ? costMap.get(ucComponent).getQuantity() : 0.;
+            Unit resourceUnitInCompo = compoLine.getUnit();
+            Unit unitInSourceResource = ucMap.get(ucComponent).getResourceUnit();
+            Unit costUnitInSourceResource = ucMap.get(ucComponent).getCostUnit();
+            Double conversion = UtilsUnit.calculateConversion(resourceUnitInCompo, unitInSourceResource);
+            conversion = conversion * UtilsUnit.calculateConversion(costUnitInSourceResource, preferredUnits.get(ucComponent)); //ok
+            costMap.put(
+                ucComponent,
+                CostLine
+                    .builder()
+                    .unit(preferredUnits.get(ucComponent))
+                    .quantity(initialQuantity + compoLine.getQuantity() * ucMap.get(ucComponent).getCost() * conversion)
+                    .build()
+            );
+            i++;
+        }
     }
 
     private CalculationResult calculateConsoAtt(

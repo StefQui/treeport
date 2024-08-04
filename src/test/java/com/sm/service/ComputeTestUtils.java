@@ -9,8 +9,10 @@ import com.sm.domain.AttributeConfig;
 import com.sm.domain.attribute.AggInfo;
 import com.sm.domain.attribute.Attribute;
 import com.sm.domain.attribute.DoubleValue;
+import com.sm.domain.attribute.Unit;
 import com.sm.domain.operation.*;
 import java.util.List;
+import java.util.Map;
 
 public class ComputeTestUtils {
 
@@ -109,13 +111,13 @@ public class ComputeTestUtils {
         return IfThen.builder().ifOp(ifOp).thenOp(thenOp).build();
     }
 
-    public static AttributeConfig costRefConfig(RefOperation refOp, String costKey) {
+    public static AttributeConfig costRefConfig(RefOperation refOp, String costKey, Map<String, Unit> preferredUnits) {
         return AttributeConfig
             .builder()
             .id("compoCost")
             .isWritable(false)
             .attributeType(COST)
-            .operation(CostRefOperation.builder().refOperation(refOp).costKey(costKey).build())
+            .operation(CostRefOperation.builder().refOperation(refOp).costKey(costKey).preferredUnits(preferredUnits).build())
             .build();
     }
 }

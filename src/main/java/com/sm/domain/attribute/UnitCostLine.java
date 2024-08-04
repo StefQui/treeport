@@ -7,7 +7,8 @@ import lombok.Data;
 @Builder
 public class UnitCostLine {
 
-    private Double quantity;
-    private Unit unit;
+    private Double cost;
+    private Unit costUnit;
+    private Unit resourceUnit;
     //    private String resourceId;
 }

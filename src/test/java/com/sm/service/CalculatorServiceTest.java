@@ -4,6 +4,11 @@ import static com.sm.domain.attribute.AggInfo.AttributeType.BOOLEAN;
 import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.attribute.AggInfo.AttributeType.LONG;
 import static com.sm.domain.attribute.Unit.kg;
+import static com.sm.domain.attribute.Unit.kgCo2;
+import static com.sm.domain.attribute.Unit.kgNox;
+import static com.sm.domain.attribute.Unit.mj;
+import static com.sm.domain.attribute.Unit.tCo2;
+import static com.sm.domain.attribute.Unit.tNox;
 import static com.sm.domain.attribute.Unit.to;
 import static com.sm.domain.operation.TagOperationType.CONTAINS;
 import static com.sm.service.ComputeTestUtils.childrenSumConfig;
@@ -666,11 +671,11 @@ class CalculatorServiceTest {
     }
 
     @Nested
-    class VectorCompo {
+    class CostValueOp {
 
         @Test
         @SneakyThrows
-        public void vector() {
+        public void costRefValue() {
             when(attributeService.findByIdAndOrgaId("site:r1:coutEnv:period:2023", COCA))
                 .thenReturn(
                     Optional.of(
@@ -682,11 +687,11 @@ class CalculatorServiceTest {
                                     .value(
                                         Map.of(
                                             "co2",
-                                            UnitCostLine.builder().quantity(12.).unit(to).build(),
+                                            UnitCostLine.builder().cost(12.).costUnit(tCo2).resourceUnit(to).build(),
                                             "nox",
-                                            UnitCostLine.builder().quantity(15.).unit(kg).build(),
+                                            UnitCostLine.builder().cost(15000.).costUnit(kgNox).resourceUnit(to).build(),
                                             "ene",
-                                            UnitCostLine.builder().quantity(8.).unit(kg).build()
+                                            UnitCostLine.builder().cost(8.).costUnit(Unit.kj).resourceUnit(to).build()
                                         )
                                     )
                                     .build()
@@ -706,11 +711,11 @@ class CalculatorServiceTest {
                                     .value(
                                         Map.of(
                                             "co2",
-                                            UnitCostLine.builder().quantity(10.).unit(to).build(),
+                                            UnitCostLine.builder().cost(10000.).costUnit(kgCo2).resourceUnit(to).build(),
                                             "nox",
-                                            UnitCostLine.builder().quantity(25.).unit(kg).build(),
+                                            UnitCostLine.builder().cost(0.025).costUnit(tNox).resourceUnit(kg).build(),
                                             "ene",
-                                            UnitCostLine.builder().quantity(1.).unit(kg).build()
+                                            UnitCostLine.builder().cost(.001).costUnit(mj).resourceUnit(to).build()
                                         )
                                     )
                                     .build()
@@ -729,8 +734,8 @@ class CalculatorServiceTest {
                                     .builder()
                                     .value(
                                         List.of(
-                                            CompoLine.builder().resourceId("r1").quantity(2.).unit(to).build(),
-                                            CompoLine.builder().resourceId("r2").quantity(3.).unit(to).build()
+                                            CompoLine.builder().resourceId("r1").quantity(2.).unit(kg).build(),
+                                            CompoLine.builder().resourceId("r2").quantity(0.003).unit(to).build()
                                         )
                                     )
                                     .build()
@@ -739,14 +744,22 @@ class CalculatorServiceTest {
                     )
                 );
 
-            CalculationResult calc = doCalculateAttribute("site:r:refCost:period:2023", costRefConfig(refOp("comp"), "coutEnv"));
+            CalculationResult calc = doCalculateAttribute(
+                "site:r:refCost:period:2023",
+                costRefConfig(refOp("comp"), "coutEnv", Map.of("nox", kgNox, "co2", tCo2, "ene", Unit.j))
+            );
 
             assertThat(calc.getResultValue()).isInstanceOf(CostValue.class);
             CostValue cv = (CostValue) calc.getResultValue();
-            assertThat(cv.getValue().get("nox").getQuantity()).isEqualTo(105.);
-            assertThat(cv.getValue().get("co2").getQuantity()).isEqualTo(54.);
-            assertThat(cv.getValue().get("ene").getQuantity()).isEqualTo(19.);
+            assertCostLineValue(cv, "co2", 0.054, tCo2);
+            assertCostLineValue(cv, "nox", 105., kgNox);
+            assertCostLineValue(cv, "ene", 19., Unit.j);
         }
+    }
+
+    private void assertCostLineValue(CostValue cv, String key, double v, Unit unit) {
+        assertThat(cv.getValue().get(key).getQuantity()).isEqualTo(v);
+        assertThat(cv.getValue().get(key).getUnit()).isEqualTo(unit);
     }
 
     private CalculationResult doCalculateAttribute(String attId, AttributeConfig config) throws IsDirtyValueException {

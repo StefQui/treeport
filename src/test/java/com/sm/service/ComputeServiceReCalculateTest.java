@@ -1,22 +1,24 @@
 package com.sm.service;
 
+import static com.sm.domain.attribute.AggInfo.AttributeType.COST_TYPE;
+import static com.sm.domain.attribute.Unit.kgNox;
+import static com.sm.domain.attribute.Unit.tCo2;
 import static com.sm.service.CalculatorService.CANNOT_RESOLVE_IF_STATEMENT_AS_A_BOOLEAN;
 import static com.sm.service.CalculatorService.CANNOT_RESOLVE_THEN_STATEMENT;
 import static com.sm.service.CalculatorService.REFERENCED_ATTRIBUTE_HAS_NO_VALUE;
 import static com.sm.service.CalculatorService.wrapMessage;
 import static com.sm.service.ComputeTestUtils.refOp;
 import static com.sm.service.InitialLoadService.COCA;
+import static com.sm.service.InitialLoadService.ROOT;
 import static com.sm.service.UtilsValue.CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_NOT_RESOLVABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sm.domain.AttributeConfig;
-import com.sm.domain.attribute.Attribute;
-import com.sm.domain.attribute.BooleanValue;
-import com.sm.domain.attribute.DoubleValue;
-import com.sm.domain.attribute.NotResolvableValue;
+import com.sm.domain.attribute.*;
 import com.sm.domain.operation.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -25,18 +27,18 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
 
     @Test
     public void testRecalculateWithSum() {
-        writable("w3");
-        writable("w7");
-        writable("w8");
-        writable("w11");
+        writableOnS1("w3");
+        writableOnS1("w7");
+        writableOnS1("w8");
+        writableOnS1("w11");
 
-        notWritable("a6", refSum("w7"));
-        notWritable("a4", refSum("a6", "w8"));
-        notWritable("a2", refSum("w3", "a4"));
-        notWritable("a10", refSum("w11"));
-        notWritable("a9", refSum("a10", "a6"));
-        notWritable("a12", refSum("a6", "a4"));
-        notWritable("a1", refSum("a9", "a2"));
+        notWritableOnS1("a6", refSum("w7"));
+        notWritableOnS1("a4", refSum("a6", "w8"));
+        notWritableOnS1("a2", refSum("w3", "a4"));
+        notWritableOnS1("a10", refSum("w11"));
+        notWritableOnS1("a9", refSum("a10", "a6"));
+        notWritableOnS1("a12", refSum("a6", "a4"));
+        notWritableOnS1("a1", refSum("a9", "a2"));
 
         computeService.applyCampaigns(COCA, List.of("2023"));
         computeService.reCalculateSomeAttributes(
@@ -85,13 +87,13 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
 
     @Test
     public void testRecalculateWithIfThenElse() {
-        writable("wif1");
-        writable("wthen1");
-        writable("wif2");
-        writable("wthen2");
-        writable("welse");
+        writableOnS1("wif1");
+        writableOnS1("wthen1");
+        writableOnS1("wif2");
+        writableOnS1("wthen2");
+        writableOnS1("welse");
 
-        notWritable(
+        notWritableOnS1(
             "a1",
             IfThenElseOperation
                 .builder()
@@ -133,19 +135,99 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
 
     @Test
     public void testRecalculateWithInfiniteLoop() {
-        writable("w1");
-        writable("w2");
-        writable("w3");
+        writableOnS1("w1");
+        writableOnS1("w2");
+        writableOnS1("w3");
 
-        notWritable("a1", refSum("a2", "a6"));
-        notWritable("a2", refSum("a3", "a4"));
-        notWritable("a3", refSum("w1"));
-        notWritable("a4", refSum("w2"));
-        notWritable("a6", refSum("a5"));
-        notWritable("a5", refSum("w3", "a1"));
+        notWritableOnS1("a1", refSum("a2", "a6"));
+        notWritableOnS1("a2", refSum("a3", "a4"));
+        notWritableOnS1("a3", refSum("w1"));
+        notWritableOnS1("a4", refSum("w2"));
+        notWritableOnS1("a6", refSum("a5"));
+        notWritableOnS1("a5", refSum("w3", "a1"));
 
         computeService.applyCampaigns(COCA, List.of("2023"));
         computeService.reCalculateSomeAttributes(Set.of("site:s1:a1:period:2023"), COCA);
+
+        assertNotResolvables(CANNOT_RESOLVE_IF_STATEMENT_AS_A_BOOLEAN, "a1");
+    }
+
+    @Test
+    public void testRecalculateWithConsoCost() {
+        writable("wCost");
+
+        attributeConfigService.save(
+            notWritableAttributeConfigWithNoScope()
+                .id("consoCost")
+                .key("consoCost")
+                .isWritable(false)
+                .attributeType(COST_TYPE)
+                .siteId(ROOT)
+                .orgaId(COCA)
+                .applyOnChildren(true)
+                .isConsolidable(true)
+                .configOrder(0)
+                .consoOperationType(OperationType.CONSO_COST_SUM)
+                .defaultValue(
+                    Map.of(
+                        "co2",
+                        CostLine.builder().quantity(0.).unit(tCo2).build(),
+                        "nox",
+                        CostLine.builder().quantity(0.).unit(kgNox).build(),
+                        "ene",
+                        CostLine.builder().quantity(0.).unit(Unit.j).build()
+                    )
+                )
+                .defaultValueForNotResolvableItem(
+                    Map.of(
+                        "co2",
+                        CostLine.builder().quantity(0.).unit(tCo2).build(),
+                        "nox",
+                        CostLine.builder().quantity(0.).unit(kgNox).build(),
+                        "ene",
+                        CostLine.builder().quantity(0.).unit(Unit.j).build()
+                    )
+                )
+                .consoPreferredUnits(Map.of("nox", kgNox, "co2", tCo2, "ene", Unit.j))
+                .consoOperation(
+                    CostOperation
+                        .builder()
+                        .costKey("wCost")
+                        .preferredUnits(Map.of("nox", kgNox, "co2", tCo2, "ene", Unit.j))
+                        .operation(refOp("wCost"))
+                        .build()
+                )
+                .campaignId("2023")
+                .build()
+        );
+
+        computeService.applyCampaigns(COCA, List.of("2023"));
+        computeService.reCalculateAllAttributes(COCA);
+
+        setCostValueOnSiteAndRecalculate(
+            "wCost",
+            "s1-1",
+            Map.of(
+                "co2",
+                CostLine.builder().quantity(2.).unit(tCo2).build(),
+                "nox",
+                CostLine.builder().quantity(3.).unit(kgNox).build(),
+                "ene",
+                CostLine.builder().quantity(4.).unit(Unit.j).build()
+            )
+        );
+        setCostValueOnSiteAndRecalculate(
+            "wCost",
+            "s1-2",
+            Map.of(
+                "co2",
+                CostLine.builder().quantity(10.).unit(tCo2).build(),
+                "nox",
+                CostLine.builder().quantity(20.).unit(kgNox).build(),
+                "ene",
+                CostLine.builder().quantity(30.).unit(Unit.j).build()
+            )
+        );
 
         assertNotResolvables(CANNOT_RESOLVE_IF_STATEMENT_AS_A_BOOLEAN, "a1");
     }
@@ -180,11 +262,18 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
         computeService.reCalculateSomeAttributes(Set.of("site:s1:" + w + ":period:2023"), COCA);
     }
 
+    private void setCostValueOnSiteAndRecalculate(String w, String siteId, Map<String, CostLine> v) {
+        Attribute attw = attributeService.findByIdAndOrgaId("site:" + siteId + ":" + w + ":period:2023", COCA).get();
+        attw.setAttributeValue(CostValue.builder().value(v).build());
+        attributeService.save(attw);
+        computeService.reCalculateSomeAttributes(Set.of("site:" + siteId + ":" + w + ":period:2023"), COCA);
+    }
+
     private List<Operation> refSum(String... ids) {
         return Arrays.stream(ids).map(id -> RefOperation.builder().useCurrentSite(true).key(id).build()).collect(Collectors.toList());
     }
 
-    private AttributeConfig writable(String w) {
+    private AttributeConfig writableOnS1(String w) {
         return attributeConfigService.save(
             notWritableAttributeConfigWithNoScope()
                 .id(w)
@@ -197,7 +286,13 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
         );
     }
 
-    private AttributeConfig notWritable(String a, List<Operation> refs) {
+    private AttributeConfig writable(String w) {
+        return attributeConfigService.save(
+            notWritableAttributeConfigWithNoScope().id(w).key(w).configOrder(0).isWritable(true).campaignId("2023").build()
+        );
+    }
+
+    private AttributeConfig notWritableOnS1(String a, List<Operation> refs) {
         return attributeConfigService.save(
             notWritableAttributeConfigWithNoScope()
                 .id(a)
@@ -210,7 +305,7 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
         );
     }
 
-    private AttributeConfig notWritable(String a, Operation op) {
+    private AttributeConfig notWritableOnS1(String a, Operation op) {
         return attributeConfigService.save(
             notWritableAttributeConfigWithNoScope()
                 .id(a)

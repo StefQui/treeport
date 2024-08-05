@@ -754,6 +754,8 @@ class CalculatorServiceTest {
                 costConfig(refOp("comp"), "coutEnv", Map.of("nox", kgNox, "co2", tCo2, "ene", Unit.j))
             );
 
+            assertThat(calc.getImpacterIds())
+                .containsExactlyInAnyOrder("site:r1:coutEnv:period:2023", "site:r2:coutEnv:period:2023", "site:r:comp:period:2023");
             assertThat(calc.getResultValue()).isInstanceOf(CostValue.class);
             CostValue cv = (CostValue) calc.getResultValue();
             assertCostLineValue(cv, "co2", 0.054, tCo2);
@@ -810,6 +812,7 @@ class CalculatorServiceTest {
                 )
             );
 
+            assertThat(calc.getImpacterIds()).isEmpty();
             assertThat(calc.getResultValue()).isInstanceOf(CostValue.class);
             CostValue cv = (CostValue) calc.getResultValue();
             assertCostLineValue(cv, "co2", 5., tCo2);
@@ -929,6 +932,7 @@ class CalculatorServiceTest {
                 )
             );
 
+            assertThat(calc.getImpacterIds()).containsExactlyInAnyOrder("site:r1:coutEnv:period:2023", "site:r2:coutEnv:period:2023");
             assertThat(calc.getResultValue()).isInstanceOf(CostValue.class);
             CostValue cv = (CostValue) calc.getResultValue();
             assertCostLineValue(cv, "co2", 5.054, tCo2);

@@ -3,6 +3,7 @@ package com.sm.service;
 import com.sm.domain.AttributeConfig;
 import com.sm.domain.attribute.*;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
@@ -155,9 +156,17 @@ public class ConsoCalculator<T> {
             if (consolidatedValueIsMissing || consolidatedValueIsNotResolvable) {
                 //                attribute.getAggInfo().getNotResolvables().add(consolidatedAttribute.getId());
                 if (config.getDefaultValueForNotResolvableItem() != null) {
-                    attVals.add(
-                        DoubleValue.builder().value(Double.valueOf(config.getDefaultValueForNotResolvableItem().toString())).build()
-                    );
+                    if (config.getDefaultValueForNotResolvableItem() instanceof Double) {
+                        attVals.add(
+                            DoubleValue.builder().value(Double.valueOf(config.getDefaultValueForNotResolvableItem().toString())).build()
+                        );
+                    } else if (config.getDefaultValueForNotResolvableItem() instanceof Map) {
+                        attVals.add(
+                            CostValue.builder().value((Map<String, CostLine>) config.getDefaultValueForNotResolvableItem()).build()
+                        );
+                    } else {
+                        throw new RuntimeException("pas possible ici 654654");
+                    }
                 } else {
                     return CalculationResult
                         .builder()
@@ -202,9 +211,12 @@ public class ConsoCalculator<T> {
             return attValue;
         }
         T defaultValue = (T) config.getDefaultValueForNotResolvableItem();
-        if (!(defaultValue instanceof Double)) {
-            throw new RuntimeException("should be implemented for type " + defaultValue.getClass());
+        if (defaultValue instanceof Double) {
+            return DoubleValue.builder().value((Double) defaultValue).build();
+        } else if (defaultValue instanceof Map) {
+            CostValue a = CostValue.builder().value((Map<String, CostLine>) defaultValue).build();
+            return a;
         }
-        return DoubleValue.builder().value((Double) defaultValue).build();
+        throw new RuntimeException("should be implemented for type " + defaultValue.getClass());
     }
 }

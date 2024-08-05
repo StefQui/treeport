@@ -7,6 +7,7 @@ public enum OperationType {
     CHILDREN_AVG_BY_KEY,
     CONSO_SUM_BY_KEY,
     CONSO_SUM,
+    CONSO_COST_SUM,
     SUM,
     COST_SUM,
     PRODUCT,

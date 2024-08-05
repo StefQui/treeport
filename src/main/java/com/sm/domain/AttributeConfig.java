@@ -2,12 +2,14 @@ package com.sm.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sm.domain.attribute.AggInfo;
+import com.sm.domain.attribute.Unit;
 import com.sm.domain.operation.Operation;
 import com.sm.domain.operation.OperationType;
 import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.*;
 import lombok.experimental.NonFinal;
@@ -87,6 +89,9 @@ public class AttributeConfig implements Serializable {
 
     @Field("conso_operation_type")
     private OperationType consoOperationType;
+
+    @Field("conso_preferred_units")
+    private Map<String, Unit> consoPreferredUnits;
 
     @Field("orgaId")
     private String orgaId;

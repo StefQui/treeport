@@ -1,8 +1,11 @@
 package com.sm.service;
 
+import static com.sm.domain.attribute.AggInfo.AttributeType.COST_TYPE;
+import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.operation.OperationType.CHILDREN_PRODUCT_BY_KEY;
 import static com.sm.domain.operation.OperationType.CHILDREN_SUM_BY_KEY;
 import static com.sm.domain.operation.OperationType.COMPARISON;
+import static com.sm.domain.operation.OperationType.CONSO_COST_SUM;
 import static com.sm.domain.operation.OperationType.CONSO_SUM;
 import static com.sm.domain.operation.OperationType.CONSO_SUM_BY_KEY;
 import static com.sm.domain.operation.OperationType.CONSTANT;
@@ -90,7 +93,7 @@ public class CalculatorService {
                     .resultValue(BooleanValue.builder().value(op.getBooleanValue()).build())
                     .success(true)
                     .build();
-            } else if (op.getConstantType().equals(AggInfo.AttributeType.DOUBLE)) {
+            } else if (op.getConstantType().equals(DOUBLE)) {
                 return CalculationResult
                     .builder()
                     .resultValue(DoubleValue.builder().value(op.getDoubleValue()).build())
@@ -117,7 +120,7 @@ public class CalculatorService {
                 throw new RuntimeException("to implement tagOp " + op.getTagOperationType());
             }
         } else if (CONSO_SUM_BY_KEY.equals(config.getConsoOperationType())) {
-            if (config.getAttributeType() != AggInfo.AttributeType.DOUBLE) {
+            if (config.getAttributeType() != DOUBLE) {
                 throw new RuntimeException("to implement 566");
             }
             if (config.getConsoParameterKey() == null) {
@@ -130,8 +133,16 @@ public class CalculatorService {
                 config,
                 RefOperation.builder().key(config.getConsoParameterKey()).build()
             );
+        } else if (CONSO_COST_SUM.equals(config.getConsoOperationType())) {
+            if (config.getAttributeType() != AggInfo.AttributeType.COST_TYPE) {
+                throw new RuntimeException("to implement 613");
+            }
+            if (config.getConsoOperation() == null) {
+                throw new RuntimeException("pas possible ici 406");
+            }
+            return calculateConsoAtt(orgaId, attribute, impacterIds, config, config.getConsoOperation());
         } else if (CONSO_SUM.equals(config.getConsoOperationType())) {
-            if (config.getAttributeType() != AggInfo.AttributeType.DOUBLE) {
+            if (config.getAttributeType() != DOUBLE) {
                 throw new RuntimeException("to implement 555");
             }
             if (config.getConsoOperation() == null) {
@@ -144,15 +155,13 @@ public class CalculatorService {
             HasItems op = (HasItems) config.getOperation();
             if (config.getAttributeType() == AggInfo.AttributeType.LONG) {
                 throw new RuntimeException("to be implemented here 66");
-            } else if (
-                config.getAttributeType() == AggInfo.AttributeType.DOUBLE || config.getAttributeType() == AggInfo.AttributeType.COST_TYPE
-            ) {
+            } else if (config.getAttributeType() == DOUBLE || config.getAttributeType() == AggInfo.AttributeType.COST_TYPE) {
                 return calculateSum(op, orgaId, attribute, impacterIds, config);
             } else {
                 throw new RuntimeException("to implement 555");
             }
         } else if (CHILDREN_SUM_BY_KEY.equals(config.getOperationType()) || CHILDREN_PRODUCT_BY_KEY.equals(config.getOperationType())) {
-            if (config.getAttributeType() == AggInfo.AttributeType.DOUBLE) {
+            if (config.getAttributeType() == DOUBLE) {
                 HasItemsKey op = (HasItemsKey) config.getOperation();
                 List<Attribute> attributes = attributeService.getAttributesForSiteChildrenAndConfig(
                     attribute.getId(),
@@ -290,7 +299,7 @@ public class CalculatorService {
         if (result.getResultValue() instanceof CompoValue) {
             CompoValue compoValue = (CompoValue) result.getResultValue();
             try {
-                CostValue cost = calculateCost(attId, compoValue, costKey, preferredUnits, orgaId, impacterIds);
+                CostValue cost = calculateCostForCompo(attId, compoValue, costKey, preferredUnits, orgaId, impacterIds);
                 return CalculationResult.builder().resultValue(cost).success(true).impacterIds(impacterIds).aggInfo(null).build();
             } catch (NotHomogenousException e) {
                 return CalculationResult
@@ -435,7 +444,7 @@ public class CalculatorService {
         }
     }
 
-    private CostValue calculateCost(
+    private CostValue calculateCostForCompo(
         @NotBlank String attId,
         CompoValue compoValue,
         String costKey,
@@ -519,17 +528,41 @@ public class CalculatorService {
             .build();
         CalculationResult consolidated = calculateAttribute(orgaId, attribute, impacterIds, consoFakeConfig);
 
-        return doubleCalculator.calculateConsolidatedAttribute(
-            attribute.getId(),
-            impacterIds,
-            attributes,
-            consolidated.getResultValue(),
-            config,
-            DoubleValue.builder().build(),
-            UtilsValue::mapToDouble,
-            0.,
-            Double::sum
-        );
+        if (DOUBLE.equals(config.getAttributeType())) {
+            return doubleCalculator.calculateConsolidatedAttribute(
+                attribute.getId(),
+                impacterIds,
+                attributes,
+                consolidated.getResultValue(),
+                config,
+                DoubleValue.builder().build(),
+                UtilsValue::mapToDouble,
+                0.,
+                Double::sum
+            );
+        } else if (COST_TYPE.equals(config.getAttributeType())) {
+            return costCalculator.calculateConsolidatedAttribute(
+                attribute.getId(),
+                impacterIds,
+                attributes,
+                consolidated.getResultValue(),
+                config,
+                CostValue.builder().build(),
+                UtilsValue::mapToCost,
+                config
+                    .getConsoPreferredUnits()
+                    .keySet()
+                    .stream()
+                    .collect(
+                        Collectors.toMap(
+                            Function.identity(),
+                            key -> CostLine.builder().unit(config.getConsoPreferredUnits().get(key)).quantity(0.).build()
+                        )
+                    ),
+                CostValue::sum
+            );
+        }
+        throw new RuntimeException("pas possible ici 8866");
     }
 
     private CalculationResult calculateComparison(String orgaId, Attribute attribute, Set<String> impacterIds, ComparisonOperation op)

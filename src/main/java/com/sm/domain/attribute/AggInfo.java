@@ -13,9 +13,6 @@ public class AggInfo {
     private Integer withValues = 0;
 
     @Builder.Default
-    private List<String> notResolvables = new ArrayList<>();
-
-    @Builder.Default
     private List<String> errors = new ArrayList<>();
 
     public enum AttributeType {

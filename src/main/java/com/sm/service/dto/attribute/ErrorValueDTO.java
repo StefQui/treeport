@@ -10,10 +10,10 @@ import lombok.extern.jackson.Jacksonized;
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder(toBuilder = true)
 @Jacksonized
-public class NotResolvableValueDTO extends AttributeValueDTO {
+public class ErrorValueDTO extends AttributeValueDTO {
 
     @Builder.Default
-    private AttributeValueType attributeValueType = AttributeValueType.NOT_RESOLVABLE_VT;
+    private AttributeValueType attributeValueType = AttributeValueType.ERROR_VT;
 
     private String value;
 }

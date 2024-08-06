@@ -512,7 +512,7 @@ public class InitialLoadService {
                 .isConsolidable(true)
                 .consoParameterKey(TO_SITE)
                 .consoOperationType(CONSO_SUM_BY_KEY)
-                .defaultValueForNotResolvableItem(0.)
+                .consoDefaultValueForNotResolvableItem(0.)
                 .isWritable(false)
                 .tags(Set.of(Tag.builder().id(CAR).build()))
                 .attributeType(DOUBLE)

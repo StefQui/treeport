@@ -9,8 +9,4 @@ public abstract class AttributeValue<T> {
     public boolean isError() {
         return this instanceof ErrorValue;
     }
-
-    public boolean isNotResolvable() {
-        return this instanceof NotResolvableValue;
-    }
 }

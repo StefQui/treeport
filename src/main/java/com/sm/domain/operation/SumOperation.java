@@ -21,6 +21,8 @@ public class SumOperation implements Operation, HasItems {
     @Builder.Default
     private List<Operation> items = new ArrayList<>();
 
+    private Object defaultValueForNotResolvableItem;
+
     @Override
     public Set<RefOperation> extractAllRefs() {
         Set<RefOperation> result = new HashSet<>();

@@ -26,7 +26,7 @@ public class ConsoCalculator<T> {
         BiFunction<T, T, T> function
     ) {
         if (initial == null) {
-            return NotResolvableValue.builder().value("Initial value for conso should not be null").build();
+            return UtilsValue.generateErrorValue("Initial value for conso should not be null");
         }
         try {
             T initialValueDouble = (T) initial;
@@ -40,7 +40,7 @@ public class ConsoCalculator<T> {
             //                    )
             //                    .build()
         } catch (Exception e) {
-            return NotResolvableValue.builder().value("Cannot calculate").build();
+            return UtilsValue.generateErrorValue("Cannot calculate" + e.getLocalizedMessage());
         }
     }
 
@@ -54,10 +54,10 @@ public class ConsoCalculator<T> {
         BinaryOperator<T> reducer
     ) {
         try {
-            AttributeValue errorOrNotResolvable = UtilsValue.handleErrorsAndNotResolvable(vals);
-            if (errorOrNotResolvable != null) {
-                return errorOrNotResolvable;
-            }
+            //            AttributeValue errorOrNotResolvable = UtilsValue.handleErrorsAndNotResolvable(vals);
+            //            if (errorOrNotResolvable != null) {
+            //                return errorOrNotResolvable;
+            //            }
 
             return calculate(builderValue, vals, attributeValueTFunction, startValue, reducer);
         } catch (Exception e) {
@@ -80,7 +80,7 @@ public class ConsoCalculator<T> {
             .map(Attribute::getAttributeValue)
             .map(attValue -> {
                 if (attValue == null) {
-                    return NotResolvableValue.builder().value("one item value is missing").build();
+                    return ErrorValue.builder().value("one item value is missing").build();
                     //                            atLeastOnChildValueIsNotResolvable.set(true);
                 }
                 return attValue;
@@ -101,21 +101,26 @@ public class ConsoCalculator<T> {
         T startValue,
         BinaryOperator<T> reducer
     ) {
+        //        AttributeValue errorOrNotResolvable = UtilsValue.handleErrorsAndNotResolvable(atts.stream().map(Attribute::getAttributeValue).collect(Collectors.toList()));
+        //        if (errorOrNotResolvable != null) {
+        //            return UtilsValue.buildResult(impacterIds, errorOrNotResolvable);
+        //        }
+
         try {
             AggInfo aggInfo = AggInfo.builder().build();
             Boolean consolidatedValueIsMissing = false;
-            Boolean consolidatedValueIsNotResolvable = false;
+            Boolean consolidatedValueIsInError = false;
             AttributeValue consolidatedAttributeValueToApply = consolidatedAttributeValue;
             AtomicBoolean atLeastOnChildValueIsNotResolvable = new AtomicBoolean(false);
             if (consolidatedAttributeValue == null) {
-                aggInfo.getNotResolvables().add(attId);
+                aggInfo.getErrors().add(attId);
                 consolidatedValueIsMissing = true;
             } else if (consolidatedAttributeValue.isError()) {
                 aggInfo.getErrors().add(attId);
-            } else if (consolidatedAttributeValue.isNotResolvable()) {
-                aggInfo.getNotResolvables().add(attId);
-                consolidatedAttributeValueToApply = applyDefaultValue(config, consolidatedAttributeValue);
-                consolidatedValueIsNotResolvable = true;
+                consolidatedValueIsInError = true;
+            } else if (consolidatedAttributeValue.getValue() == null) {
+                aggInfo.getErrors().add(attId);
+                consolidatedValueIsInError = true;
             } else {
                 aggInfo.setWithValues(aggInfo.getWithValues() + 1);
             }
@@ -126,26 +131,27 @@ public class ConsoCalculator<T> {
                 })
                 .peek(att -> {
                     aggInfo.getErrors().addAll(att.getAggInfo().getErrors());
-                    aggInfo.getNotResolvables().addAll(att.getAggInfo().getNotResolvables());
                     aggInfo.setWithValues(aggInfo.getWithValues() + att.getAggInfo().getWithValues());
-                    if (att.getAttributeValue() == null) {
-                        aggInfo.getNotResolvables().add(att.getId());
-                        //                            atLeastOnChildValueIsNotResolvable.set(true);
-                    }
                 })
                 .map(Attribute::getAttributeValue)
                 .map(attValue -> {
                     if (attValue == null) {
-                        return NotResolvableValue
-                            .builder()
-                            .value("one item value is missing, check your tags on consoConfig and consolidateConfig")
-                            .build();
-                        //                            atLeastOnChildValueIsNotResolvable.set(true);
+                        return UtilsValue.buildOneItemIsNullWhenConsolidating();
                     }
                     return attValue;
                 })
-                .map(attValue -> applyDefaultValue(config, attValue))
+                .map(attValue -> {
+                    if (!(attValue instanceof ErrorValue) || config.getConsoDefaultValueForNotResolvableItem() == null) {
+                        return attValue;
+                    }
+                    return buildDefaultValue(config.getConsoDefaultValueForNotResolvableItem());
+                })
                 .collect(Collectors.toList());
+
+            ErrorValue error = UtilsValue.handleErrors(attVals);
+            if (error != null) {
+                return UtilsValue.buildValueToConsolidateIsNotResolvableResult(impacterIds, aggInfo, error);
+            }
 
             //            attribute.setAggInfo(aggInfo);
             //            if (consolidatedAttributeIsMissing) {
@@ -153,45 +159,31 @@ public class ConsoCalculator<T> {
             //                        .generateErrorValue("attribute to consolidate is null, check your config"));
             //                return;
             //            }
-            if (consolidatedValueIsMissing || consolidatedValueIsNotResolvable) {
+            if (consolidatedValueIsMissing || consolidatedValueIsInError) {
                 //                attribute.getAggInfo().getNotResolvables().add(consolidatedAttribute.getId());
-                if (config.getDefaultValueForNotResolvableItem() != null) {
-                    if (config.getDefaultValueForNotResolvableItem() instanceof Double) {
-                        attVals.add(
-                            DoubleValue.builder().value(Double.valueOf(config.getDefaultValueForNotResolvableItem().toString())).build()
-                        );
-                    } else if (config.getDefaultValueForNotResolvableItem() instanceof Map) {
-                        attVals.add(
-                            CostValue.builder().value((Map<String, CostLine>) config.getDefaultValueForNotResolvableItem()).build()
-                        );
-                    } else {
-                        throw new RuntimeException("pas possible ici 654654");
-                    }
+                if (config.getConsoDefaultValueForNotResolvableItem() != null) {
+                    attVals.add(buildDefaultValue(config.getConsoDefaultValueForNotResolvableItem()));
                 } else {
-                    return CalculationResult
-                        .builder()
-                        .success(true)
-                        .resultValue(UtilsValue.generateNotResolvableValue(VALUE_TO_CONSOLIDATE_IS_NULL_OR_NOT_RESOLVABLE))
-                        .impacterIds(impacterIds)
-                        .aggInfo(aggInfo)
-                        .build();
+                    return UtilsValue.buildValueToConsolidateIsNullOrInError(impacterIds, aggInfo);
                 }
+            } else {
+                attVals.add(consolidatedAttributeValueToApply);
             }
 
             //            if (consolidatedAttribute != null && consolidatedAttribute.getAttributeValue() != null) {
-            attVals.add(consolidatedAttributeValueToApply);
+            //            attVals.add(consolidatedAttributeValueToApply);
             //          }
 
-            AttributeValue errorOrNotResolvable = UtilsValue.handleErrorsAndNotResolvable(attVals);
-            if (errorOrNotResolvable != null) {
-                return CalculationResult
-                    .builder()
-                    .success(true)
-                    .resultValue(UtilsValue.handleErrorsAndNotResolvable(attVals))
-                    .impacterIds(impacterIds)
-                    .aggInfo(aggInfo)
-                    .build();
-            }
+            //            AttributeValue errorOrNotResolvable = UtilsValue.handleErrorsAndNotResolvable(attVals);
+            //            if (errorOrNotResolvable != null) {
+            //                return CalculationResult
+            //                    .builder()
+            //                    .success(true)
+            //                    .resultValue(UtilsValue.handleErrorsAndNotResolvable(attVals))
+            //                    .impacterIds(impacterIds)
+            //                    .aggInfo(aggInfo)
+            //                    .build();
+            //            }
 
             return CalculationResult
                 .builder()
@@ -206,17 +198,26 @@ public class ConsoCalculator<T> {
         }
     }
 
-    private AttributeValue applyDefaultValue(AttributeConfig config, AttributeValue attValue) {
-        if (!(attValue instanceof NotResolvableValue) || config.getDefaultValueForNotResolvableItem() == null) {
-            return attValue;
-        }
-        T defaultValue = (T) config.getDefaultValueForNotResolvableItem();
-        if (defaultValue instanceof Double) {
-            return DoubleValue.builder().value((Double) defaultValue).build();
-        } else if (defaultValue instanceof Map) {
-            CostValue a = CostValue.builder().value((Map<String, CostLine>) defaultValue).build();
+    private AttributeValue buildDefaultValue(Object defaultValueForNotResolvableItem) {
+        if (defaultValueForNotResolvableItem instanceof Double) {
+            return DoubleValue.builder().value((Double) defaultValueForNotResolvableItem).build();
+        } else if (defaultValueForNotResolvableItem instanceof Map) {
+            CostValue a = CostValue.builder().value((Map<String, CostLine>) defaultValueForNotResolvableItem).build();
             return a;
         }
-        throw new RuntimeException("should be implemented for type " + defaultValue.getClass());
+        return UtilsValue.generateErrorValue("Cannot generate default value for " + defaultValueForNotResolvableItem);
     }
+    //    private AttributeValue applyDefaultValue(AttributeConfig config, AttributeValue attValue) {
+    //        if (!(attValue instanceof NotResolvableValue) || config.getDefaultValueForNotResolvableItem() == null) {
+    //            return attValue;
+    //        }
+    //        T defaultValue = (T) config.getDefaultValueForNotResolvableItem();
+    //        if (defaultValue instanceof Double) {
+    //            return DoubleValue.builder().value((Double) defaultValue).build();
+    //        } else if (defaultValue instanceof Map) {
+    //            CostValue a = CostValue.builder().value((Map<String, CostLine>) defaultValue).build();
+    //            return a;
+    //        }
+    //        throw new RuntimeException("should be implemented for type " + defaultValue.getClass());
+    //    }
 }

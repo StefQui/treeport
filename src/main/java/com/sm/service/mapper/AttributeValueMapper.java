@@ -1,7 +1,13 @@
 package com.sm.service.mapper;
 
-import com.sm.domain.attribute.*;
-import com.sm.service.dto.attribute.*;
+import com.sm.domain.attribute.Attribute;
+import com.sm.domain.attribute.AttributeValue;
+import com.sm.domain.attribute.BooleanValue;
+import com.sm.domain.attribute.DoubleValue;
+import com.sm.service.dto.attribute.AttributeDTO;
+import com.sm.service.dto.attribute.AttributeValueDTO;
+import com.sm.service.dto.attribute.BooleanValueDTO;
+import com.sm.service.dto.attribute.DoubleValueDTO;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -28,8 +34,6 @@ public class AttributeValueMapper {
             return booleanValueToEntity((BooleanValueDTO) aDTO);
         } else if (aDTO instanceof DoubleValueDTO) {
             return doubleValueToEntity((DoubleValueDTO) aDTO);
-        } else if (aDTO instanceof NotResolvableValueDTO) {
-            return notResolvaleValueToEntity((NotResolvableValueDTO) aDTO);
         }
         throw new RuntimeException("cannot Map2 " + aDTO);
     }
@@ -42,10 +46,6 @@ public class AttributeValueMapper {
         return DoubleValue.builder().value(aDTO.getValue()).build();
     }
 
-    private NotResolvableValue notResolvaleValueToEntity(NotResolvableValueDTO aDTO) {
-        return NotResolvableValue.builder().value(aDTO.getValue()).build();
-    }
-
     public AttributeValueDTO toDto(AttributeValue entity) {
         if (null == entity) {
             return null;
@@ -54,8 +54,6 @@ public class AttributeValueMapper {
             return booleanValueToDto((BooleanValue) entity);
         } else if (entity instanceof DoubleValue) {
             return doubleValueToDto((DoubleValue) entity);
-        } else if (entity instanceof NotResolvableValue) {
-            return noResolvableValueToDto((NotResolvableValue) entity);
         }
         throw new RuntimeException("cannot Map " + entity);
     }
@@ -66,9 +64,5 @@ public class AttributeValueMapper {
 
     private DoubleValueDTO doubleValueToDto(DoubleValue entity) {
         return DoubleValueDTO.builder().value(entity.getValue()).build();
-    }
-
-    private NotResolvableValueDTO noResolvableValueToDto(NotResolvableValue entity) {
-        return NotResolvableValueDTO.builder().value(entity.getValue()).build();
     }
 }

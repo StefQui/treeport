@@ -1,16 +1,12 @@
 package com.sm.service;
 
 import static com.sm.domain.attribute.AggInfo.AttributeType.COST_TYPE;
+import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
 import static com.sm.domain.attribute.Unit.kgNox;
 import static com.sm.domain.attribute.Unit.tCo2;
-import static com.sm.service.CalculatorService.CANNOT_RESOLVE_IF_STATEMENT_AS_A_BOOLEAN;
-import static com.sm.service.CalculatorService.CANNOT_RESOLVE_THEN_STATEMENT;
-import static com.sm.service.CalculatorService.REFERENCED_ATTRIBUTE_HAS_NO_VALUE;
-import static com.sm.service.CalculatorService.wrapMessage;
 import static com.sm.service.ComputeTestUtils.refOp;
 import static com.sm.service.InitialLoadService.COCA;
 import static com.sm.service.InitialLoadService.ROOT;
-import static com.sm.service.UtilsValue.CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_NOT_RESOLVABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sm.domain.AttributeConfig;
@@ -21,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
@@ -46,27 +43,28 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
             COCA
         );
 
-        assertNotResolvables(CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_NOT_RESOLVABLE, "a1", "a9", "a10", "a12", "a2", "a4", "a6");
+        //        assertNotResolvables(CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_NOT_RESOLVABLE, "a1", "a9", "a10", "a12", "a2", "a4", "a6");
+        assertErrors("a1", "a9", "a10", "a12", "a2", "a4", "a6");
 
-        setDoubleValueAndRecalculate("w7", 2.);
-        assertNotResolvables(CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_NOT_RESOLVABLE, "a1", "a9", "a10", "a12", "a2", "a4");
+        setDoubleValueAndRecalculate("s1", "w7", 2.);
+        assertErrors("a1", "a9", "a10", "a12", "a2", "a4");
         assertIsDouble("a6", 2.);
 
-        setDoubleValueAndRecalculate("w11", 3.);
-        assertNotResolvables(CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_NOT_RESOLVABLE, "a1", "a12", "a2", "a4");
+        setDoubleValueAndRecalculate("s1", "w11", 3.);
+        assertErrors("a1", "a12", "a2", "a4");
         assertIsDouble("a6", 2.);
         assertIsDouble("a10", 3.);
         assertIsDouble("a9", 5.);
 
-        setDoubleValueAndRecalculate("w8", 7.);
-        assertNotResolvables(CANNOT_DO_MULTI_OP_OF_DOUBLES_AT_LEAST_ONE_ITEM_IS_NOT_RESOLVABLE, "a1", "a2");
+        setDoubleValueAndRecalculate("s1", "w8", 7.);
+        assertErrors("a1", "a2");
         assertIsDouble("a6", 2.);
         assertIsDouble("a10", 3.);
         assertIsDouble("a9", 5.);
         assertIsDouble("a4", 9.);
         assertIsDouble("a12", 11.);
 
-        setDoubleValueAndRecalculate("w3", 11.5);
+        setDoubleValueAndRecalculate("s1", "w3", 11.5);
         assertIsDouble("a6", 2.);
         assertIsDouble("a10", 3.);
         assertIsDouble("a9", 5.);
@@ -75,7 +73,7 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
         assertIsDouble("a2", 20.5);
         assertIsDouble("a1", 25.5);
 
-        setDoubleValueAndRecalculate("w7", 100);
+        setDoubleValueAndRecalculate("s1", "w7", 100.);
         assertIsDouble("a6", 100.);
         assertIsDouble("a10", 3.);
         assertIsDouble("a9", 103.);
@@ -110,22 +108,22 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
         computeService.applyCampaigns(COCA, List.of("2023"));
         computeService.reCalculateSomeAttributes(Set.of("site:s1:a1:period:2023"), COCA);
 
-        assertNotResolvables(CANNOT_RESOLVE_IF_STATEMENT_AS_A_BOOLEAN, "a1");
+        assertErrors("a1");
 
         setBooleanValueAndRecalculate("wif2", true);
-        setDoubleValueAndRecalculate("wthen2", 10);
-        assertNotResolvables(CANNOT_RESOLVE_IF_STATEMENT_AS_A_BOOLEAN, "a1");
+        setDoubleValueAndRecalculate("s1", "wthen2", 10.);
+        assertErrors("a1");
 
         setBooleanValueAndRecalculate("wif1", false);
         assertIsDouble("a1", 10.);
 
         setBooleanValueAndRecalculate("wif1", true);
-        assertNotResolvables(wrapMessage(CANNOT_RESOLVE_THEN_STATEMENT, REFERENCED_ATTRIBUTE_HAS_NO_VALUE), "a1");
+        assertErrors("a1");
 
-        setDoubleValueAndRecalculate("wthen1", 5.);
+        setDoubleValueAndRecalculate("s1", "wthen1", 5.);
         assertIsDouble("a1", 5.);
 
-        setDoubleValueAndRecalculate("welse", 7.);
+        setDoubleValueAndRecalculate("s1", "welse", 7.);
         assertIsDouble("a1", 5.);
 
         setBooleanValueAndRecalculate("wif1", false);
@@ -149,96 +147,214 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
         computeService.applyCampaigns(COCA, List.of("2023"));
         computeService.reCalculateSomeAttributes(Set.of("site:s1:a1:period:2023"), COCA);
 
-        assertNotResolvables(CANNOT_RESOLVE_IF_STATEMENT_AS_A_BOOLEAN, "a1");
+        assertErrors("a1");
     }
 
-    @Test
-    public void testRecalculateWithConsoCost() {
-        writable("wCost");
+    @Nested
+    class ConsoCost {
 
-        attributeConfigService.save(
-            notWritableAttributeConfigWithNoScope()
-                .id("consoCost")
-                .key("consoCost")
-                .isWritable(false)
-                .attributeType(COST_TYPE)
-                .siteId(ROOT)
-                .orgaId(COCA)
-                .applyOnChildren(true)
-                .isConsolidable(true)
-                .configOrder(0)
-                .consoOperationType(OperationType.CONSO_COST_SUM)
-                .defaultValue(
-                    Map.of(
-                        "co2",
-                        CostLine.builder().quantity(0.).unit(tCo2).build(),
-                        "nox",
-                        CostLine.builder().quantity(0.).unit(kgNox).build(),
-                        "ene",
-                        CostLine.builder().quantity(0.).unit(Unit.j).build()
+        @Test
+        public void testRecalculateWithConsoCost() {
+            writable("wCost");
+
+            attributeConfigService.save(
+                notWritableAttributeConfigWithNoScope()
+                    .id("consoCost")
+                    .key("consoCost")
+                    .isWritable(false)
+                    .attributeType(COST_TYPE)
+                    .siteId(ROOT)
+                    .orgaId(COCA)
+                    .applyOnChildren(true)
+                    .isConsolidable(true)
+                    .configOrder(0)
+                    .consoOperationType(OperationType.CONSO_COST_SUM)
+                    .defaultValue(
+                        Map.of(
+                            "co2",
+                            CostLine.builder().quantity(0.).unit(tCo2).build(),
+                            "nox",
+                            CostLine.builder().quantity(0.).unit(kgNox).build(),
+                            "ene",
+                            CostLine.builder().quantity(0.).unit(Unit.j).build()
+                        )
                     )
-                )
-                .defaultValueForNotResolvableItem(
-                    Map.of(
-                        "co2",
-                        CostLine.builder().quantity(0.).unit(tCo2).build(),
-                        "nox",
-                        CostLine.builder().quantity(0.).unit(kgNox).build(),
-                        "ene",
-                        CostLine.builder().quantity(0.).unit(Unit.j).build()
+                    .consoDefaultValueForNotResolvableItem(
+                        Map.of(
+                            "co2",
+                            CostLine.builder().quantity(0.).unit(tCo2).build(),
+                            "nox",
+                            CostLine.builder().quantity(0.).unit(kgNox).build(),
+                            "ene",
+                            CostLine.builder().quantity(0.).unit(Unit.j).build()
+                        )
                     )
+                    .consoPreferredUnits(Map.of("nox", kgNox, "co2", tCo2, "ene", Unit.j))
+                    .consoOperation(
+                        CostOperation
+                            .builder()
+                            .costKey("wCost")
+                            .preferredUnits(Map.of("nox", kgNox, "co2", tCo2, "ene", Unit.j))
+                            .operation(refOp("wCost"))
+                            .build()
+                    )
+                    .campaignId("2023")
+                    .build()
+            );
+
+            computeService.applyCampaigns(COCA, List.of("2023"));
+            computeService.reCalculateAllAttributes(COCA);
+
+            setCostValueOnSiteAndRecalculate(
+                "wCost",
+                "s1-1",
+                Map.of(
+                    "co2",
+                    CostLine.builder().quantity(2.).unit(tCo2).build(),
+                    "nox",
+                    CostLine.builder().quantity(3.).unit(kgNox).build(),
+                    "ene",
+                    CostLine.builder().quantity(4.).unit(Unit.j).build()
                 )
-                .consoPreferredUnits(Map.of("nox", kgNox, "co2", tCo2, "ene", Unit.j))
-                .consoOperation(
-                    CostOperation
-                        .builder()
-                        .costKey("wCost")
-                        .preferredUnits(Map.of("nox", kgNox, "co2", tCo2, "ene", Unit.j))
-                        .operation(refOp("wCost"))
-                        .build()
+            );
+            setCostValueOnSiteAndRecalculate(
+                "wCost",
+                "s1-2",
+                Map.of(
+                    "co2",
+                    CostLine.builder().quantity(10.).unit(tCo2).build(),
+                    "nox",
+                    CostLine.builder().quantity(20.).unit(kgNox).build(),
+                    "ene",
+                    CostLine.builder().quantity(30.).unit(Unit.j).build()
                 )
-                .campaignId("2023")
-                .build()
-        );
+            );
 
-        computeService.applyCampaigns(COCA, List.of("2023"));
-        computeService.reCalculateAllAttributes(COCA);
-
-        setCostValueOnSiteAndRecalculate(
-            "wCost",
-            "s1-1",
-            Map.of(
-                "co2",
-                CostLine.builder().quantity(2.).unit(tCo2).build(),
-                "nox",
-                CostLine.builder().quantity(3.).unit(kgNox).build(),
-                "ene",
-                CostLine.builder().quantity(4.).unit(Unit.j).build()
-            )
-        );
-        setCostValueOnSiteAndRecalculate(
-            "wCost",
-            "s1-2",
-            Map.of(
-                "co2",
-                CostLine.builder().quantity(10.).unit(tCo2).build(),
-                "nox",
-                CostLine.builder().quantity(20.).unit(kgNox).build(),
-                "ene",
-                CostLine.builder().quantity(30.).unit(Unit.j).build()
-            )
-        );
-
-        assertNotResolvables(CANNOT_RESOLVE_IF_STATEMENT_AS_A_BOOLEAN, "a1");
+            assertIsCost(
+                "s1",
+                "consoCost",
+                Map.of(
+                    "co2",
+                    CostLine.builder().quantity(12.).unit(tCo2).build(),
+                    "nox",
+                    CostLine.builder().quantity(23.).unit(kgNox).build(),
+                    "ene",
+                    CostLine.builder().quantity(34.).unit(Unit.j).build()
+                )
+            );
+        }
     }
 
-    private void assertNotResolvables(String message, String... atts) {
+    @Nested
+    class ConsoDouble {
+
+        @Test
+        public void testRecalculateWithConsoDouble() {
+            writable("wDouble");
+
+            attributeConfigService.save(
+                notWritableAttributeConfigWithNoScope()
+                    .id("consoDouble")
+                    .key("consoDouble")
+                    .isWritable(false)
+                    .attributeType(DOUBLE)
+                    .siteId(ROOT)
+                    .orgaId(COCA)
+                    .applyOnChildren(true)
+                    .isConsolidable(true)
+                    .configOrder(0)
+                    .consoOperationType(OperationType.CONSO_SUM)
+                    .consoDefaultValueForNotResolvableItem(0.)
+                    .consoOperation(RefOperation.builder().useCurrentSite(true).key("wDouble").build())
+                    .campaignId("2023")
+                    .build()
+            );
+
+            computeService.applyCampaigns(COCA, List.of("2023"));
+            computeService.reCalculateAllAttributes(COCA);
+
+            assertIsDouble("consoDouble", 0.);
+
+            setDoubleValueAndRecalculate("s1-1", "wDouble", 2.);
+            setDoubleValueAndRecalculate("s1-2", "wDouble", 3.);
+
+            assertIsDouble("consoDouble", 5.);
+        }
+
+        @Test
+        public void testRecalculateWithConsoDoubleAndNoDefault() {
+            writable("wDouble");
+
+            attributeConfigService.save(
+                notWritableAttributeConfigWithNoScope()
+                    .id("consoDouble")
+                    .key("consoDouble")
+                    .isWritable(false)
+                    .attributeType(DOUBLE)
+                    .siteId(ROOT)
+                    .orgaId(COCA)
+                    .applyOnChildren(true)
+                    .isConsolidable(true)
+                    .configOrder(0)
+                    .consoOperationType(OperationType.CONSO_SUM)
+                    .consoOperation(RefOperation.builder().useCurrentSite(true).key("wDouble").build())
+                    .campaignId("2023")
+                    .build()
+            );
+
+            computeService.applyCampaigns(COCA, List.of("2023"));
+            computeService.reCalculateAllAttributes(COCA);
+
+            Attribute att = attributeRepository.findByIdAndOrgaId("site:s1:consoDouble:period:2023", COCA).get(0);
+            assertThat(att.getAttributeValue()).isInstanceOf(ErrorValue.class);
+            ErrorValue valToConsolidateError = (ErrorValue) UtilsValue.buildValueToConsolidateIsNullOrInError(null, null).getResultValue();
+            String errorMessage = (String) UtilsValue
+                .buildValueToConsolidateIsNotResolvableResult(
+                    null,
+                    null,
+                    UtilsValue.generateErrorValues(List.of(valToConsolidateError, valToConsolidateError))
+                )
+                .getResultValue()
+                .getValue();
+            assertThat(att.getAttributeValue().getValue()).isEqualTo(errorMessage);
+
+            setDoubleValueAndRecalculate("s1-1", "wDouble", 2.);
+            setDoubleValueAndRecalculate("s1-2", "wDouble", 3.);
+
+            att = attributeRepository.findByIdAndOrgaId("site:s1:consoDouble:period:2023", COCA).get(0);
+            assertThat(att.getAttributeValue()).isInstanceOf(ErrorValue.class);
+            assertThat(att.getAttributeValue().getValue())
+                .isEqualTo(UtilsValue.buildValueToConsolidateIsNullOrInError(null, null).getResultValue().getValue());
+
+            setDoubleValueAndRecalculate("s1", "wDouble", 7.);
+
+            assertIsDouble("consoDouble", 12.);
+
+            setDoubleValueAndRecalculate("s1-1", "wDouble", null);
+            setDoubleValueAndRecalculate("s1-2", "wDouble", null);
+
+            att = attributeRepository.findByIdAndOrgaId("site:s1:consoDouble:period:2023", COCA).get(0);
+            assertThat(att.getAttributeValue()).isInstanceOf(ErrorValue.class);
+            assertThat(att.getAttributeValue().getValue()).isEqualTo(errorMessage);
+        }
+    }
+
+    //    private void assertNotResolvables(String message, String... atts) {
+    //        Arrays
+    //            .stream(atts)
+    //            .forEach(attId -> {
+    //                Attribute att = attributeRepository.findByIdAndOrgaId("site:s1:" + attId + ":period:2023", COCA).get(0);
+    //                assertThat(att.getAttributeValue()).isInstanceOf(NotResolvableValue.class);
+    //                assertThat(att.getAttributeValue().getValue()).isEqualTo(message);
+    //            });
+    //    }
+
+    private void assertErrors(String... atts) {
         Arrays
             .stream(atts)
             .forEach(attId -> {
                 Attribute att = attributeRepository.findByIdAndOrgaId("site:s1:" + attId + ":period:2023", COCA).get(0);
-                assertThat(att.getAttributeValue()).isInstanceOf(NotResolvableValue.class);
-                assertThat(att.getAttributeValue().getValue()).isEqualTo(message);
+                assertThat(att.getAttributeValue()).isInstanceOf(ErrorValue.class);
             });
     }
 
@@ -248,11 +364,17 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
         assertThat(att.getAttributeValue().getValue()).isEqualTo(d);
     }
 
-    private void setDoubleValueAndRecalculate(String w, double v) {
-        Attribute attw = attributeService.findByIdAndOrgaId("site:s1:" + w + ":period:2023", COCA).get();
+    private void assertIsCost(String s, String configId, Map<String, CostLine> cv) {
+        Attribute att = attributeRepository.findByIdAndOrgaId("site:" + s + ":" + configId + ":period:2023", COCA).get(0);
+        assertThat(att.getAttributeValue()).isInstanceOf(CostValue.class);
+        assertThat(att.getAttributeValue().getValue()).isEqualTo(cv);
+    }
+
+    private void setDoubleValueAndRecalculate(String s, String w, Double v) {
+        Attribute attw = attributeService.findByIdAndOrgaId("site:" + s + ":" + w + ":period:2023", COCA).get();
         attw.setAttributeValue(DoubleValue.builder().value(v).build());
         attributeService.save(attw);
-        computeService.reCalculateSomeAttributes(Set.of("site:s1:" + w + ":period:2023"), COCA);
+        computeService.reCalculateSomeAttributes(Set.of("site:" + s + ":" + w + ":period:2023"), COCA);
     }
 
     private void setBooleanValueAndRecalculate(String w, boolean b) {

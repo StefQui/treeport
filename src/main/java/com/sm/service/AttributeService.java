@@ -233,7 +233,7 @@ public class AttributeService {
                     .orElse(
                         Attribute
                             .builder()
-                            .attributeValue(UtilsValue.generateNotResolvableValue("No attribute found for " + key))
+                            .attributeValue(UtilsValue.generateErrorValue("No attribute found for " + key))
                             .aggInfo(AggInfo.builder().build())
                             .id(key)
                             .build()

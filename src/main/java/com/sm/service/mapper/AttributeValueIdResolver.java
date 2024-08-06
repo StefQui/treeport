@@ -46,7 +46,7 @@ public class AttributeValueIdResolver extends TypeIdResolverBase {
             switch (AttributeValueType.fromString(type)) {
                 case BOOLEAN_VT -> BooleanValueDTO.class;
                 case DOUBLE_VT -> DoubleValueDTO.class;
-                case NOT_RESOLVABLE_VT -> NotResolvableValueDTO.class;
+                case ERROR_VT -> ErrorValueDTO.class;
             };
 
         return TypeFactory.defaultInstance().constructSpecializedType(javaType, clazz);

@@ -317,7 +317,7 @@ public class CalculatorService {
             } catch (NotHomogenousException e) {
                 CalculationResult
                     .builder()
-                    .resultValue(NotResolvableValue.builder().value("Not homogenous error : " + attId).build())
+                    .resultValue(ErrorValue.builder().value("Not homogenous error : " + attId).build())
                     .success(true)
                     .build();
             }
@@ -325,7 +325,7 @@ public class CalculatorService {
         }
         return CalculationResult
             .builder()
-            .resultValue(NotResolvableValue.builder().value("Cannot extract cost Value : " + attId).build())
+            .resultValue(ErrorValue.builder().value("Cannot extract cost Value : " + attId).build())
             .success(true)
             .build();
     }
@@ -378,6 +378,11 @@ public class CalculatorService {
                 }
             });
         List<AttributeValue> vals = results.stream().map(CalculationResult::getResultValue).collect(Collectors.toList());
+
+        ErrorValue errorOnVals = UtilsValue.handleErrors(vals);
+        if (errorOnVals != null) {
+            return UtilsValue.buildCannotCalculateSumResult(impacterIds, errorOnVals);
+        }
 
         if (SUM.equals(config.getOperationType())) {
             return CalculationResult
@@ -528,6 +533,12 @@ public class CalculatorService {
             .build();
         CalculationResult consolidated = calculateAttribute(orgaId, attribute, impacterIds, consoFakeConfig);
 
+        //        if (consolidated.getResultValue() instanceof NotResolvableValue) {
+        //            return UtilsValue.buildResult(impacterIds,
+        //                UtilsValue.generateNotResolvableValue(format("cannot consolidate, consolidated value is not Resolvable [%s]",
+        //                    consolidated.getResultValue().getValue())));
+        //        }
+
         if (DOUBLE.equals(config.getAttributeType())) {
             return doubleCalculator.calculateConsolidatedAttribute(
                 attribute.getId(),
@@ -570,7 +581,7 @@ public class CalculatorService {
         if (op.getFirst() == null) {
             return CalculationResult
                 .builder()
-                .resultValue(NotResolvableValue.builder().value("Cannot do comparison, missing first operand").build())
+                .resultValue(ErrorValue.builder().value("Cannot do comparison, missing first operand").build())
                 .success(true)
                 .impacterIds(impacterIds)
                 .build();
@@ -578,7 +589,7 @@ public class CalculatorService {
         if (op.getSecond() == null) {
             return CalculationResult
                 .builder()
-                .resultValue(NotResolvableValue.builder().value("Cannot do comparison, missing second operand").build())
+                .resultValue(ErrorValue.builder().value("Cannot do comparison, missing second operand").build())
                 .success(true)
                 .impacterIds(impacterIds)
                 .build();
@@ -603,21 +614,11 @@ public class CalculatorService {
             .build();
         CalculationResult first = calculateAttribute(orgaId, attribute, impacterIds, firstFakeConfig);
         CalculationResult second = calculateAttribute(orgaId, attribute, impacterIds, secondFakeConfig);
-        if (first.getResultValue().isNotResolvable() || first.getResultValue().isError()) {
-            return CalculationResult
-                .builder()
-                .resultValue(NotResolvableValue.builder().value("Cannot do comparison, first operand is error or not resolvable").build())
-                .success(true)
-                .impacterIds(impacterIds)
-                .build();
+        if (first.getResultValue().isError()) {
+            return UtilsValue.buildCannotResolveFirstOperandOfComparison(impacterIds);
         }
-        if (second.getResultValue().isNotResolvable() || second.getResultValue().isError()) {
-            return CalculationResult
-                .builder()
-                .resultValue(NotResolvableValue.builder().value("Cannot do comparison, second operand is error or not resolvable").build())
-                .success(true)
-                .impacterIds(impacterIds)
-                .build();
+        if (second.getResultValue().isError()) {
+            return UtilsValue.buildCannotResolveSecondOperandOfComparison(impacterIds);
         }
         Double firstDouble = Double.valueOf(first.getResultValue().getValue().toString());
         Double secondDouble = Double.valueOf(second.getResultValue().getValue().toString());
@@ -637,7 +638,8 @@ public class CalculatorService {
             IfThen ifThen = op.getIfThens().get(i);
             i++;
             if (ifThen.getIfOp() == null) {
-                return createNotResolvable(impacterIds, null, "Cannot check if of if/then because it is null");
+                return UtilsValue.buildCannotResolveIfBecauseIsNullResult(impacterIds);
+                //                return createNotResolvable(impacterIds, null, "Cannot check if of if/then because it is null");
             }
             CalculationResult ifResult = calculateAttribute(orgaId, attribute, impacters, fakeConfig(orgaId, attribute, ifThen.getIfOp()));
             Boolean ifValue;
@@ -646,13 +648,14 @@ public class CalculatorService {
             } else if (ifResult.getResultValue() instanceof DoubleValue) {
                 ifValue = ((DoubleValue) ifResult.getResultValue()).getValue() != 0;
             } else {
-                return createNotResolvable(impacterIds, ifResult.getImpacterIds(), CANNOT_RESOLVE_IF_STATEMENT_AS_A_BOOLEAN);
+                impacters.addAll(ifResult.getImpacterIds());
+                return UtilsValue.buildCannotResolveIfStatementAsBoolean(impacters);
             }
             if (!ifValue) {
                 continue;
             }
             if (ifThen.getThenOp() == null) {
-                return createNotResolvable(impacterIds, null, "Cannot check then of if/then because it is null");
+                return UtilsValue.buildCannotResolveThenStatementBecauseIsNull(impacterIds);
             }
             CalculationResult thenResult = calculateAttribute(
                 orgaId,
@@ -663,19 +666,14 @@ public class CalculatorService {
             if (thenResult.getImpacterIds() != null) {
                 impacterIds.addAll(thenResult.getImpacterIds());
             }
-            if (thenResult.getResultValue() instanceof NotResolvableValue) {
-                return createNotResolvable(
-                    (NotResolvableValue) thenResult.getResultValue(),
-                    impacterIds,
-                    null,
-                    CANNOT_RESOLVE_THEN_STATEMENT
-                );
+            if (thenResult.getResultValue() instanceof ErrorValue) {
+                return UtilsValue.buildCannotResolveThenStatementResult(impacterIds, thenResult.getResultValue());
             }
             return thenResult;
         }
         Operation elseOp = op.getElseOp();
         if (elseOp == null) {
-            return createNotResolvable(impacterIds, null, "Cannot calculate else of if/then because it is null");
+            return UtilsValue.buildCannotResolveElseStatementResult(impacterIds);
         }
         CalculationResult elseResult = calculateAttribute(orgaId, attribute, impacters, fakeConfig(orgaId, attribute, elseOp));
         if (elseResult.getImpacterIds() != null) {
@@ -684,38 +682,38 @@ public class CalculatorService {
         return elseResult;
     }
 
-    private CalculationResult createNotResolvable(Set<String> impacterIds, Set<String> impacterIdsToAdd, String message) {
-        if (impacterIdsToAdd != null) {
-            impacterIds.addAll(impacterIdsToAdd);
-        }
-        return CalculationResult
-            .builder()
-            .resultValue(NotResolvableValue.builder().value(message).build())
-            .success(true)
-            .impacterIds(impacterIds)
-            .build();
-    }
+    //    private CalculationResult createNotResolvable(Set<String> impacterIds, Set<String> impacterIdsToAdd, String message) {
+    //        if (impacterIdsToAdd != null) {
+    //            impacterIds.addAll(impacterIdsToAdd);
+    //        }
+    //        return CalculationResult
+    //            .builder()
+    //            .resultValue(NotResolvableValue.builder().value(message).build())
+    //            .success(true)
+    //            .impacterIds(impacterIds)
+    //            .build();
+    //    }
 
-    private CalculationResult createNotResolvable(
-        NotResolvableValue wrapped,
-        Set<String> impacterIds,
-        Set<String> impacterIdsToAdd,
-        String message
-    ) {
-        if (impacterIdsToAdd != null) {
-            impacterIds.addAll(impacterIdsToAdd);
-        }
-        return CalculationResult
-            .builder()
-            .resultValue(NotResolvableValue.builder().value(wrapMessage(message, wrapped.getValue())).build())
-            .success(true)
-            .impacterIds(impacterIds)
-            .build();
-    }
-
-    public static String wrapMessage(String message, String wrapped) {
-        return message + " [" + wrapped + "]";
-    }
+    //    private CalculationResult createNotResolvable(
+    //        NotResolvableValue wrapped,
+    //        Set<String> impacterIds,
+    //        Set<String> impacterIdsToAdd,
+    //        String message
+    //    ) {
+    //        if (impacterIdsToAdd != null) {
+    //            impacterIds.addAll(impacterIdsToAdd);
+    //        }
+    //        return CalculationResult
+    //            .builder()
+    //            .resultValue(NotResolvableValue.builder().value(wrapMessage(message, wrapped.getValue())).build())
+    //            .success(true)
+    //            .impacterIds(impacterIds)
+    //            .build();
+    //    }
+    //
+    //    public static String wrapMessage(String message, String wrapped) {
+    //        return message + " [" + wrapped + "]";
+    //    }
 
     private AttributeConfig fakeConfig(String orgaId, Attribute attribute, Operation op) {
         return AttributeConfig
@@ -746,9 +744,10 @@ public class CalculatorService {
             } else if (att.getAttributeValue() != null) {
                 return att.getAttributeValue();
             } else {
-                return NotResolvableValue.builder().value(REFERENCED_ATTRIBUTE_HAS_NO_VALUE).build();
+                return UtilsValue.buildReferencedAttributeHasNoValue(att.getId());
             }
         }
-        return NotResolvableValue.builder().value("referenced attribute cannot be found").build();
+        return UtilsValue.buildReferencedAttributeCannotBeFound(attKey);
+        //        return NotResolvableValue.builder().value("referenced attribute cannot be found").build();
     }
 }

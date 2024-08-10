@@ -9,4 +9,12 @@ public abstract class AttributeValue<T> {
     public boolean isError() {
         return this instanceof ErrorValue;
     }
+
+    public boolean isNull() {
+        return getValue() == null;
+    }
+
+    public boolean isErrorRefToNull() {
+        return this instanceof ErrorValue && ((ErrorValue) this).isRefToNull();
+    }
 }

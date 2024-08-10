@@ -179,7 +179,7 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
                             CostLine.builder().quantity(0.).unit(Unit.j).build()
                         )
                     )
-                    .consoDefaultValueForNotResolvableItem(
+                    .defaultValue(
                         Map.of(
                             "co2",
                             CostLine.builder().quantity(0.).unit(tCo2).build(),
@@ -264,7 +264,7 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
                     .isConsolidable(true)
                     .configOrder(0)
                     .consoOperationType(OperationType.CONSO_SUM)
-                    .consoDefaultValueForNotResolvableItem(0.)
+                    .defaultValue(0.)
                     .consoOperation(RefOperation.builder().useCurrentSite(true).key("wDouble").build())
                     .campaignId("2023")
                     .build()
@@ -355,6 +355,15 @@ class ComputeServiceReCalculateTest extends AbstractComputeServiceTest {
             .forEach(attId -> {
                 Attribute att = attributeRepository.findByIdAndOrgaId("site:s1:" + attId + ":period:2023", COCA).get(0);
                 assertThat(att.getAttributeValue()).isInstanceOf(ErrorValue.class);
+            });
+    }
+
+    private void assertNullValues(String... atts) {
+        Arrays
+            .stream(atts)
+            .forEach(attId -> {
+                Attribute att = attributeRepository.findByIdAndOrgaId("site:s1:" + attId + ":period:2023", COCA).get(0);
+                assertThat(att.isNull()).isTrue();
             });
     }
 

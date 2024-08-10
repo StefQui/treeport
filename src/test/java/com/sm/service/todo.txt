@@ -1,0 +1,11 @@
+add isNull() sur attribute.java qui check attributeValue == null or attributeValue.value == null
+
+ajouter nullValues sur aggInfo
+
+remplacer defaultValueForNotResolvable par defaultValue
+
+idem dans les config "conso"
+
+tester null values avec et sans defaultValue, sur conso
+
+tester null values avec et sans defaultValue, sur sum et sumChildren

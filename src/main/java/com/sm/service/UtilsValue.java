@@ -173,11 +173,11 @@ public class UtilsValue {
     }
 
     public static AttributeValue buildReferencedAttributeHasNoValue(String attId) {
-        return ErrorValue.builder().value(format("Referenced attribute has no value: %s", attId)).build();
+        return ErrorValue.builder().isRefToNull(true).value(format("Referenced attribute has no value: %s", attId)).build();
     }
 
     public static AttributeValue buildReferencedAttributeCannotBeFound(String attKey) {
-        return ErrorValue.builder().value(format("Referenced attribute cannot be found for key: %s", attKey)).build();
+        return ErrorValue.builder().isRefToNull(true).value(format("Referenced attribute cannot be found for key: %s", attKey)).build();
     }
 
     public static CalculationResult buildCannotCalculateSumResult(Set<String> impacterIds, ErrorValue error) {

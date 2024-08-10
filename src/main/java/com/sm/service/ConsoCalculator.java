@@ -108,13 +108,13 @@ public class ConsoCalculator<T> {
 
         try {
             AggInfo aggInfo = AggInfo.builder().build();
-            Boolean consolidatedValueIsMissing = false;
+            Boolean consolidatedValueIsNull = false;
             Boolean consolidatedValueIsInError = false;
             AttributeValue consolidatedAttributeValueToApply = consolidatedAttributeValue;
             AtomicBoolean atLeastOnChildValueIsNotResolvable = new AtomicBoolean(false);
-            if (consolidatedAttributeValue == null) {
-                aggInfo.getErrors().add(attId);
-                consolidatedValueIsMissing = true;
+            if (consolidatedAttributeValue.isErrorRefToNull()) {
+                aggInfo.getNullValues().add(attId);
+                consolidatedValueIsNull = true;
             } else if (consolidatedAttributeValue.isError()) {
                 aggInfo.getErrors().add(attId);
                 consolidatedValueIsInError = true;
@@ -131,6 +131,7 @@ public class ConsoCalculator<T> {
                 })
                 .peek(att -> {
                     aggInfo.getErrors().addAll(att.getAggInfo().getErrors());
+                    aggInfo.getNullValues().addAll(att.getAggInfo().getNullValues());
                     aggInfo.setWithValues(aggInfo.getWithValues() + att.getAggInfo().getWithValues());
                 })
                 .map(Attribute::getAttributeValue)
@@ -141,10 +142,10 @@ public class ConsoCalculator<T> {
                     return attValue;
                 })
                 .map(attValue -> {
-                    if (!(attValue instanceof ErrorValue) || config.getConsoDefaultValueForNotResolvableItem() == null) {
+                    if (!(attValue instanceof ErrorValue) || config.getDefaultValue() == null) {
                         return attValue;
                     }
-                    return buildDefaultValue(config.getConsoDefaultValueForNotResolvableItem());
+                    return buildDefaultValue(config.getDefaultValue());
                 })
                 .collect(Collectors.toList());
 
@@ -159,10 +160,10 @@ public class ConsoCalculator<T> {
             //                        .generateErrorValue("attribute to consolidate is null, check your config"));
             //                return;
             //            }
-            if (consolidatedValueIsMissing || consolidatedValueIsInError) {
+            if (consolidatedValueIsNull || consolidatedValueIsInError) {
                 //                attribute.getAggInfo().getNotResolvables().add(consolidatedAttribute.getId());
-                if (config.getConsoDefaultValueForNotResolvableItem() != null) {
-                    attVals.add(buildDefaultValue(config.getConsoDefaultValueForNotResolvableItem()));
+                if (config.getDefaultValue() != null) {
+                    attVals.add(buildDefaultValue(config.getDefaultValue()));
                 } else {
                     return UtilsValue.buildValueToConsolidateIsNullOrInError(impacterIds, aggInfo);
                 }
@@ -198,14 +199,14 @@ public class ConsoCalculator<T> {
         }
     }
 
-    private AttributeValue buildDefaultValue(Object defaultValueForNotResolvableItem) {
-        if (defaultValueForNotResolvableItem instanceof Double) {
-            return DoubleValue.builder().value((Double) defaultValueForNotResolvableItem).build();
-        } else if (defaultValueForNotResolvableItem instanceof Map) {
-            CostValue a = CostValue.builder().value((Map<String, CostLine>) defaultValueForNotResolvableItem).build();
+    private AttributeValue buildDefaultValue(Object defaultValue) {
+        if (defaultValue instanceof Double) {
+            return DoubleValue.builder().value((Double) defaultValue).build();
+        } else if (defaultValue instanceof Map) {
+            CostValue a = CostValue.builder().value((Map<String, CostLine>) defaultValue).build();
             return a;
         }
-        return UtilsValue.generateErrorValue("Cannot generate default value for " + defaultValueForNotResolvableItem);
+        return UtilsValue.generateErrorValue("Cannot generate default value for " + defaultValue);
     }
     //    private AttributeValue applyDefaultValue(AttributeConfig config, AttributeValue attValue) {
     //        if (!(attValue instanceof NotResolvableValue) || config.getDefaultValueForNotResolvableItem() == null) {

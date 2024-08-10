@@ -15,6 +15,9 @@ public class AggInfo {
     @Builder.Default
     private List<String> errors = new ArrayList<>();
 
+    @Builder.Default
+    private List<String> nullValues = new ArrayList<>();
+
     public enum AttributeType {
         LONG,
         BOOLEAN,

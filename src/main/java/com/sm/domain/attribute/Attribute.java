@@ -10,6 +10,7 @@ import lombok.*;
 import lombok.experimental.NonFinal;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -114,5 +115,10 @@ public class Attribute implements Serializable {
             return "-";
         }
         return id.split(":")[ASSET_ID_FRAGMENT_POSITION_FROM_WITH_ONE];
+    }
+
+    @Transient
+    public boolean isNull() {
+        return getAttributeValue() == null || getAttributeValue().isNull();
     }
 }

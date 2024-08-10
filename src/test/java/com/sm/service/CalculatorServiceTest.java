@@ -28,6 +28,7 @@ import static com.sm.service.ComputeTestUtils.sumConfig;
 import static com.sm.service.ComputeTestUtils.sumCostRefConfig;
 import static com.sm.service.InitialLoadService.COCA;
 import static com.sm.service.UtilsValue.generateErrorValue;
+import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -331,31 +332,99 @@ class CalculatorServiceTest {
 
         @Test
         @SneakyThrows
-        public void consoSumByKeyOperation_toSiteIsNotResolvable_withDefaultValueForNotResolvable() {
+        public void consoSumByKeyOperation_toSiteIsNullAttribute_withNoDefaultValue() {
             givenSomeChildrenValues();
 
             when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA))
-                .thenReturn(
-                    of(
-                        Attribute
-                            .builder()
-                            .attributeValue(UtilsValue.generateErrorValue("nrToSite"))
-                            .id("site:s1:toSite:period:2023")
-                            .build()
-                    )
-                );
+                .thenReturn(of(Attribute.builder().attributeValue(null).id("site:s1:toSite:period:2023").build()));
+
+            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumBykeyConfig("toSite"));
+
+            assertAttValueIsLike(
+                calc,
+                null,
+                ErrorValue.class,
+                AggInfo
+                    .builder()
+                    .withValues(5)
+                    .nullValues(List.of("site:s1:toConso:period:2023"))
+                    .errors(List.of("err1", "err2", "err3"))
+                    .build()
+            );
+            assertImpactersAreOk(calc);
+        }
+
+        @Test
+        @SneakyThrows
+        public void consoSumByKeyOperation_toSiteIsNullAttributeValue_withNoDefaultValue() {
+            givenSomeChildrenValues();
+
+            when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA)).thenReturn(Optional.empty());
+
+            CalculationResult calc = doCalculateAttribute("site:s1:toConso:period:2023", consoSumBykeyConfig("toSite"));
+
+            assertAttValueIsLike(
+                calc,
+                null,
+                ErrorValue.class,
+                AggInfo
+                    .builder()
+                    .withValues(5)
+                    .nullValues(List.of("site:s1:toConso:period:2023"))
+                    .errors(List.of("err1", "err2", "err3"))
+                    .build()
+            );
+            assertImpactersAreOk(calc);
+        }
+
+        @Test
+        @SneakyThrows
+        public void consoSumByKeyOperation_toSiteIsNullAttribute_withDefaultValue() {
+            givenSomeChildrenValues();
+
+            when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA)).thenReturn(empty());
 
             CalculationResult calc = doCalculateAttribute(
                 "site:s1:toConso:period:2023",
-                consoSumBykeyConfig("toSite").toBuilder().consoDefaultValueForNotResolvableItem(0.).build()
+                consoSumBykeyConfig("toSite").toBuilder().defaultValue(0.).build()
             );
             assertAttValueIsLike(
                 calc,
                 12.,
                 DoubleValue.class,
-                AggInfo.builder().withValues(5).errors(List.of("site:s1:toConso:period:2023", "err1", "err2", "err3")).build()
+                AggInfo
+                    .builder()
+                    .withValues(5)
+                    .nullValues(List.of("site:s1:toConso:period:2023"))
+                    .errors(List.of("err1", "err2", "err3"))
+                    .build()
             );
             assertImpactersAreOk(calc);
+        }
+
+        @Test
+        @SneakyThrows
+        public void consoSumByKeyOperation_toSiteIsNullAttributeValue_withDefaultValue() {
+            givenSomeChildrenValues();
+
+            when(attributeService.findByIdAndOrgaId("site:s1:toSite:period:2023", COCA))
+                .thenReturn(of(Attribute.builder().attributeValue(null).id("site:s1:toSite:period:2023").build()));
+
+            CalculationResult calc = doCalculateAttribute(
+                "site:s1:toConso:period:2023",
+                consoSumBykeyConfig("toSite").toBuilder().defaultValue(0.).build()
+            );
+            assertAttValueIsLike(
+                calc,
+                12.,
+                DoubleValue.class,
+                AggInfo
+                    .builder()
+                    .withValues(5)
+                    .nullValues(List.of("site:s1:toConso:period:2023"))
+                    .errors(List.of("err1", "err2", "err3"))
+                    .build()
+            );
         }
 
         @Test
@@ -426,7 +495,7 @@ class CalculatorServiceTest {
 
         @Test
         @SneakyThrows
-        public void consoSumByKeyOperation_oneChildrenValueIsNotResolvable_withDefaultValueForNotResolvable() {
+        public void consoSumByKeyOperation_oneChildrenValueIsError_withDefaultValue() {
             when(attributeService.getAttributesForSiteChildrenAndConfig("site:s1:toConso:period:2023", "toConso", COCA))
                 .thenReturn(
                     List.of(
@@ -449,7 +518,7 @@ class CalculatorServiceTest {
 
             CalculationResult calc = doCalculateAttribute(
                 "site:s1:toConso:period:2023",
-                consoSumBykeyConfig("toSite").toBuilder().consoDefaultValueForNotResolvableItem(0.).build()
+                consoSumBykeyConfig("toSite").toBuilder().defaultValue(0.).build()
             );
             assertAttValueIsLike(
                 calc,

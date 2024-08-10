@@ -105,8 +105,6 @@ public class AttributeConfig implements Serializable {
     @Field("siteId")
     private String siteId;
 
-    private Object consoDefaultValueForNotResolvableItem;
-
     private Object defaultValue;
 
     public OperationType getOperationType() {

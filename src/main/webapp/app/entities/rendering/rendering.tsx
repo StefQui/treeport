@@ -15,6 +15,7 @@ import { SmDatasetTable } from './sm-dataset-table';
 import { SmVerticalPanel } from './sm-vertical-panel';
 import { useRefToLocalContext } from './parameter-definition';
 import { SmDatasetTree } from './sm-dataset-tree';
+import { SmAgGrid } from './sm-ag-grid';
 
 export const initialFilter: ValueInState = { loading: true, value: null };
 
@@ -38,6 +39,8 @@ export const MyElem = props => {
     switch (params.componentType) {
       case 'SmText':
         return <SmText {...params}></SmText>;
+      case 'SmAgGrid':
+        return <SmAgGrid {...params}></SmAgGrid>;
       case 'SmInput':
         return <SmInput {...params}></SmInput>;
       case 'SmRefToResource':

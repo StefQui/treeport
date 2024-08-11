@@ -45,6 +45,8 @@ public class InitialLoadService {
     public static final String R_DT_TREE = "rDtTree";
     public static final String R_PAGEDS = "rpageDs";
     public static final String R_PAGEDS_WITH_FORM = "rpageDsWithForm";
+    public static final String R_PAGE_AG_GRID = "rpageAgGrid";
+    public static final String R_AG_GRID = "rAgGrid";
     public static final String R_PAGEDS_LIST = "rpageDsList";
     public static final String R_PAGEDT_TREE = "rpageDtTree";
     public static final String R_FORM = "rform";
@@ -104,6 +106,12 @@ public class InitialLoadService {
 
     @Value("classpath:json/rpageDsWithForm.json")
     org.springframework.core.io.Resource rpageDsWithFormSourceFile;
+
+    @Value("classpath:json/rpageDsWithForm.json")
+    org.springframework.core.io.Resource rpageAgGrid;
+
+    @Value("classpath:json/rpageDsWithForm.json")
+    org.springframework.core.io.Resource rAgGrid;
 
     @Value("classpath:json/rpageDsList.json")
     org.springframework.core.io.Resource rpageDsListSourceFile;
@@ -383,6 +391,28 @@ public class InitialLoadService {
                 .type(RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageDsWithFormSourceFile))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_PAGE_AG_GRID)
+                .name("Resource page agGrid")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rpageAgGrid))
+                .childrenIds(List.of())
+                .build()
+        );
+        resourceRepository.save(
+            Resource
+                .builder()
+                .id(R_AG_GRID)
+                .name("Resource agGrid")
+                .type(RESOURCE)
+                .orgaId(COCA)
+                .content(UtilsResourceFile.asString(rAgGrid))
                 .childrenIds(List.of())
                 .build()
         );

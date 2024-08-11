@@ -1200,6 +1200,27 @@ const rds: ComponentResource = {
   parameters: [],
 };
 
+const rAgGrid: ComponentResource = {
+  content: {
+    componentType: 'verticalPanel',
+    path: 'vp12',
+    border: true,
+    items: [
+      {
+        componentType: 'SmAgGrid',
+        path: 'vp13',
+        col: 12,
+        params: {
+          textValue: {
+            ruleType: 'constant',
+            constValue: 'Test aggrid',
+          },
+        },
+      },
+    ],
+  },
+};
+
 const rform: ComponentResource = {
   content: {
     componentType: 'verticalPanel',
@@ -1520,6 +1541,27 @@ const rpageDtTree: ComponentResource = {
   parameters: [],
 };
 
+const rpageAgGrid: ComponentResource = {
+  content: {
+    componentType: 'page',
+    path: 'page-dt',
+    params: {
+      layoutResourceId: 'rlayout',
+      layoutElements: [
+        {
+          layoutElementId: 'menuTop',
+          resourceId: 'rmenuTop',
+        },
+        {
+          layoutElementId: 'theContent',
+          resourceId: 'rAgGrid',
+        },
+      ],
+    },
+  },
+  parameters: [],
+};
+
 export const stubbedResources = {
   r3,
   r4,
@@ -1534,8 +1576,10 @@ export const stubbedResources = {
   rDsWithForm,
   rDsList,
   rDtTree,
+  rAgGrid,
   rpageDs,
   rpageDsWithForm,
+  rpageAgGrid,
   rpageDsList,
   rpageDtTree,
 };

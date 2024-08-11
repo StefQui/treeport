@@ -231,6 +231,9 @@ export const SmMenu = props => {
             <Nav.Link as={NavLink} to="/contact">
               Contact
             </Nav.Link>
+            <Nav.Link as={NavLink} to="/coca/render/rpageAgGrid">
+              Aggrid
+            </Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

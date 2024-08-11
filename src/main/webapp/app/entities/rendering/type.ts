@@ -66,6 +66,11 @@ export type SmTextResourceContent = CommonContent & {
   params: TextParams;
 };
 
+export type SmAgGridResourceContent = CommonContent & {
+  componentType: 'SmAgGrid';
+  params: TextParams;
+};
+
 export type DataSetTableType = 'dataSetTable';
 export type DataSetResourceContent = CommonContent & {
   componentType: DataSetTableType;
@@ -131,6 +136,7 @@ export type VerticalPanelResourceElement = CommonContent & {
 
 export type ComponentResourceContent =
   | SmTextResourceContent
+  | SmAgGridResourceContent
   | DataSetResourceContent
   | DataSetListResourceContent
   | DataSetTreeResourceContent

@@ -1221,6 +1221,72 @@ const rAgGrid: ComponentResource = {
   },
 };
 
+const rAgGridServer: ComponentResource = {
+  content: {
+    componentType: 'verticalPanel',
+    path: 'vp-agg-tree',
+    border: true,
+    items: [
+      {
+        componentType: 'SmText',
+        path: 'const',
+        params: {
+          textValue: {
+            ruleType: 'constant',
+            constValue: 'Exemple de Aggrid tree',
+          },
+        },
+        parameterDefinitions: [
+          {
+            target: {
+              parameterKey: 'mydt1',
+              targetType: 'currentLocalContextPath',
+            },
+            definition: {
+              ruleType: 'datatree',
+              columnDefinitions: [
+                { columnType: 'ID' },
+                { columnType: 'NAME' },
+                { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+                { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+                { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
+                { columnType: 'BUTTON', action: 'select' },
+              ],
+              // filter: {
+              //   ruleType: 'refToLocalContext',
+              //   path: '',
+              //   sourceParameterKey: 'theFilter',
+              // },
+              initialPaginationState: {
+                activePage: 1,
+                itemsPerPage: 5,
+                sort: 'id',
+                order: 'asc',
+              },
+              valueFilter: {
+                filterType: 'AND',
+                items: [],
+              },
+            },
+          },
+        ],
+      },
+      {
+        componentType: 'aggridTree',
+        path: 'aggridtree',
+        params: {
+          data: {
+            ruleType: 'refToLocalContext',
+            path: '',
+            sourceParameterKey: 'mydt1',
+          },
+          resourceIdForDetail: 'siteDetail',
+        },
+      },
+    ],
+  },
+};
+
 const rform: ComponentResource = {
   content: {
     componentType: 'verticalPanel',
@@ -1562,6 +1628,27 @@ const rpageAgGrid: ComponentResource = {
   parameters: [],
 };
 
+const rpageAgGridServer: ComponentResource = {
+  content: {
+    componentType: 'page',
+    path: 'page-dt',
+    params: {
+      layoutResourceId: 'rlayout',
+      layoutElements: [
+        {
+          layoutElementId: 'menuTop',
+          resourceId: 'rmenuTop',
+        },
+        {
+          layoutElementId: 'theContent',
+          resourceId: 'rAgGridServer',
+        },
+      ],
+    },
+  },
+  parameters: [],
+};
+
 export const stubbedResources = {
   r3,
   r4,
@@ -1577,9 +1664,11 @@ export const stubbedResources = {
   rDsList,
   rDtTree,
   rAgGrid,
+  rAgGridServer,
   rpageDs,
   rpageDsWithForm,
   rpageAgGrid,
+  rpageAgGridServer,
   rpageDsList,
   rpageDtTree,
 };

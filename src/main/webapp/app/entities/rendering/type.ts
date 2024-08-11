@@ -89,6 +89,12 @@ export type DataSetTreeResourceContent = CommonContent & {
   params: DataSetTreeParams;
 };
 
+export type AggridTreeType = 'aggridTree';
+export type AggridTreeResourceContent = CommonContent & {
+  componentType: AggridTreeType;
+  params: DataSetTreeParams;
+};
+
 export type SmInputResourceContent = CommonContent & {
   componentType: 'SmInput';
   params: SmInputParams;
@@ -140,6 +146,7 @@ export type ComponentResourceContent =
   | DataSetResourceContent
   | DataSetListResourceContent
   | DataSetTreeResourceContent
+  | AggridTreeResourceContent
   | SmInputResourceContent
   | SmRefToResourceResourceContent
   | FormResourceContent

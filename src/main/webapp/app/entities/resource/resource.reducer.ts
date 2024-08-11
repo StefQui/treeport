@@ -20,6 +20,7 @@ const apiUrl = 'api/resources';
 
 export const getEntities = createAsyncThunk('resource/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
   const requestUrl = `${apiUrl}?${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
+  console.log('requestUrl===', requestUrl);
   return axios.get<IResource[]>(requestUrl);
 });
 

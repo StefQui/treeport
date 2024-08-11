@@ -418,10 +418,15 @@ const sendValueTo2 = (state, mainTarget: MainTarget, secondaryTarget: SecondaryT
 // };
 
 const getStubbedOrNot = (resourceId, data) => {
-  const stubbed = true;
+  const stubbed = false;
   if (!stubbed) {
-    return data;
+    console.log('data.contentdata.content', data.content);
+    return {
+      id: data.id,
+      content: JSON.stringify({ content: JSON.parse(data.content) }),
+    };
   }
+  console.log('data.contentdata.content', JSON.stringify(stubbedResources[resourceId]));
   return {
     id: resourceId,
     content: JSON.stringify(stubbedResources[resourceId]),

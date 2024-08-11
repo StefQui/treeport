@@ -1,7 +1,7 @@
 export function getData() {
   var rowData = [
       {
-          orgHierarchy: ['Erica Rogers'],
+          orgHierarchy: ['Stephane Rogers'],
           jobTitle: 'CEO',
           employmentType: 'Permanent',
       },

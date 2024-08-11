@@ -39,6 +39,8 @@ export const SmRefToResource = (props: SmRefToResourceProps) => {
 
   handleParameterDefinitions(params, props);
 
+  console.log('resourceContentresourceContentresourceContentresourceContent', resource);
+
   if (resourceContent) {
     console.log('resourceContent', props.itemParam);
     return (
@@ -54,7 +56,7 @@ export const SmRefToResource = (props: SmRefToResourceProps) => {
   }
   return (
     <div>
-      <span>no val for SmRefToResource</span>
+      <span>no val for SmRefToResource {JSON.stringify(props)}</span>
     </div>
   );
 };

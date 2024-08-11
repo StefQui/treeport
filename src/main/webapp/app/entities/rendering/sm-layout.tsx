@@ -234,6 +234,9 @@ export const SmMenu = props => {
             <Nav.Link as={NavLink} to="/coca/render/rpageAgGrid">
               Aggrid
             </Nav.Link>
+            <Nav.Link as={NavLink} to="/coca/render/rpageAgGridServer">
+              AggSeerver
+            </Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

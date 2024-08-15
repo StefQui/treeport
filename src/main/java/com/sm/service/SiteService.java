@@ -49,10 +49,30 @@ public class SiteService {
      * @param siteDTO the entity to save.
      * @return the persisted entity.
      */
+    /*
     public SiteDTO save(SiteDTO siteDTO) {
         log.debug("Request to save Site : {}", siteDTO);
         Site site = siteMapper.toEntity(siteDTO);
+        if (site.getParentId() != null) {
+            parent = siteRepository.findByOrgaIdAndParentId();
+        }
         site = siteRepository.save(site);
+        return siteMapper.toDto(site);
+    }
+*/
+    public SiteDTO save(SiteDTO siteDTO, String orgaId) {
+        log.debug("Request to save Site : {}", siteDTO);
+        Site site = siteMapper.toEntity(siteDTO);
+        if (site.getParentId() != null) {
+            site = siteRepository.save(site);
+            List<Site> parents = siteRepository.findByIdAndOrgaId(site.getParentId(), orgaId);
+            if (!parents.get(0).getChildrenIds().contains(site.getId())) {
+                parents.get(0).getChildrenIds().add(site.getId());
+                siteRepository.save(parents.get(0));
+            }
+        } else {
+            site = siteRepository.save(site);
+        }
         return siteMapper.toDto(site);
     }
 

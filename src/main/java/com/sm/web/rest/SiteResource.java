@@ -27,7 +27,7 @@ import tech.jhipster.web.util.ResponseUtil;
  * REST controller for managing {@link Site}.
  */
 @RestController
-@RequestMapping("/api/sites")
+@RequestMapping("/api/orga/{orgaId}/sites")
 public class SiteResource {
 
     private static final String ENTITY_NAME = "site";
@@ -51,14 +51,14 @@ public class SiteResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<SiteDTO> createSite(@RequestBody SiteDTO siteDTO) throws URISyntaxException {
+    public ResponseEntity<SiteDTO> createSite(@RequestBody SiteDTO siteDTO, @PathVariable String orgaId) throws URISyntaxException {
         log.debug("REST request to save Site : {}", siteDTO);
         /*
         if (siteDTO.getId() != null) {
             throw new BadRequestAlertException("A new site cannot already have an ID", ENTITY_NAME, "idexists");
         }
 */
-        SiteDTO result = siteService.save(siteDTO);
+        SiteDTO result = siteService.save(siteDTO, orgaId);
         return ResponseEntity
             .created(new URI("/api/sites/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId()))

@@ -13,11 +13,12 @@ export const SiteDeleteDialog = () => {
   const pageLocation = useLocation();
   const navigate = useNavigate();
   const { id } = useParams<'id'>();
+  const { orgaId } = useParams<'orgaId'>();
 
   const [loadModal, setLoadModal] = useState(false);
 
   useEffect(() => {
-    dispatch(getEntity(id));
+    dispatch(getEntity({ id, orgaId }));
     setLoadModal(true);
   }, []);
 

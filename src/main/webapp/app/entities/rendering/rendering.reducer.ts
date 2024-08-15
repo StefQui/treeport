@@ -35,22 +35,24 @@ const initialState: RenderingState = {
   currentPageId: null,
 };
 
-const siteApiUrl = 'api/sites';
+// const siteApiUrlzzzz = `api/sites${ff}`;
 const attributeApiUrl = 'api/attributes';
-const resourceApiUrl = 'api/resources';
+export const resourceApiUrl = 'api/resources';
 const computeApiUrl = 'api/compute';
 
 // Actions
 
-export const getSites = createAsyncThunk(`rendering/fetch_site_list`, async ({ page, size, sort }: IQueryParams) => {
-  const requestUrl = `${siteApiUrl}?type=SITE&${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
+export const getSites = createAsyncThunk(`rendering/fetch_site_list`, async ({ page, size, sort, orgaId }: IQueryParams) => {
+  const requestUrl = `api/orga/${orgaId}/sites?type=SITE&${
+    sort ? `page=${page}&size=${size}&sort=${sort}&` : ''
+  }cacheBuster=${new Date().getTime()}`;
   return axios.get<ISite[]>(requestUrl);
 });
 
 export const searchResources = createAsyncThunk(
   `rendering/search`,
   async ({ searchModel, orgaId }: { searchModel: ResourceSearchModel; orgaId: string } & TargetInfo) => {
-    const requestUrl = `${resourceApiUrl}/${orgaId}/search`;
+    const requestUrl = `${resourceApiUrl}/orga/${orgaId}/search`;
     return axios.post<IResourceWithValue[]>(requestUrl, searchModel);
   },
 );
@@ -60,10 +62,13 @@ export const getResourceForPageResources = createAsyncThunk(`rendering/fetch_res
   return axios.get<IResourceWithValue[]>(requestUrl);
 });
 
-export const getSiteForRenderingStateParameters = createAsyncThunk(`rendering/fetch_site`, async ({ siteId }: FetchSiteRequestModel) => {
-  const requestUrl = `${siteApiUrl}/${siteId}`;
-  return axios.get<ISite[]>(requestUrl);
-});
+export const getSiteForRenderingStateParameters = createAsyncThunk(
+  `rendering/fetch_site`,
+  async ({ siteId, orgaId }: FetchSiteRequestModel) => {
+    const requestUrl = `api/orga/${orgaId}/sites/${siteId}`;
+    return axios.get<ISite[]>(requestUrl);
+  },
+);
 
 export const getFieldAttributesAndConfig = createAsyncThunk(
   `rendering/fetch_fieldsAttributesAndConfigs`,
@@ -463,7 +468,7 @@ export type EntitiesValue = {
 };
 
 function treeBuild(result: TreeNode, value: EntitiesValue | 'loading' | 'close' | 'open', treePath: string[], index: number): TreeNode {
-  console.log('treeBuild...', result, index, treePath);
+  console.log('treeBuild...', result, index, treePath, value);
   if (index >= treePath.length) {
     console.log('treeBuild111', value);
     if (value === 'loading') {
@@ -626,7 +631,7 @@ export const setAnyInLocalContextState2 = (
   secondaryTarget: SecondaryTarget,
   value: any,
 ): RenderingState => {
-  console.log('setInLocalContextState', parameterKey, secondaryTarget);
+  console.log('setInLocalContextState', parameterKey, secondaryTarget, value);
 
   return {
     ...state,

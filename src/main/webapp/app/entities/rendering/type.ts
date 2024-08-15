@@ -92,7 +92,7 @@ export type DataSetTreeResourceContent = CommonContent & {
 export type AggridTreeType = 'aggridTree';
 export type AggridTreeResourceContent = CommonContent & {
   componentType: AggridTreeType;
-  params: DataSetTreeParams;
+  params: DataSetTreeParams2;
 };
 
 export type SmInputResourceContent = CommonContent & {
@@ -187,7 +187,7 @@ export type RENDERING_CONTEXT = { [key: string]: ValueInState };
 export type TargetInfo = { mainTarget: MainTarget; secondaryTarget: SecondaryTarget };
 
 export type SearchResourceRequestModel = { searchModel: ResourceSearchModel; orgaId: string } & TargetInfo;
-export type FetchSiteRequestModel = { siteId: string } & TargetInfo;
+export type FetchSiteRequestModel = { siteId: string; orgaId: string } & TargetInfo;
 
 // export const ELEM_LAYOUT_ELEMENT = 'layoutElement';
 // export const ELEM_REF_TO_RESOURCE_ELEMENT = 'SmRefToResource';
@@ -353,6 +353,13 @@ export type DataSetListParams = {
 export type DataSetTreeParams = {
   data: RuleDefinition;
   resourceIdForDetail?: string;
+};
+
+export type DataSetTreeParams2 = {
+  data: RuleDefinition;
+  resourceIdForDetail?: string;
+  columnDefinitions: ColumnDefinition[];
+  valueFilter: ResourceFilter;
 };
 
 export type ResourcePropertyFilterTargetType = 'name' | 'id' | 'parentId';

@@ -30,6 +30,7 @@ public class SiteMapper {
             .name(a.getName())
             .content(a.getContent())
             .parent(toBasicDto(a.getParentId()))
+            .childrenCount((long) a.getChildrenIds().size())
             .childrens(toDtos(a.getChildrenIds()))
             .tags(tagMapper.toDto(a.getTags()))
             .build();
@@ -84,6 +85,7 @@ public class SiteMapper {
             .builder()
             .id(siteDTO.getId())
             .name(siteDTO.getName())
+            .childrenCount((long) siteWithValues.getChildrenIds().size())
             .attributeValues(
                 siteWithValues
                     .getAttributeValues()

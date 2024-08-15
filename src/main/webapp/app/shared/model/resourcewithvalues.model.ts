@@ -10,6 +10,7 @@ export interface IResourceWithValue {
   orga?: IOrganisation | null;
   parent?: IResource | null;
   childrens?: IResource[] | null;
+  childrenCount?: number | null;
 }
 
 export const defaultValue: Readonly<IResourceWithValue> = {};

@@ -21,6 +21,7 @@ export const SiteUpdate = () => {
 
   const { id } = useParams<'id'>();
   const isNew = id === undefined;
+  const { orgaId } = useParams<'orgaId'>();
 
   const organisations = useAppSelector(state => state.organisation.entities);
   const sites = useAppSelector(state => state.site.entities);
@@ -37,7 +38,7 @@ export const SiteUpdate = () => {
     if (isNew) {
       dispatch(reset());
     } else {
-      dispatch(getEntity(id));
+      dispatch(getEntity({ id, orgaId }));
     }
 
     dispatch(getOrganisations({}));

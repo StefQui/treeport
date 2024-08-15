@@ -1281,6 +1281,18 @@ const rAgGridServer: ComponentResource = {
             sourceParameterKey: 'mydt1',
           },
           resourceIdForDetail: 'siteDetail',
+          columnDefinitions: [
+            { columnType: 'ID' },
+            { columnType: 'NAME' },
+            { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+            { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+            { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
+            { columnType: 'BUTTON', action: 'select' },
+          ],
+          valueFilter: {
+            filterType: 'AND',
+            items: [],
+          },
         },
       },
     ],

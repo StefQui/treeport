@@ -13,9 +13,10 @@ export const SiteDetail = () => {
   const dispatch = useAppDispatch();
 
   const { id } = useParams<'id'>();
+  const { orgaId } = useParams<'orgaId'>();
 
   useEffect(() => {
-    dispatch(getEntity(id));
+    dispatch(getEntity({ id, orgaId }));
   }, []);
 
   const siteEntity = useAppSelector(state => state.site.entity);

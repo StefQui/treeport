@@ -29,6 +29,7 @@ import {
   DatatreeDefinition,
 } from './type';
 import { enrichToMainTarget, handleDataTree } from './datatree';
+import { useParams } from 'react-router';
 
 export const useRefToLocalContextValue = (currentLocalContextPath, localContextPath, parameterKey, parameterProperty): ValueInState => {
   return useAppSelector((state: RenderingSliceState) => {
@@ -335,6 +336,7 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
 
 const handleRefToSite = (target: ParameterTarget, refToSiteDefinition: RefToSiteDefinition, props) => {
   const dispatch = useAppDispatch();
+  const { orgaId } = useParams<'orgaId'>();
   const siteIdRef = refToSiteDefinition.sourceSiteId;
   if (!siteIdRef) {
     return {
@@ -353,6 +355,7 @@ const handleRefToSite = (target: ParameterTarget, refToSiteDefinition: RefToSite
           secondaryTarget: {
             secondaryTargetType: 'anyValueInTarget',
           },
+          orgaId,
         }),
       );
       // });

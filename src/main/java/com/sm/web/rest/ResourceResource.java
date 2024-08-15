@@ -192,7 +192,7 @@ public class ResourceResource {
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
     }
 
-    @PostMapping("/{orgaId}/search")
+    @PostMapping("/orga/{orgaId}/search")
     public ResponseEntity<List> search(@PathVariable(value = "orgaId") final String orgaId, @RequestBody ResourceSearchDTO resourceSearch)
         throws URISyntaxException {
         log.debug("REST search resource : {}", resourceSearch.toString());

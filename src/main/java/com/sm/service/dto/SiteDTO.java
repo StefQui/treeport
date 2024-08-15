@@ -29,6 +29,8 @@ public class SiteDTO implements Serializable {
 
     private SiteDTO parent;
 
+    private Long childrenCount;
+
     @Builder.Default
     private List<SiteDTO> childrens = new ArrayList<>();
 

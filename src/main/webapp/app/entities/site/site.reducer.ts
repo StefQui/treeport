@@ -3,6 +3,7 @@ import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
 import { cleanEntity } from 'app/shared/util/entity-utils';
 import { IQueryParams, createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 import { ISite, defaultValue } from 'app/shared/model/site.model';
+import { useParams } from 'react-router';
 
 const initialState: EntityState<ISite> = {
   loading: false,
@@ -14,19 +15,17 @@ const initialState: EntityState<ISite> = {
   updateSuccess: false,
 };
 
-const apiUrl = 'api/sites';
-
 // Actions
 
-export const getEntities = createAsyncThunk('site/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
-  const requestUrl = `${apiUrl}?${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
+export const getEntities = createAsyncThunk('site/fetch_entity_list', async ({ page, size, sort, orgaId }: IQueryParams) => {
+  const requestUrl = `api/orga/${orgaId}/sites?${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
   return axios.get<ISite[]>(requestUrl);
 });
 
 export const getEntity = createAsyncThunk(
   'site/fetch_entity',
-  async (id: string | number) => {
-    const requestUrl = `${apiUrl}/${id}`;
+  async ({ id, orgaId }: { id: string | number; orgaId: string }) => {
+    const requestUrl = `api/orga/${orgaId}/sites/${id}`;
     return axios.get<ISite>(requestUrl);
   },
   { serializeError: serializeAxiosError },
@@ -34,8 +33,8 @@ export const getEntity = createAsyncThunk(
 
 export const createEntity = createAsyncThunk(
   'site/create_entity',
-  async (entity: ISite, thunkAPI) => {
-    const result = await axios.post<ISite>(apiUrl, cleanEntity(entity));
+  async ({ entity, orgaId }: { entity: ISite; orgaId: string }, thunkAPI) => {
+    const result = await axios.post<ISite>(`api/orga/${orgaId}/sites`, cleanEntity(entity));
     thunkAPI.dispatch(getEntities({}));
     return result;
   },
@@ -44,8 +43,8 @@ export const createEntity = createAsyncThunk(
 
 export const updateEntity = createAsyncThunk(
   'site/update_entity',
-  async (entity: ISite, thunkAPI) => {
-    const result = await axios.put<ISite>(`${apiUrl}/${entity.id}`, cleanEntity(entity));
+  async ({ entity, orgaId }: { entity: ISite; orgaId: string }, thunkAPI) => {
+    const result = await axios.put<ISite>(`api/orga/${orgaId}/sites/${entity.id}`, cleanEntity(entity));
     thunkAPI.dispatch(getEntities({}));
     return result;
   },
@@ -54,8 +53,8 @@ export const updateEntity = createAsyncThunk(
 
 export const partialUpdateEntity = createAsyncThunk(
   'site/partial_update_entity',
-  async (entity: ISite, thunkAPI) => {
-    const result = await axios.patch<ISite>(`${apiUrl}/${entity.id}`, cleanEntity(entity));
+  async ({ entity, orgaId }: { entity: ISite; orgaId: string }, thunkAPI) => {
+    const result = await axios.patch<ISite>(`api/orga/${orgaId}/sites${entity.id}`, cleanEntity(entity));
     thunkAPI.dispatch(getEntities({}));
     return result;
   },
@@ -64,8 +63,8 @@ export const partialUpdateEntity = createAsyncThunk(
 
 export const deleteEntity = createAsyncThunk(
   'site/delete_entity',
-  async (id: string | number, thunkAPI) => {
-    const requestUrl = `${apiUrl}/${id}`;
+  async ({ id, orgaId }: { id: string | number; orgaId: string }, thunkAPI) => {
+    const requestUrl = `api/orga/${orgaId}/sites}/${id}`;
     const result = await axios.delete<ISite>(requestUrl);
     thunkAPI.dispatch(getEntities({}));
     return result;

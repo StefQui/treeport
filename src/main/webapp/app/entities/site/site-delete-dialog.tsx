@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntity, deleteEntity } from './site.reducer';
 
-export const SiteDeleteDialog = () => {
+export const SiteDeleteDialog = ({ showModal, setShowModal, siteId, onSuccessDelete, onCancelDelete }) => {
   const dispatch = useAppDispatch();
 
   const pageLocation = useLocation();
@@ -16,37 +16,45 @@ export const SiteDeleteDialog = () => {
   const { orgaId } = useParams<'orgaId'>();
 
   const [loadModal, setLoadModal] = useState(false);
-
-  useEffect(() => {
-    dispatch(getEntity({ id, orgaId }));
-    setLoadModal(true);
-  }, []);
-
   const siteEntity = useAppSelector(state => state.site.entity);
+
+  // useEffect(() => {
+  //   dispatch(getEntity({ id, orgaId }));
+  //   setLoadModal(true);
+  // }, []);
+
+  // const siteEntity = useAppSelector(state => state.site.entity);
   const updateSuccess = useAppSelector(state => state.site.updateSuccess);
 
   const handleClose = () => {
-    navigate('/site' + pageLocation.search);
+    setShowModal(false);
+    // onCloseDelete(siteId);
   };
 
   useEffect(() => {
-    if (updateSuccess && loadModal) {
-      handleClose();
-      setLoadModal(false);
+    if (updateSuccess) {
+      console.log('');
+      if (siteEntity.id) {
+        return;
+      }
+
+      setShowModal(false);
+      onSuccessDelete();
+      // setLoadModal(false);
     }
   }, [updateSuccess]);
 
   const confirmDelete = () => {
-    dispatch(deleteEntity(siteEntity.id));
+    dispatch(deleteEntity({ id: siteId, orgaId }));
   };
 
   return (
-    <Modal isOpen toggle={handleClose}>
+    <Modal isOpen={showModal} toggle={handleClose}>
       <ModalHeader toggle={handleClose} data-cy="siteDeleteDialogHeading">
         <Translate contentKey="entity.delete.title">Confirm delete operation</Translate>
       </ModalHeader>
       <ModalBody id="treeportApp.site.delete.question">
-        <Translate contentKey="treeportApp.site.delete.question" interpolate={{ id: siteEntity.id }}>
+        <Translate contentKey="treeportApp.site.delete.question" interpolate={{ id: siteId }}>
           Are you sure you want to delete this Site?
         </Translate>
       </ModalBody>

@@ -24,6 +24,7 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 /**
  * Service Implementation for managing {@link Site}.
@@ -63,6 +64,7 @@ public class SiteService {
     public SiteDTO save(SiteDTO siteDTO, String orgaId) {
         log.debug("Request to save Site : {}", siteDTO);
         Site site = siteMapper.toEntity(siteDTO);
+        site = site.toBuilder().orgaId(orgaId).build();
         if (site.getParentId() != null) {
             site = siteRepository.save(site);
             List<Site> parents = siteRepository.findByIdAndOrgaId(site.getParentId(), orgaId);
@@ -137,10 +139,18 @@ public class SiteService {
      *
      * @param id the id of the entity.
      */
-    public void delete(String id) {
-        log.debug("Request to delete Site : {}", id);
-        Optional<Site> existing = siteRepository.findBySiteId(id);
-        siteRepository.deleteBySiteId(existing.get().getId());
+    public void delete(String id, String orgaId) {
+        log.debug("Request to delete Site : {} {}", id, orgaId);
+        Site existing = siteRepository.findByIdAndOrgaId(id, orgaId).get(0);
+        if (!CollectionUtils.isEmpty(existing.getChildrenIds())) {
+            throw new RuntimeException("Cannot delete site wit children");
+        }
+        if (existing.getParentId() != null) {
+            Site parent = siteRepository.findByIdAndOrgaId(existing.getParentId(), orgaId).get(0);
+            parent.getChildrenIds().remove(id);
+            siteRepository.save(parent);
+        }
+        siteRepository.deleteBySiteId(existing.getId());
     }
 
     public List<Site> findAllRootSites(String orgaId) {

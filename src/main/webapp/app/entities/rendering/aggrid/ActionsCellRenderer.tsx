@@ -7,7 +7,7 @@ import { Button } from 'reactstrap';
 
 // import styles from './ActionsCellRenderer.module.scss';
 
-export const actionsRenderer = ({ editAction, addAction }) => {
+export const actionsRenderer = ({ editAction, addAction, removeAction }) => {
   const handleSelect = (node: any) => {
     // alert(`click on ${site.id}`);
     editAction(node);
@@ -15,6 +15,10 @@ export const actionsRenderer = ({ editAction, addAction }) => {
   const handleAdd = (node: any) => {
     // alert(`click on ${site.id}`);
     addAction(node);
+  };
+  const handleRemove = (node: any) => {
+    // alert(`click on ${site.id}`);
+    removeAction(node);
   };
 
   return ({ api, node }) => {
@@ -45,10 +49,10 @@ export const actionsRenderer = ({ editAction, addAction }) => {
           </span>
         </Button>
         <Button color="info" onClick={() => handleAdd(node)} size="sm" data-cy="entitySelectButton">
-          <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Add under </span>
+          <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Add </span>
         </Button>
-        <Button color="warning" size="sm" data-cy="entitySelectButton">
-          <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Open </span>
+        <Button color="danger" onClick={() => handleRemove(node)} size="sm" data-cy="entitySelectButton">
+          <FontAwesomeIcon icon="ban" /> <span className="d-none d-md-inline">R</span>
         </Button>
       </div>
     );

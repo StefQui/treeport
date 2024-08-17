@@ -9,8 +9,9 @@ import { getEntities as getSites } from 'app/entities/site/site.reducer';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntity, updateEntity, createEntity, reset } from './site.reducer';
+import { is } from 'immer/dist/internal';
 
-export const SiteUpdateDialog = ({ showModal, setShowModal, siteId, onCloseEdit, parentSiteId }) => {
+export const SiteUpdateDialog = ({ showModal, setShowModal, siteId, onSuccessUpdate, onSuccessAdd, onCancelEdit, parentSiteId }) => {
   const dispatch = useAppDispatch();
 
   const organisations = useAppSelector(state => state.organisation.entities);
@@ -36,7 +37,7 @@ export const SiteUpdateDialog = ({ showModal, setShowModal, siteId, onCloseEdit,
     if (!siteId) {
       dispatch(reset());
     } else {
-      dispatch(getEntity(siteId));
+      dispatch(getEntity({ id: siteId, orgaId }));
     }
   }, [siteId]);
 
@@ -48,7 +49,13 @@ export const SiteUpdateDialog = ({ showModal, setShowModal, siteId, onCloseEdit,
     if (updateSuccess) {
       // handleClose();
       // setLoadModal(false);
-      onCloseEdit(siteId);
+      console.log('useEffect', isNew, siteEntity, siteId);
+      setShowModal(false);
+      if (!isNew && siteEntity.id === siteId) {
+        onSuccessUpdate(siteEntity);
+      } else if (isNew && siteEntity.id) {
+        onSuccessAdd(siteEntity);
+      }
     }
   }, [updateSuccess]);
 
@@ -75,8 +82,10 @@ export const SiteUpdateDialog = ({ showModal, setShowModal, siteId, onCloseEdit,
     };
 
     if (!siteId) {
+      setIsNew(true);
       dispatch(createEntity({ entity, orgaId }));
     } else {
+      setIsNew(false);
       dispatch(updateEntity({ entity, orgaId }));
     }
   };

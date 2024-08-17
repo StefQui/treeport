@@ -64,7 +64,7 @@ export const partialUpdateEntity = createAsyncThunk(
 export const deleteEntity = createAsyncThunk(
   'site/delete_entity',
   async ({ id, orgaId }: { id: string | number; orgaId: string }, thunkAPI) => {
-    const requestUrl = `api/orga/${orgaId}/sites}/${id}`;
+    const requestUrl = `api/orga/${orgaId}/sites/${id}`;
     const result = await axios.delete<ISite>(requestUrl);
     thunkAPI.dispatch(getEntities({}));
     return result;

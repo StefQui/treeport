@@ -176,9 +176,9 @@ public class SiteResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSite(@PathVariable String id) {
+    public ResponseEntity<Void> deleteSite(@PathVariable String id, @PathVariable String orgaId) {
         log.debug("REST request to delete Site : {}", id);
-        siteService.delete(id);
+        siteService.delete(id, orgaId);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
     }
 }

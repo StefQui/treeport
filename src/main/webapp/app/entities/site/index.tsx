@@ -15,7 +15,7 @@ const SiteRoutes = () => (
     <Route path=":id">
       <Route index element={<SiteDetail />} />
       <Route path="edit" element={<SiteUpdate />} />
-      <Route path="delete" element={<SiteDeleteDialog />} />
+      {/* <Route path="delete" element={<SiteDeleteDialog />} /> */}
     </Route>
   </ErrorBoundaryRoutes>
 );

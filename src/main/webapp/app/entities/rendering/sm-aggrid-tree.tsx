@@ -49,6 +49,8 @@ import { useParams } from 'react-router';
 import { getEntity } from '../site/site.reducer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ISiteAndImpacters } from 'app/shared/model/site-and-impacters.model';
+import tagReducer, { TagSlice } from '../tag/tag.reducer';
+import { ITag } from 'app/shared/model/tag.model';
 
 export const SmAggridTree = (props: {
   params: DataSetTreeParams2;
@@ -187,6 +189,7 @@ export const SmAggridTree = (props: {
     console.log('onSuccessUpdate', entityAndImpacters.site, updatingNode, siteEntity);
     updatingNode.setData(entityAndImpacters.site);
     setCurrentAction('none');
+    setSiteId(null);
   };
   const onSuccessAdd = (entityAndImpacters: ISiteAndImpacters) => {
     console.log('onSuccessAdd', updatingNode);
@@ -205,6 +208,7 @@ export const SmAggridTree = (props: {
       });
       setCurrentAction('none');
     }
+    setSiteId(null);
   };
   const onCancelEdit = () => {
     console.log('onCancelEdit', siteId, updatingNode, siteEntity);
@@ -286,6 +290,16 @@ export const SmAggridTree = (props: {
     },
     {
       field: 'childrenCount',
+    },
+    {
+      field: 'tags',
+      valueGetter: params => {
+        if (params.data.tags) {
+          const val: ITag[] = params.data.tags;
+          return val.map(tag => tag.id).join(',');
+        }
+        return '--';
+      },
     },
     // {
     //   field: 'id',

@@ -91,7 +91,7 @@ export const SiteUpdateDialog = ({
     const entity = {
       ...siteEntity,
       ...values,
-      tags: values.tagsAsString.split(',').map(t => ({ id: t, orga: { id: orgaId } })),
+      tags: values.tagsAsString.split(',').length > 0 ? values.tagsAsString.split(',').map(t => ({ id: t, orga: { id: orgaId } })) : [],
       tagsAsString: undefined,
       childrenCount: undefined,
     };
@@ -142,13 +142,6 @@ export const SiteUpdateDialog = ({
                     data-cy="content"
                     type="textarea"
                   />
-                  <Button tag={Link} id="cancel-save" data-cy="entityCreateCancelButton" to="/site" replace color="info">
-                    <FontAwesomeIcon icon="arrow-left" />
-                    &nbsp;
-                    <span className="d-none d-md-inline">
-                      <Translate contentKey="entity.action.back">Back</Translate>
-                    </span>
-                  </Button>
                   &nbsp;
                   <Button color="primary" id="save-entity" data-cy="entityCreateSaveButton" type="submit" disabled={updating}>
                     <FontAwesomeIcon icon="save" />

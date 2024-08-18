@@ -36,4 +36,6 @@ public interface AttributeRepository extends MongoRepository<Attribute, String> 
     List<Attribute> findBySiteIdAndOrgaId(String siteId, String orgaId);
 
     List<Attribute> findByDirtyAndOrgaId(Boolean dirty, String orgaId);
+
+    List<Attribute> findBySiteIdAndConfigIdAndOrgaId(String siteId, String configId, String orgaId);
 }

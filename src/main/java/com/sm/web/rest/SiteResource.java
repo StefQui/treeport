@@ -69,7 +69,7 @@ public class SiteResource {
         }
 */
         Site site = siteService.saveWithAttributes(siteUpdateDTO.getSiteToUpdate(), orgaId);
-        computeService.applyCampaigns(orgaId, List.of("2023"));
+        computeService.applyCampaignsForSite(orgaId, site, List.of("2023"));
         Set<String> impacteds = computeService.reCalculateAllAttributes(orgaId);
 
         SiteWithValuesDTO siteWithAttributes = siteService.getSiteWithAttributes(
@@ -120,7 +120,7 @@ public class SiteResource {
 
         Site site = siteService.update(siteUpdateDTO.getSiteToUpdate(), orgaId);
 
-        computeService.applyCampaigns(orgaId, List.of("2023"));
+        computeService.applyCampaignsForSite(orgaId, site, List.of("2023"));
         Set<String> impacteds = computeService.reCalculateAllAttributes(orgaId);
 
         SiteWithValuesDTO siteWithAttributes = siteService.getSiteWithAttributes(

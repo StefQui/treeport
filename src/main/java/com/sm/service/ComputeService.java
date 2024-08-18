@@ -67,13 +67,13 @@ public class ComputeService {
         //        campaignService.findAllCampaigns().stream().forEach(c -> this.applyCampaign(c, orgaId));
     }
 
+    public void applyCampaignsForSite(@NonNull String orgaId, Site site, List<String> ids) {
+        campaignService.findAllByIdsAndOrgaId(ids, orgaId).stream().forEach(c -> this.applyCampaignForSite(c, site, orgaId));
+        //        campaignService.findAllCampaigns().stream().forEach(c -> this.applyCampaign(c, orgaId));
+    }
+
     private void applyCampaign(Campaign campaign, @NonNull String orgaId) {
-        Map<String, List<AttributeConfig>> keyOrderedConfigsMaps = attributeConfigService
-            .findAllConfigs(orgaId)
-            .stream()
-            .filter(config -> config.getCampaignId().equals(campaign.getId()))
-            .collect(Collectors.groupingBy(AttributeConfig::getKey));
-        keyOrderedConfigsMaps.forEach((key, configs) -> configs.stream().sorted(Comparator.comparingInt(AttributeConfig::getConfigOrder)));
+        Map<String, List<AttributeConfig>> keyOrderedConfigsMaps = getOrderedConfigs(orgaId, campaign);
         siteService
             .findAllRootSites(orgaId)
             .stream()
@@ -83,6 +83,25 @@ public class ComputeService {
             });
 
         treeShake(keyOrderedConfigsMaps, campaign, orgaId);
+    }
+
+    private void applyCampaignForSite(Campaign campaign, Site site, @NonNull String orgaId) {
+        Map<String, List<AttributeConfig>> keyOrderedConfigsMaps = getOrderedConfigs(orgaId, campaign);
+
+        this.applyCampaignForSiteAndKeyConfigsMap(campaign, site, keyOrderedConfigsMaps, orgaId);
+        this.validateForCampaignAndSite(campaign, site, orgaId);
+
+        treeShake(keyOrderedConfigsMaps, campaign, orgaId);
+    }
+
+    private Map<String, List<AttributeConfig>> getOrderedConfigs(String orgaId, Campaign campaign) {
+        Map<String, List<AttributeConfig>> keyOrderedConfigsMaps = attributeConfigService
+            .findAllConfigs(orgaId)
+            .stream()
+            .filter(config -> config.getCampaignId().equals(campaign.getId()))
+            .collect(Collectors.groupingBy(AttributeConfig::getKey));
+        keyOrderedConfigsMaps.forEach((key, configs) -> configs.stream().sorted(Comparator.comparingInt(AttributeConfig::getConfigOrder)));
+        return keyOrderedConfigsMaps;
     }
 
     private void validateForCampaignAndSite(Campaign campaign, Site site, @NonNull String orgaId) {
@@ -160,20 +179,9 @@ public class ComputeService {
             }
             i++;
         }
-        //        AttributeConfig configForSite = configs
-        //            .stream()
-        //            .filter(c -> c.getId().equals(configKey) && site.getId().equals(c.getSiteId()))
-        //            .findAny()
-        //            .orElse(null);
-        //        if (configForSite == null) {
-        //            if (applyableConfig != null) {
-        //                this.createOrUpdateAttribute(site, configKey, campaign, applyableConfig, orgaId);
-        //            }
-        //        } else {
-        //            this.createOrUpdateAttribute(site, configKey, campaign, configForSite, orgaId);
-        //        }
-        //        AttributeConfig nextApplyableConfig = fetchNextApplyableConfig(configForSite, applyableConfig);
-
+        if (!found) {
+            attributeService.deleteAttributesForSiteAndConfigKey(site.getId(), configKey, orgaId);
+        }
         List<Site> children = siteService.getChildren(site, orgaId);
         children.stream().forEach(s -> applyCampaignForSiteAndKeyConfigs(campaign, s, configKey, orderedConfigs, orgaId));
     }

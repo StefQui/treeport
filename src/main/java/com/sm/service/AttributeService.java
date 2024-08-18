@@ -151,6 +151,12 @@ public class AttributeService {
         atts.forEach(att -> attributeRepository.deleteByAttributeId(att.getId()));
     }
 
+    public void deleteAttributesForSiteAndConfigKey(String siteId, String configKey, String orgaId) {
+        log.debug("Request to deleteAttributesForSiteAndConfigKey : {}", siteId);
+        List<Attribute> atts = attributeRepository.findBySiteIdAndConfigIdAndOrgaId(siteId, configKey, orgaId);
+        atts.forEach(att -> attributeRepository.deleteByAttributeId(att.getId()));
+    }
+
     public List<Attribute> findBySite(String siteId, String orgaId) {
         List<Attribute> atts = findAllAttributes(orgaId);
         return atts.stream().filter(a -> a.getSiteFragment().equals(siteId)).collect(Collectors.toList());

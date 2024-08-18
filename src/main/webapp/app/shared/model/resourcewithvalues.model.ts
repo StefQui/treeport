@@ -1,6 +1,7 @@
 import { IOrganisation } from 'app/shared/model/organisation.model';
 import { AttributeValueType, IAttributeValue, IAttributeWithValue } from './attribute.model';
 import { IResource } from './resource.model';
+import { ITag } from './tag.model';
 
 export interface IResourceWithValue {
   attributeValues?: IAttributeValue[];
@@ -11,6 +12,7 @@ export interface IResourceWithValue {
   parent?: IResource | null;
   childrens?: IResource[] | null;
   childrenCount?: number | null;
+  tags?: ITag[] | null;
 }
 
 export const defaultValue: Readonly<IResourceWithValue> = {};

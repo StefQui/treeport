@@ -8,6 +8,7 @@ import {
   ValidateSliceCaseReducers,
 } from '@reduxjs/toolkit';
 import { AxiosError } from 'axios';
+import { ISiteAndImpacters } from '../model/site-and-impacters.model';
 
 /**
  * Model for redux actions with pagination
@@ -72,6 +73,7 @@ export interface EntityState<T> {
   errorMessage: string | null;
   entities: ReadonlyArray<T>;
   entity: T;
+  entityAndImpacters?: ISiteAndImpacters;
   links?: any;
   updating: boolean;
   totalItems?: number;

@@ -11,12 +11,22 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntity, updateEntity, createEntity, reset } from './site.reducer';
 import { is } from 'immer/dist/internal';
 
-export const SiteUpdateDialog = ({ showModal, setShowModal, siteId, onSuccessUpdate, onSuccessAdd, onCancelEdit, parentSiteId }) => {
+export const SiteUpdateDialog = ({
+  showModal,
+  setShowModal,
+  siteId,
+  onSuccessUpdate,
+  onSuccessAdd,
+  onCancelEdit,
+  parentSiteId,
+  columnDefinitions,
+}) => {
   const dispatch = useAppDispatch();
 
   const organisations = useAppSelector(state => state.organisation.entities);
   const sites = useAppSelector(state => state.site.entities);
   const siteEntity = useAppSelector(state => state.site.entity);
+  const entityAndImpacters = useAppSelector(state => state.site.entityAndImpacters);
   const updateSuccess = useAppSelector(state => state.site.updateSuccess);
 
   const loading = useAppSelector(state => state.site.loading);
@@ -49,12 +59,12 @@ export const SiteUpdateDialog = ({ showModal, setShowModal, siteId, onSuccessUpd
     if (updateSuccess) {
       // handleClose();
       // setLoadModal(false);
-      console.log('useEffect', isNew, siteEntity, siteId);
+      console.log('useEffect', isNew, entityAndImpacters, siteId);
       setShowModal(false);
-      if (!isNew && siteEntity.id === siteId) {
-        onSuccessUpdate(siteEntity);
-      } else if (isNew && siteEntity.id) {
-        onSuccessAdd(siteEntity);
+      if (!isNew && entityAndImpacters && entityAndImpacters.site && entityAndImpacters.site.id === siteId) {
+        onSuccessUpdate(entityAndImpacters);
+      } else if (isNew && entityAndImpacters && entityAndImpacters.site && entityAndImpacters.site.id) {
+        onSuccessAdd(entityAndImpacters);
       }
     }
   }, [updateSuccess]);
@@ -66,9 +76,11 @@ export const SiteUpdateDialog = ({ showModal, setShowModal, siteId, onSuccessUpd
           orga: { orga: orgaId },
           childrens: [],
           tags: [],
+          tagsAsString: '',
         }
       : {
           ...siteEntity,
+          tagsAsString: siteEntity.tags ? siteEntity.tags.map(t => t.id).join(',') : '',
           // orga: siteEntity?.orga?.id,
           // parent: siteEntity?.parent?.id,
           // childrens: siteEntity?.childrens?.map(e => e.id.toString()),
@@ -79,14 +91,17 @@ export const SiteUpdateDialog = ({ showModal, setShowModal, siteId, onSuccessUpd
     const entity = {
       ...siteEntity,
       ...values,
+      tags: values.tagsAsString.split(',').map(t => ({ id: t, orga: { id: orgaId } })),
+      tagsAsString: undefined,
+      childrenCount: undefined,
     };
 
     if (!siteId) {
       setIsNew(true);
-      dispatch(createEntity({ entity, orgaId }));
+      dispatch(createEntity({ entity, orgaId, columnDefinitions }));
     } else {
       setIsNew(false);
-      dispatch(updateEntity({ entity, orgaId }));
+      dispatch(updateEntity({ entity, orgaId, columnDefinitions }));
     }
   };
 
@@ -119,6 +134,7 @@ export const SiteUpdateDialog = ({ showModal, setShowModal, siteId, onSuccessUpd
                     validate={{ required: true }}
                   />
                   <ValidatedField label={translate('treeportApp.site.name')} id="site-name" name="name" data-cy="name" type="text" />
+                  <ValidatedField label={'Tags'} id="site-tagsAsString" name="tagsAsString" data-cy="name" type="text" />
                   <ValidatedField
                     label={translate('treeportApp.site.content')}
                     id="site-content"

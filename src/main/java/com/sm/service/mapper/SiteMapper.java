@@ -2,6 +2,7 @@ package com.sm.service.mapper;
 
 import com.sm.domain.Site;
 import com.sm.domain.SiteWithValues;
+import com.sm.domain.enumeration.AssetType;
 import com.sm.service.dto.SiteDTO;
 import com.sm.service.dto.SiteWithValuesDTO;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class SiteMapper {
         return Site
             .builder()
             .id(siteDTO.getId())
+            .type(AssetType.SITE)
             .orgaId(siteDTO.getOrga().getId())
             .name(siteDTO.getName())
             .content(siteDTO.getContent())

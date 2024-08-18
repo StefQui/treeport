@@ -48,6 +48,7 @@ import { handleParameterDefinition } from './parameter-definition';
 import { useParams } from 'react-router';
 import { getEntity } from '../site/site.reducer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { ISiteAndImpacters } from 'app/shared/model/site-and-impacters.model';
 
 export const SmAggridTree = (props: {
   params: DataSetTreeParams2;
@@ -182,24 +183,25 @@ export const SmAggridTree = (props: {
 
   // }, [siteEntity]);
 
-  const onSuccessUpdate = updatedSite => {
-    console.log('onSuccessUpdate', updatedSite, updatingNode, siteEntity);
-    updatingNode.setData(updatedSite);
+  const onSuccessUpdate = (entityAndImpacters: ISiteAndImpacters) => {
+    console.log('onSuccessUpdate', entityAndImpacters.site, updatingNode, siteEntity);
+    updatingNode.setData(entityAndImpacters.site);
     setCurrentAction('none');
   };
-  const onSuccessAdd = addedSite => {
+  const onSuccessAdd = (entityAndImpacters: ISiteAndImpacters) => {
+    console.log('onSuccessAdd', updatingNode);
     if (updatingNode) {
       updatingNode.updateData({ ...updatingNode.data, group: true });
-      console.log('onSuccessAdd', addedSite, parentRoute, { ...updatingNode.data, group: true, childrenCount: 10 });
+      console.log('onSuccessAdd 2', entityAndImpacters, parentRoute, { ...updatingNode.data, group: true, childrenCount: 10 });
       gridParams.api.applyServerSideTransaction({
         route: parentRoute,
-        add: [addedSite],
+        add: [entityAndImpacters.site],
       });
       setCurrentAction('none');
     } else {
       gridParams.api.applyServerSideTransaction({
         route: [],
-        add: [addedSite],
+        add: [entityAndImpacters.site],
       });
       setCurrentAction('none');
     }
@@ -399,6 +401,7 @@ export const SmAggridTree = (props: {
         onSuccessUpdate={onSuccessUpdate}
         onSuccessAdd={onSuccessAdd}
         onCancelEdit={onCancelEdit}
+        columnDefinitions={columnDefinitions}
         siteId={siteId}
         parentSiteId={parentSiteId}
       ></SiteUpdateDialog>

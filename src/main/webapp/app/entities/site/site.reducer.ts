@@ -4,12 +4,15 @@ import { cleanEntity } from 'app/shared/util/entity-utils';
 import { IQueryParams, createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 import { ISite, defaultValue } from 'app/shared/model/site.model';
 import { useParams } from 'react-router';
+import { ColumnDefinition } from '../rendering/type';
+import { ISiteAndImpacters } from 'app/shared/model/site-and-impacters.model';
 
 const initialState: EntityState<ISite> = {
   loading: false,
   errorMessage: null,
   entities: [],
   entity: defaultValue,
+  entityAndImpacters: null,
   updating: false,
   totalItems: 0,
   updateSuccess: false,
@@ -33,8 +36,11 @@ export const getEntity = createAsyncThunk(
 
 export const createEntity = createAsyncThunk(
   'site/create_entity',
-  async ({ entity, orgaId }: { entity: ISite; orgaId: string }, thunkAPI) => {
-    const result = await axios.post<ISite>(`api/orga/${orgaId}/sites`, cleanEntity(entity));
+  async ({ entity, orgaId, columnDefinitions }: { entity: ISite; orgaId: string; columnDefinitions: ColumnDefinition[] }, thunkAPI) => {
+    const result = await axios.post<ISiteAndImpacters>(`api/orga/${orgaId}/sites`, {
+      siteToUpdate: cleanEntity(entity),
+      columnDefinitions,
+    });
     thunkAPI.dispatch(getEntities({}));
     return result;
   },
@@ -43,8 +49,11 @@ export const createEntity = createAsyncThunk(
 
 export const updateEntity = createAsyncThunk(
   'site/update_entity',
-  async ({ entity, orgaId }: { entity: ISite; orgaId: string }, thunkAPI) => {
-    const result = await axios.put<ISite>(`api/orga/${orgaId}/sites/${entity.id}`, cleanEntity(entity));
+  async ({ entity, orgaId, columnDefinitions }: { entity: ISite; orgaId: string; columnDefinitions: ColumnDefinition[] }, thunkAPI) => {
+    const result = await axios.put<ISiteAndImpacters>(`api/orga/${orgaId}/sites/${entity.id}`, {
+      siteToUpdate: cleanEntity(entity),
+      columnDefinitions,
+    });
     thunkAPI.dispatch(getEntities({}));
     return result;
   },
@@ -98,7 +107,13 @@ export const SiteSlice = createEntitySlice({
           totalItems: parseInt(headers['x-total-count'], 10),
         };
       })
-      .addMatcher(isFulfilled(createEntity, updateEntity, partialUpdateEntity), (state, action) => {
+      .addMatcher(isFulfilled(createEntity, updateEntity), (state, action) => {
+        state.updating = false;
+        state.loading = false;
+        state.updateSuccess = true;
+        state.entityAndImpacters = action.payload.data;
+      })
+      .addMatcher(isFulfilled(partialUpdateEntity), (state, action) => {
         state.updating = false;
         state.loading = false;
         state.updateSuccess = true;

@@ -3,6 +3,7 @@ package com.sm.service;
 import static com.sm.service.AttributeKeyUtils.createReferenced;
 import static com.sm.service.AttributeKeyUtils.fromString;
 import static com.sm.service.AttributeKeyUtils.objToString;
+import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
@@ -144,6 +145,12 @@ public class AttributeService {
         attributeRepository.deleteByAttributeId(existing.get().getId());
     }
 
+    public void deleteAttributesForSite(String siteId, String orgaId) {
+        log.debug("Request to deleteAttributesForSite : {}", siteId);
+        List<Attribute> atts = attributeRepository.findBySiteIdAndOrgaId(siteId, orgaId);
+        atts.forEach(att -> attributeRepository.deleteByAttributeId(att.getId()));
+    }
+
     public List<Attribute> findBySite(String siteId, String orgaId) {
         List<Attribute> atts = findAllAttributes(orgaId);
         return atts.stream().filter(a -> a.getSiteFragment().equals(siteId)).collect(Collectors.toList());
@@ -215,7 +222,11 @@ public class AttributeService {
 
     public List<Attribute> getAttributesForSiteChildrenAndConfig(String attId, String configKey, String orgaId) {
         AttributeKeyAsObj attIdAsObj = fromString(attId);
-        Site site = siteRepository.findByIdAndOrgaId(attIdAsObj.getAssetId(), orgaId).get(0);
+        List<Site> sites = siteRepository.findByIdAndOrgaId(attIdAsObj.getAssetId(), orgaId);
+        if (sites.isEmpty()) {
+            throw new RuntimeException(format("cannot find site %s %s %s", attId, configKey, orgaId));
+        }
+        Site site = sites.get(0);
         List<String> keys = site
             .getChildrenIds()
             .stream()

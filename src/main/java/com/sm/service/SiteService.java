@@ -37,17 +37,25 @@ public class SiteService {
     private final MongoTemplate mongoTemplate;
     private final SiteRepository siteRepository;
     private final SiteMapper siteMapper;
+    private final AttributeService attributeService;
 
-    public SiteService(MongoTemplate mongoTemplate, SiteRepository siteRepository, SiteMapper siteMapper) {
+    public SiteService(
+        MongoTemplate mongoTemplate,
+        SiteRepository siteRepository,
+        SiteMapper siteMapper,
+        AttributeService attributeService
+    ) {
         this.siteRepository = siteRepository;
         this.siteMapper = siteMapper;
         this.mongoTemplate = mongoTemplate;
+        this.attributeService = attributeService;
     }
 
     /**
      * Save a site.
      *
-     * @param siteDTO the entity to save.
+     * @param siteDTO           the entity to save.
+     * @param columnDefinitions
      * @return the persisted entity.
      */
     /*
@@ -78,19 +86,56 @@ public class SiteService {
         return siteMapper.toDto(site);
     }
 
+    public Site saveWithAttributes(SiteDTO siteDTO, String orgaId) {
+        log.debug("Request to save Site : {}", siteDTO);
+        Site site = siteMapper.toEntity(siteDTO);
+        site = site.toBuilder().orgaId(orgaId).build();
+        if (site.getParentId() != null) {
+            site = siteRepository.save(site);
+            List<Site> parents = siteRepository.findByIdAndOrgaId(site.getParentId(), orgaId);
+            if (!parents.get(0).getChildrenIds().contains(site.getId())) {
+                parents.get(0).getChildrenIds().add(site.getId());
+                siteRepository.save(parents.get(0));
+            }
+        } else {
+            site = siteRepository.save(site);
+        }
+        return site;
+    }
+
     /**
      * Update a site.
      *
-     * @param siteDTO the entity to save.
+     * @param siteDTO           the entity to save.
+     * @param columnDefinitions
      * @return the persisted entity.
      */
-    public SiteDTO update(SiteDTO siteDTO) {
+    public Site update(SiteDTO siteDTO, String orgaId) {
         log.debug("Request to update Site : {}", siteDTO);
         Site site = siteMapper.toEntity(siteDTO);
         Optional<Site> existing = siteRepository.findBySiteId(siteDTO.getId());
         site.setObjectId(existing.get().getObjectId());
-        site = siteRepository.save(site);
-        return siteMapper.toDto(site);
+        return siteRepository.save(site);
+    }
+
+    public SiteWithValuesDTO getSiteWithAttributes(String id, String orgaId, List<ColumnDefinitionDTO> columnDefinitions) {
+        Page<SiteWithValuesDTO> page = search(
+            ResourceSearchDTO
+                .builder()
+                .page(0l)
+                .size(1l)
+                .columnDefinitions(columnDefinitions)
+                .filter(
+                    PropertyFilterDTO
+                        .builder()
+                        .filterRule(TextEqualsFilterRuleDTO.builder().filterRuleType(FilterRuleType.TEXT_EQUALS).terms(id).build())
+                        .property(ResourcePropertyFilterTargetDTO.builder().property("id").build())
+                        .build()
+                )
+                .build(),
+            orgaId
+        );
+        return page.getContent().get(0);
     }
 
     /**
@@ -143,7 +188,7 @@ public class SiteService {
         log.debug("Request to delete Site : {} {}", id, orgaId);
         Site existing = siteRepository.findByIdAndOrgaId(id, orgaId).get(0);
         if (!CollectionUtils.isEmpty(existing.getChildrenIds())) {
-            throw new RuntimeException("Cannot delete site wit children");
+            throw new RuntimeException("Cannot delete site with children");
         }
         if (existing.getParentId() != null) {
             Site parent = siteRepository.findByIdAndOrgaId(existing.getParentId(), orgaId).get(0);
@@ -151,6 +196,7 @@ public class SiteService {
             siteRepository.save(parent);
         }
         siteRepository.deleteBySiteId(existing.getId());
+        attributeService.deleteAttributesForSite(existing.getId(), orgaId);
     }
 
     public List<Site> findAllRootSites(String orgaId) {

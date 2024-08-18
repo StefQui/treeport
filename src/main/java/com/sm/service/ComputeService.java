@@ -21,10 +21,7 @@ import static com.sm.service.AttributeKeyUtils.unApplyOffSet;
 import static java.util.Optional.of;
 
 import com.sm.domain.*;
-import com.sm.domain.attribute.AggInfo;
-import com.sm.domain.attribute.AssetKey;
-import com.sm.domain.attribute.Attribute;
-import com.sm.domain.attribute.ErrorValue;
+import com.sm.domain.attribute.*;
 import com.sm.domain.operation.*;
 import com.sm.service.dto.attribute.AttributeDTO;
 import com.sm.service.mapper.AttributeValueMapper;
@@ -279,7 +276,7 @@ public class ComputeService {
         attribute.setCampaignId(campaign.getId());
         if (config.getIsConsolidable()) {
             attribute.setIsAgg(true);
-            attribute.setAggInfo(AggInfo.builder().build());
+            attribute.setAggInfo(attribute.getAggInfo() != null ? attribute.getAggInfo() : AggInfo.builder().build());
         }
         attribute.setTags(site.getTags());
         attributeService.save(attribute);
@@ -312,7 +309,7 @@ public class ComputeService {
         return tags1 != null && tags2 != null && tags1.stream().anyMatch(t -> tags2String.contains(t.getId()));
     }
 
-    public void reCalculateAllAttributes(String orgaId) {
+    public Set<String> reCalculateAllAttributes(String orgaId) {
         Set<String> all = new HashSet<>();
         attributeService
             .findAllAttributes(orgaId)
@@ -321,10 +318,10 @@ public class ComputeService {
                 all.add(att.getId());
                 //                all.addAll(att.getImpacterIds());
             });
-        this.reCalculateSomeAttributes(all, orgaId);
+        return this.reCalculateSomeAttributes(all, orgaId);
     }
 
-    public List<Attribute> reCalculateSomeAttributes(Set<String> attributeIds, String orgaId) {
+    public Set<String> reCalculateSomeAttributes(Set<String> attributeIds, String orgaId) {
         log.info("-------------------------------------");
         log.info("ReCalculating for : " + attributeIds);
         log.info("-------------------------------------");
@@ -336,12 +333,13 @@ public class ComputeService {
 
         //        dirtierService.dirtyTrees(attributes, orgaId);
 
-        calculateImpactsFor(attributeIds, orgaId);
+        Set<String> impacteds = new HashSet();
+        calculateImpactsFor(attributeIds, orgaId, impacteds);
 
-        return new ArrayList<>();
+        return impacteds;
     }
 
-    private void calculateImpactsFor(Set<String> attributeIds, String orgaId) {
+    private void calculateImpactsFor(Set<String> attributeIds, String orgaId, Set<String> impacteds) {
         if (attributeIds.isEmpty()) {
             return;
         }
@@ -353,12 +351,19 @@ public class ComputeService {
             .stream()
             .forEach(attribute -> {
                 log.info("---start Processing for : " + attribute.getId());
-                process(attribute, orgaId, shouldBeProcessed, false, new ArrayList<>());
+                process(attribute, orgaId, shouldBeProcessed, false, new ArrayList<>(), impacteds);
             });
         //        }
     }
 
-    private void process(Attribute attribute, String orgaId, AtomicBoolean shouldBeProcessed, boolean forced, List<String> currentPath) {
+    private void process(
+        Attribute attribute,
+        String orgaId,
+        AtomicBoolean shouldBeProcessed,
+        boolean forced,
+        List<String> currentPath,
+        Set<String> impactedIds
+    ) {
         log.info("Processing for : " + attribute.getId() + " dirty=" + attribute.getDirty() + " forced=" + forced + " " + currentPath);
         //        if (currentPath.contains(attribute.getId())) {
         //            handleInfiniteLoop(currentPath, orgaId, shouldBeProcessed);
@@ -366,7 +371,7 @@ public class ComputeService {
         //        }
         currentPath.add(attribute.getId());
         if (!attribute.getDirty() && !forced) {
-            handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed);
+            handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed, impactedIds);
             return;
         }
         AttributeConfig config = attributeConfigService.findByOrgaIdAndId(attribute.getConfigId(), orgaId).orElse(null);
@@ -374,7 +379,12 @@ public class ComputeService {
             boolean isStartOrInError = true;
             while (isStartOrInError) {
                 try {
+                    AttributeValue existingValue = attribute.getAttributeValue();
+                    AggInfo existingAggInfo = attribute.getAggInfo();
                     CalculationResult v = calculatorService.calculateAttribute(orgaId, attribute, attribute.getImpacterIds(), config);
+                    if (hasChanged(existingValue, v.getResultValue(), existingAggInfo, v.getAggInfo())) {
+                        impactedIds.add(attribute.getId());
+                    }
                     attribute.setAttributeValue(v.getResultValue());
                     attribute.setAggInfo(v.getAggInfo());
                     attribute.setDirty(false);
@@ -389,25 +399,54 @@ public class ComputeService {
                     log.info("IsDirtyValueException : " + att.getId());
                     //                    currentPath.remove(currentPath.size() - 1);
                     if (currentPath.contains(att.getId())) {
-                        handleInfiniteLoop(currentPath, orgaId, shouldBeProcessed);
+                        handleInfiniteLoop(currentPath, orgaId, shouldBeProcessed, impactedIds);
                         return;
                     }
 
-                    process(att, orgaId, shouldBeProcessed, true, currentPath);
+                    process(att, orgaId, shouldBeProcessed, true, currentPath, impactedIds);
                     shouldBeProcessed.set(true);
                 }
-                handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed);
+                handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed, impactedIds);
             }
         } else {
             log.info("Cleaning writable " + attribute.getId());
             attribute.setDirty(false);
             attributeService.save(attribute);
             currentPath.remove(currentPath.size() - 1);
-            handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed);
+            handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed, impactedIds);
         }
     }
 
-    private void handleInfiniteLoop(List<String> infiniteLoopPath, String orgaId, AtomicBoolean shouldBeProcessed) {
+    private boolean hasChanged(AttributeValue existingValue, AttributeValue newValue, AggInfo existingAggInfo, AggInfo newAggInfo) {
+        return hasValueChanged(existingValue, newValue) || hasAggInfoChanged(existingAggInfo, newAggInfo);
+    }
+
+    private boolean hasAggInfoChanged(AggInfo existingAggInfo, AggInfo newAggInfo) {
+        if (existingAggInfo == null) {
+            return newAggInfo != null;
+        }
+        if (newAggInfo == null) {
+            return true;
+        }
+        return !existingAggInfo.equals(newAggInfo);
+    }
+
+    private boolean hasValueChanged(AttributeValue existingValue, AttributeValue newValue) {
+        if (existingValue == null) {
+            return newValue != null;
+        }
+        if (newValue == null) {
+            return true;
+        }
+        return !existingValue.equals(newValue);
+    }
+
+    private void handleInfiniteLoop(
+        List<String> infiniteLoopPath,
+        String orgaId,
+        AtomicBoolean shouldBeProcessed,
+        Set<String> impactedIds
+    ) {
         attributeService
             .getAttributesFromKeys(infiniteLoopPath.stream().collect(Collectors.toSet()), orgaId)
             .stream()
@@ -416,14 +455,14 @@ public class ComputeService {
                 attribute.setAttributeValue(ErrorValue.builder().value("Infinite loop " + infiniteLoopPath).build());
                 attribute.setDirty(false);
                 attributeService.save(attribute);
-                handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed);
+                handleImpacteds(attribute.getId(), orgaId, shouldBeProcessed, impactedIds);
             });
     }
 
-    private void handleImpacteds(String attId, String orgaId, AtomicBoolean shouldBeProcessed) {
+    private void handleImpacteds(String attId, String orgaId, AtomicBoolean shouldBeProcessed, Set<String> impactedIds) {
         Set<Attribute> impacteds = attributeService.findImpacted(attId, orgaId);
 
-        impacteds.forEach(impacted -> process(impacted, orgaId, shouldBeProcessed, true, new ArrayList<>()));
+        impacteds.forEach(impacted -> process(impacted, orgaId, shouldBeProcessed, true, new ArrayList<>(), impactedIds));
     }
 
     //    private void calculateImpacts(List<Attribute> attributes, String orgaId) {
@@ -680,6 +719,6 @@ public class ComputeService {
                 att.setAttributeValue(attributeValueMapper.toEntity(attDto.getAttributeValue()));
                 attributeService.save(att);
             });
-        return of(reCalculateSomeAttributes(attIds, orgaId).stream().map(Attribute::getId).collect(Collectors.toList()));
+        return of(reCalculateSomeAttributes(attIds, orgaId).stream().collect(Collectors.toList()));
     }
 }

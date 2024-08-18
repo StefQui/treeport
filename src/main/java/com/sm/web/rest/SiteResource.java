@@ -2,14 +2,19 @@ package com.sm.web.rest;
 
 import com.sm.domain.Site;
 import com.sm.repository.SiteRepository;
+import com.sm.service.ComputeService;
 import com.sm.service.SiteService;
 import com.sm.service.dto.SiteDTO;
+import com.sm.service.dto.SiteUpdateRequestDTO;
+import com.sm.service.dto.SiteWithValuesAndImpactersDTO;
+import com.sm.service.dto.SiteWithValuesDTO;
 import com.sm.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,13 +39,15 @@ public class SiteResource {
     private final Logger log = LoggerFactory.getLogger(SiteResource.class);
     private final SiteService siteService;
     private final SiteRepository siteRepository;
+    private final ComputeService computeService;
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    public SiteResource(SiteService siteService, SiteRepository siteRepository) {
+    public SiteResource(SiteService siteService, SiteRepository siteRepository, ComputeService computeService) {
         this.siteService = siteService;
         this.siteRepository = siteRepository;
+        this.computeService = computeService;
     }
 
     /**
@@ -51,17 +58,34 @@ public class SiteResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<SiteDTO> createSite(@RequestBody SiteDTO siteDTO, @PathVariable String orgaId) throws URISyntaxException {
-        log.debug("REST request to save Site : {}", siteDTO);
+    public ResponseEntity<SiteWithValuesAndImpactersDTO> createSite(
+        @RequestBody SiteUpdateRequestDTO siteUpdateDTO,
+        @PathVariable String orgaId
+    ) throws URISyntaxException {
+        log.debug("REST request to save Site : {}", siteUpdateDTO.getSiteToUpdate());
         /*
         if (siteDTO.getId() != null) {
             throw new BadRequestAlertException("A new site cannot already have an ID", ENTITY_NAME, "idexists");
         }
 */
-        SiteDTO result = siteService.save(siteDTO, orgaId);
+        Site site = siteService.saveWithAttributes(siteUpdateDTO.getSiteToUpdate(), orgaId);
+        computeService.applyCampaigns(orgaId, List.of("2023"));
+        Set<String> impacteds = computeService.reCalculateAllAttributes(orgaId);
+
+        SiteWithValuesDTO siteWithAttributes = siteService.getSiteWithAttributes(
+            site.getId(),
+            orgaId,
+            siteUpdateDTO.getColumnDefinitions()
+        );
+        SiteWithValuesAndImpactersDTO result = SiteWithValuesAndImpactersDTO
+            .builder()
+            .impactedIds(impacteds)
+            .site(siteWithAttributes)
+            .build();
+
         return ResponseEntity
-            .created(new URI("/api/sites/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId()))
+            .created(new URI("/api/sites/" + result.getSite().getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getSite().getId()))
             .body(result);
     }
 
@@ -76,13 +100,16 @@ public class SiteResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<SiteDTO> updateSite(@PathVariable(value = "id", required = false) final String id, @RequestBody SiteDTO siteDTO)
-        throws URISyntaxException {
-        log.debug("REST request to update Site : {}, {}", id, siteDTO);
-        if (siteDTO.getId() == null) {
+    public ResponseEntity<SiteWithValuesAndImpactersDTO> updateSite(
+        @PathVariable(value = "id", required = false) final String id,
+        @RequestBody SiteUpdateRequestDTO siteUpdateDTO,
+        @PathVariable String orgaId
+    ) throws URISyntaxException {
+        log.debug("REST request to update Site : {}, {}", id, siteUpdateDTO);
+        if (siteUpdateDTO.getSiteToUpdate().getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, siteDTO.getId())) {
+        if (!Objects.equals(id, siteUpdateDTO.getSiteToUpdate().getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -91,10 +118,25 @@ public class SiteResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        SiteDTO result = siteService.update(siteDTO);
+        Site site = siteService.update(siteUpdateDTO.getSiteToUpdate(), orgaId);
+
+        computeService.applyCampaigns(orgaId, List.of("2023"));
+        Set<String> impacteds = computeService.reCalculateAllAttributes(orgaId);
+
+        SiteWithValuesDTO siteWithAttributes = siteService.getSiteWithAttributes(
+            site.getId(),
+            orgaId,
+            siteUpdateDTO.getColumnDefinitions()
+        );
+        SiteWithValuesAndImpactersDTO result = SiteWithValuesAndImpactersDTO
+            .builder()
+            .impactedIds(impacteds)
+            .site(siteWithAttributes)
+            .build();
+
         return ResponseEntity
             .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, siteDTO.getId()))
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, siteUpdateDTO.getSiteToUpdate().getId()))
             .body(result);
     }
 

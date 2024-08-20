@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { SmRefToResource } from './sm-resource-content';
 import { buildPath } from './shared';
 import {
+  AttributeColumnDefinition,
   ColumnDefinition,
   DataSetListParams,
   DataSetTreeParams,
@@ -185,12 +186,35 @@ export const SmAggridTree = (props: {
 
   // }, [siteEntity]);
 
+  const checkUpdates = (impactedIds: string[]) => {
+    const attColDefs: AttributeColumnDefinition[] = columnDefinitions
+      .filter(colDef => colDef.columnType === 'ATTRIBUTE')
+      .map(colDef => colDef as AttributeColumnDefinition);
+    const attPosts = attColDefs.map(colDef => `:${colDef.attributeConfigId}:period:${colDef.campaignId}`);
+    const pre = 'site:'.length;
+    const matchingSiteIds = new Set<string>();
+    attPosts.forEach(attPost => {
+      impactedIds
+        .filter(impacted => impacted.endsWith(attPost))
+        .forEach(impacted => matchingSiteIds.add(impacted.substring(pre, impacted.length - attPost.length)));
+    });
+    console.log('matchingSiteIds', matchingSiteIds);
+    gridParams.api.forEachNode(rowNode => {
+      if (matchingSiteIds.has(rowNode.data.id)) {
+        rowNode.updateData({ ...rowNode.data, childrenCount: 100 });
+        console.log('updaterowNode', rowNode.data.id);
+      }
+    });
+  };
+
   const onSuccessUpdate = (entityAndImpacters: ISiteAndImpacters) => {
     console.log('onSuccessUpdate', entityAndImpacters.site, updatingNode, siteEntity);
     updatingNode.setData(entityAndImpacters.site);
+    checkUpdates(entityAndImpacters.impactedIds);
     setCurrentAction('none');
     setSiteId(null);
   };
+
   const onSuccessAdd = (entityAndImpacters: ISiteAndImpacters) => {
     console.log('onSuccessAdd', updatingNode);
     if (updatingNode) {

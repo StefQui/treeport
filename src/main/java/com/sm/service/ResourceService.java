@@ -1,11 +1,12 @@
 package com.sm.service;
 
 import com.sm.domain.Resource;
+import com.sm.domain.Tag;
+import com.sm.domain.enumeration.AssetType;
 import com.sm.repository.ResourceRepository;
 import com.sm.service.dto.ResourceDTO;
 import com.sm.service.mapper.ResourceMapper;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,51 @@ public class ResourceService {
         Resource resource = resourceMapper.toEntity(resourceDTO);
         resource = resourceRepository.save(resource);
         return resourceMapper.toDto(resource);
+    }
+
+    public Resource save(Resource resource, String orgaId) {
+        if (resource.getObjectId() == null) {
+            resource.setChildrenTags(resource.getTags());
+        } else {
+            List<Resource> allChildren = new ArrayList<>();
+            getAllChildren(resource, orgaId, allChildren);
+            resource.setChildrenTags(allChildren.stream().flatMap(s -> s.getChildrenTags().stream()).collect(Collectors.toSet()));
+        }
+        Resource saved = resourceRepository.save(resource);
+        saved.setAncestorIds(calculateAncestors(orgaId, saved, new ArrayList<>()));
+        saved = resourceRepository.save(saved);
+        handleParent(saved, orgaId);
+        return saved;
+    }
+
+    private void handleParent(Resource saved, String orgaId) {
+        if (saved.getParentId() != null) {
+            Resource parent = resourceRepository.findByIdAndOrgaId(saved.getParentId(), orgaId).get(0);
+            Set<Tag> tags = new HashSet<>(saved.getChildrenTags());
+            tags.addAll(parent.getTags());
+            parent.setChildrenTags(tags);
+            List<String> newChildren = parent.getChildrenIds();
+            if (!newChildren.contains(saved.getId())) {
+                newChildren.add(saved.getId());
+                parent.setChildrenIds(newChildren);
+            }
+            parent = resourceRepository.save(parent);
+            handleParent(parent, orgaId);
+        }
+    }
+
+    private void getAllChildren(Resource resource, String orgaId, List<Resource> children) {
+        children.add(resource);
+        resourceRepository.findByOrgaIdAndParentId(orgaId, resource.getId()).forEach(child -> getAllChildren(child, orgaId, children));
+    }
+
+    private List<String> calculateAncestors(String orgaId, Resource resource, ArrayList<String> ancestorIds) {
+        ancestorIds.add(resource.getId());
+        if (resource.getParentId() == null) {
+            return ancestorIds;
+        }
+        Resource parent = resourceRepository.findByIdAndOrgaId(resource.getParentId(), orgaId).get(0);
+        return calculateAncestors(orgaId, parent, ancestorIds);
     }
 
     /**
@@ -130,5 +176,11 @@ public class ResourceService {
             return null;
         }
         return Optional.of(r.get(0));
+    }
+
+    public void deleteAll(AssetType assetType) {}
+
+    public void deleteAllByType(String type) {
+        resourceRepository.deleteByType(type);
     }
 }

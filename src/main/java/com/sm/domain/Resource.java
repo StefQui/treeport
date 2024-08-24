@@ -1,24 +1,72 @@
 package com.sm.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sm.domain.enumeration.AssetType;
+import jakarta.validation.constraints.NotBlank;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import lombok.experimental.SuperBuilder;
+import lombok.Setter;
+import lombok.experimental.NonFinal;
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-@SuperBuilder(toBuilder = true)
+@Builder(toBuilder = true)
 @Document("resource")
-public class Resource extends Asset {
+public class Resource implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @NonFinal
+    @Setter
+    @JsonIgnore
+    ObjectId objectId;
+
+    @NotBlank
+    @Field("id")
+    String id;
+
+    @Field("name")
+    private String name;
+
+    @Field("theType")
+    @Builder.Default
+    private String type = AssetType.RESOURCE.name();
+
+    @Field("orgaId")
+    private String orgaId;
+
+    @Field("content")
+    private String content;
+
+    @Field("parentId")
+    private String parentId;
 
     @Builder.Default
-    private AssetType type = AssetType.RESOURCE;
+    @Field("childrenIds")
+    private List<String> childrenIds = new ArrayList<>();
 
-    public Resource() {
-        super(AssetType.RESOURCE);
+    @Builder.Default
+    @Field("ancestorIds")
+    private List<String> ancestorIds = new ArrayList<>();
+
+    @Field("tags")
+    @Builder.Default
+    private Set<Tag> tags = new HashSet<>();
+
+    @Field("childrenTags")
+    @Builder.Default
+    private Set<Tag> childrenTags = new HashSet<>();
+
+    public Boolean isRoot() {
+        return parentId == null;
     }
 }

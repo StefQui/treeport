@@ -29,6 +29,9 @@ public interface ResourceRepository extends MongoRepository<Resource, String> {
     @Query(value = "{'id': ?0}", delete = true)
     void deleteByResourceId(String id);
 
+    @Query(value = "{'type': ?0}", delete = true)
+    void deleteByType(String type);
+
     List<Resource> findByOrgaIdAndParentId(String orgaId, String parentId);
 
     List<Resource> findByIdAndOrgaId(String id, String orgaId);

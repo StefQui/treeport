@@ -2,7 +2,6 @@ package com.sm.service;
 
 import static com.sm.domain.attribute.AggInfo.AttributeType.BOOLEAN;
 import static com.sm.domain.attribute.AggInfo.AttributeType.DOUBLE;
-import static com.sm.domain.enumeration.AssetType.RESOURCE;
 import static com.sm.domain.enumeration.AssetType.SITE;
 import static com.sm.domain.operation.OperationType.CONSO_SUM_BY_KEY;
 
@@ -24,6 +23,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class InitialLoadService {
+
+    public static final String R_SITE = "site";
+    public static final String R_RESOURCE = "resource";
 
     public static final String COCA = "coca";
     public static final String ROOT = "root";
@@ -70,6 +72,7 @@ public class InitialLoadService {
     private final AttributeRepository attributeRepository;
     private final ComputeService computeService;
     private final AttributeService attributeService;
+    private final ResourceService resourceService;
 
     @Value("classpath:json/r1.json")
     org.springframework.core.io.Resource r1SourceFile;
@@ -143,7 +146,8 @@ public class InitialLoadService {
         AttributeConfigRepository attributeConfigRepository,
         AttributeRepository attributeRepository,
         AttributeService attributeService,
-        ComputeService computeService
+        ComputeService computeService,
+        ResourceService resourceService
     ) {
         this.organisationRepository = organisationRepository;
         this.tagRepository = tagRepository;
@@ -154,6 +158,7 @@ public class InitialLoadService {
         this.attributeRepository = attributeRepository;
         this.computeService = computeService;
         this.attributeService = attributeService;
+        this.resourceService = resourceService;
     }
 
     public void reloadOrganisations() {
@@ -174,6 +179,92 @@ public class InitialLoadService {
         campaignRepository.deleteAll();
         campaignRepository.save(Campaign.builder().id("2022").name("Campagne 2022").orgaId(COCA).build());
         campaignRepository.save(Campaign.builder().id("2023").name("Campagne 2023").orgaId(COCA).build());
+    }
+
+    public void reloadResourceSites() {
+        resourceService.deleteAllByType(R_SITE);
+        resourceService.save(
+            Resource.builder().id(ROOT).name("Root site").type(R_SITE).orgaId(COCA).childrenIds(List.of(S_1, S_2)).tags(Set.of()).build(),
+            COCA
+        );
+        resourceService.save(
+            Resource
+                .builder()
+                .id(S_1)
+                .name("Site S1")
+                .type(R_SITE)
+                .orgaId(COCA)
+                .parentId(ROOT)
+                .childrenIds(List.of(S_1_1, S_1_2))
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build(),
+            COCA
+        );
+        resourceService.save(
+            Resource
+                .builder()
+                .id(S_1_1)
+                .name("Site S1-1")
+                .type(R_SITE)
+                .orgaId(COCA)
+                .parentId(S_1)
+                .childrenIds(List.of())
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build(),
+            COCA
+        );
+        resourceService.save(
+            Resource
+                .builder()
+                .id(S_1_2)
+                .name("Site S1-2")
+                .type(R_SITE)
+                .orgaId(COCA)
+                .parentId(S_1)
+                .childrenIds(List.of())
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build(),
+            COCA
+        );
+        resourceService.save(
+            Resource
+                .builder()
+                .id(S_2)
+                .name("Site S2")
+                .type(R_SITE)
+                .orgaId(COCA)
+                .parentId(ROOT)
+                .childrenIds(List.of(S_2_1, S_2_2))
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build(),
+            COCA
+        );
+        resourceService.save(
+            Resource
+                .builder()
+                .id(S_2_1)
+                .name("Site S2-1")
+                .type(R_SITE)
+                .orgaId(COCA)
+                .parentId(S_2)
+                .childrenIds(List.of())
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build(),
+            COCA
+        );
+        resourceService.save(
+            Resource
+                .builder()
+                .id(S_2_2)
+                .name("Site S2-2")
+                .type(R_SITE)
+                .orgaId(COCA)
+                .parentId(S_2)
+                .childrenIds(List.of())
+                .tags(Set.of(Tag.builder().id(CAR).build()))
+                .build(),
+            COCA
+        );
     }
 
     public void reloadAssets() {
@@ -267,7 +358,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_1)
                 .name("Resource r1")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r1SourceFile))
                 .childrenIds(List.of())
@@ -278,7 +369,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_2)
                 .name("Resource r2")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r2SourceFile))
                 .childrenIds(List.of())
@@ -289,7 +380,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_3)
                 .name("Resource r3")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r3SourceFile))
                 .childrenIds(List.of())
@@ -300,7 +391,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_4)
                 .name("Resource r4")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r4SourceFile))
                 .childrenIds(List.of())
@@ -311,7 +402,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_5)
                 .name("Resource r5")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r5SourceFile))
                 .childrenIds(List.of())
@@ -322,7 +413,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_SITE_DETAIL)
                 .name("Resource siteDetail")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(siteDetailSourceFile))
                 .childrenIds(List.of())
@@ -333,7 +424,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_DS)
                 .name("Resource rds")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rdsSourceFile))
                 .childrenIds(List.of())
@@ -344,7 +435,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_DS_WITH_FORM)
                 .name("Resource rds with form")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rDsWithFormSourceFile))
                 .childrenIds(List.of())
@@ -355,7 +446,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_DS_LIST)
                 .name("Resource rds with list")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rDsListSourceFile))
                 .childrenIds(List.of())
@@ -366,7 +457,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_DT_TREE)
                 .name("Resource rdt with tree")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rDtTreeSourceFile))
                 .childrenIds(List.of())
@@ -377,7 +468,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGEDS)
                 .name("Resource rpageDs")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageDsSourceFile))
                 .childrenIds(List.of())
@@ -388,7 +479,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGEDS_WITH_FORM)
                 .name("Resource rpageDsWithForm")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageDsWithFormSourceFile))
                 .childrenIds(List.of())
@@ -399,7 +490,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGE_AG_GRID)
                 .name("Resource page agGrid")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageAgGrid))
                 .childrenIds(List.of())
@@ -410,7 +501,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_AG_GRID)
                 .name("Resource agGrid")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rAgGrid))
                 .childrenIds(List.of())
@@ -421,7 +512,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGEDS_LIST)
                 .name("Resource rpageDsList")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageDsListSourceFile))
                 .childrenIds(List.of())
@@ -432,7 +523,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGEDT_TREE)
                 .name("Resource rpageDtTree")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageDtTreeSourceFile))
                 .childrenIds(List.of())
@@ -443,7 +534,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_FORM)
                 .name("Resource form")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rFormSourceFile))
                 .childrenIds(List.of())
@@ -454,7 +545,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_LAYOUT)
                 .name("Resource layout")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rlayoutSourceFile))
                 .childrenIds(List.of())
@@ -465,7 +556,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGE1)
                 .name("Resource page 1")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpage1SourceFile))
                 .childrenIds(List.of())
@@ -476,7 +567,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGE2)
                 .name("Resource page 2")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpage2SourceFile))
                 .childrenIds(List.of())
@@ -487,7 +578,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_MENU_TOP)
                 .name("Resource menutop")
-                .type(RESOURCE)
+                .type(R_RESOURCE)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rmenutopSourceFile))
                 .childrenIds(List.of())

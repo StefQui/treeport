@@ -214,7 +214,7 @@ public class SiteService {
     public Optional<Site> getSiteById(String id, String orgaId) {
         List<Site> r = siteRepository.findByIdAndOrgaId(id, orgaId);
         if (r.size() > 1) {
-            throw new RuntimeException("pb 12345");
+            throw new RuntimeException("pb 12345 multiple children " + id);
         }
         if (r.size() == 0) {
             return null;

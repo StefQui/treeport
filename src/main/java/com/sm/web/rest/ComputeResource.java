@@ -71,6 +71,7 @@ public class ComputeResource {
     public ResponseEntity reloadAssets() throws URISyntaxException {
         log.debug("REST request to reloadAssets");
         initialLoadService.reloadAssets();
+        initialLoadService.reloadResourceSites();
         return ResponseEntity.ok().build();
     }
 

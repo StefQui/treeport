@@ -1,5 +1,6 @@
 package com.sm.service;
 
+import static com.sm.domain.attribute.AssetKey.resource;
 import static com.sm.domain.attribute.AssetKey.resourceResource;
 import static com.sm.domain.attribute.AssetKey.site;
 import static com.sm.domain.attribute.AssetKey.siteResource;
@@ -90,12 +91,18 @@ public class AttributeKeyUtils {
     ) {
         if (site.equals(assetKey)) {
             return siteKey(s.getId(), attKey, campaignType, campaign);
+        } else if (AssetKey.resource.equals(assetKey)) {
+            return resourceKey(resource.getId(), attKey, campaignType, campaign);
         } else if (siteResource.equals(assetKey)) {
             return siteResourceKey(s.getId(), resource2.getId(), attKey, campaignType, campaign);
         } else if (resourceResource.equals(assetKey)) {
             return resourceResourceKey(resource.getId(), resource2.getId(), attKey, campaignType, campaign);
         }
         throw new RuntimeException("to implement buildKeu with " + assetKey);
+    }
+
+    public static String resourceKey(String s, String attKey, String campaignType, String campaign) {
+        return keyWithOneResource(resource, s, attKey, campaignType, campaign);
     }
 
     public static String siteKey(String s, String attKey, String campaignType, String campaign) {
@@ -143,7 +150,7 @@ public class AttributeKeyUtils {
     }
 
     public static String objToString(AttributeKeyAsObj obj) {
-        if (site.name().equals(obj.getAssetType())) {
+        if (site.name().equals(obj.getAssetType()) || resource.name().equals(obj.getAssetType())) {
             return format(
                 ATTRIBUTE_PATTERN,
                 obj.getAssetType(),

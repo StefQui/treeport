@@ -653,6 +653,16 @@ public class InitialLoadService {
         Attribute att2 = attOpt2.get().toBuilder().attributeValue(BooleanValue.builder().value(true).build()).build();
         attributeService.save(att1);
         attributeService.save(att2);
+
+        String attId3 = "resource:s1:toSite:period:2023";
+        String attId4 = "resource:s1:isCert:period:2023";
+        Optional<Attribute> attOpt3 = attributeService.findByIdAndOrgaId(attId1, COCA);
+        Optional<Attribute> attOpt4 = attributeService.findByIdAndOrgaId(attId2, COCA);
+        Attribute att3 = attOpt3.get().toBuilder().attributeValue(DoubleValue.builder().value(121.).build()).build();
+        Attribute att4 = attOpt4.get().toBuilder().attributeValue(BooleanValue.builder().value(false).build()).build();
+        attributeService.save(att3);
+        attributeService.save(att4);
+
         computeService.reCalculateSomeAttributes(Set.of(attId1, attId2), COCA);
     }
 }

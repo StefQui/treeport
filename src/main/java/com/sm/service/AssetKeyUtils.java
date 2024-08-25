@@ -1,5 +1,6 @@
 package com.sm.service;
 
+import static com.sm.domain.attribute.AssetKey.resource;
 import static com.sm.domain.attribute.AssetKey.resourceResource;
 import static com.sm.domain.attribute.AssetKey.resourceUser;
 import static com.sm.domain.attribute.AssetKey.site;
@@ -61,7 +62,7 @@ public class AssetKeyUtils {
     public static String getSite(AssetKey assetKey, Site s) {
         if (site.equals(assetKey) || (siteResource.equals(assetKey))) {
             return s.getId();
-        } else if (resourceResource.equals(assetKey) || resourceUser.equals(assetKey)) {
+        } else if (resourceResource.equals(assetKey) || resource.equals(assetKey) || resourceUser.equals(assetKey)) {
             return null;
         }
         throw new RuntimeException("to implement getSite " + assetKey);
@@ -70,7 +71,7 @@ public class AssetKeyUtils {
     public static String getResource(AssetKey assetKey, Resource resource) {
         if (site.equals(assetKey) || (siteResource.equals(assetKey))) {
             return null;
-        } else if (resourceResource.equals(assetKey) || resourceUser.equals(assetKey)) {
+        } else if (resourceResource.equals(assetKey) || resourceUser.equals(assetKey) || AssetKey.resource.equals(assetKey)) {
             return resource.getId();
         }
         throw new RuntimeException("to implement getResource " + assetKey);
@@ -79,7 +80,7 @@ public class AssetKeyUtils {
     public static String getResource2(AssetKey assetKey, Resource resource2) {
         if (resourceResource.equals(assetKey) || (siteResource.equals(assetKey))) {
             return resource2.getId();
-        } else if (site.equals(assetKey) || resourceUser.equals(assetKey)) {
+        } else if (site.equals(assetKey) || resourceUser.equals(assetKey) || resource.equals(assetKey)) {
             return null;
         }
         throw new RuntimeException("to implement getResource2 " + assetKey);

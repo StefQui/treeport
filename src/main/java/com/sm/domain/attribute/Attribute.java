@@ -110,7 +110,7 @@ public class Attribute implements Serializable {
     @Builder.Default
     private Set<Tag> tags = new HashSet<>();
 
-    public String getSiteFragment() {
+    public String getAssetFragment() {
         if (id == null) {
             return "-";
         }

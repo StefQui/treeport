@@ -183,4 +183,8 @@ public class ResourceService {
     public void deleteAllByType(String type) {
         resourceRepository.deleteByType(type);
     }
+
+    public List<Resource> findAllRoots(String orgaId) {
+        return resourceRepository.findByOrgaIdAndParentId(orgaId, null);
+    }
 }

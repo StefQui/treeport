@@ -42,6 +42,9 @@ public class ComputeService {
     SiteService siteService;
 
     @Autowired
+    ResourceService resourceService;
+
+    @Autowired
     CampaignService campaignService;
 
     @Autowired
@@ -63,7 +66,8 @@ public class ComputeService {
     ConsoCalculator<Long> longCalculator = new ConsoCalculator();
 
     public void applyCampaigns(@NonNull String orgaId, List<String> ids) {
-        campaignService.findAllByIdsAndOrgaId(ids, orgaId).stream().forEach(c -> this.applyCampaign(c, orgaId));
+        campaignService.findAllByIdsAndOrgaId(ids, orgaId).stream().forEach(c -> this.applyCampaignOnSite(c, orgaId));
+        campaignService.findAllByIdsAndOrgaId(ids, orgaId).stream().forEach(c -> this.applyCampaignOnResource(c, orgaId));
         //        campaignService.findAllCampaigns().stream().forEach(c -> this.applyCampaign(c, orgaId));
     }
 
@@ -72,7 +76,7 @@ public class ComputeService {
         //        campaignService.findAllCampaigns().stream().forEach(c -> this.applyCampaign(c, orgaId));
     }
 
-    private void applyCampaign(Campaign campaign, @NonNull String orgaId) {
+    private void applyCampaignOnSite(Campaign campaign, @NonNull String orgaId) {
         Map<String, List<AttributeConfig>> keyOrderedConfigsMaps = getOrderedConfigs(orgaId, campaign);
         siteService
             .findAllRootSites(orgaId)
@@ -80,6 +84,19 @@ public class ComputeService {
             .forEach(root -> {
                 this.applyCampaignForSiteAndKeyConfigsMap(campaign, root, keyOrderedConfigsMaps, orgaId);
                 this.validateForCampaignAndSite(campaign, root, orgaId);
+            });
+
+        treeShake(keyOrderedConfigsMaps, campaign, orgaId);
+    }
+
+    private void applyCampaignOnResource(Campaign campaign, @NonNull String orgaId) {
+        Map<String, List<AttributeConfig>> keyOrderedConfigsMaps = getOrderedConfigs(orgaId, campaign);
+        resourceService
+            .findAllRoots(orgaId)
+            .stream()
+            .forEach(root -> {
+                this.applyCampaignOnResourcesForResourceAndKeyConfigsMap(campaign, root, keyOrderedConfigsMaps, orgaId);
+                this.validateForCampaignAndResource(campaign, root, orgaId);
             });
 
         treeShake(keyOrderedConfigsMaps, campaign, orgaId);
@@ -106,18 +123,40 @@ public class ComputeService {
 
     private void validateForCampaignAndSite(Campaign campaign, Site site, @NonNull String orgaId) {
         List<Attribute> attributes = attributeService.findBySite(site.getId(), orgaId);
-        attributes.forEach(attribute -> validate(site, attribute, campaign, orgaId));
+        attributes.forEach(attribute -> validateSite(site, attribute, campaign, orgaId));
 
         List<Site> children = siteService.getChildren(site, orgaId);
         children.stream().forEach(s -> validateForCampaignAndSite(campaign, s, orgaId));
     }
 
-    private void validate(Site site, Attribute attribute, Campaign campaign, @NonNull String orgaId) {
+    private void validateForCampaignAndResource(Campaign campaign, Resource resource, @NonNull String orgaId) {
+        List<Attribute> attributes = attributeService.findByResource(resource.getId(), orgaId);
+        attributes.forEach(attribute -> validateResource(resource, attribute, campaign, orgaId));
+
+        List<Resource> children = resourceService.getChildren(resource, orgaId);
+        children.stream().forEach(r -> validateForCampaignAndResource(campaign, r, orgaId));
+    }
+
+    private void validateSite(Site site, Attribute attribute, Campaign campaign, @NonNull String orgaId) {
         if (!attribute.getIsAgg()) {
             return;
         }
         AttributeConfig config = attributeConfigService.findByOrgaIdAndId(attribute.getConfigId(), orgaId).get();
-        String consoAttKey = generateConsolidatedAttKey(site, config.getConsoParameterKey(), PERIOD_FRAG, campaign);
+        String consoAttKey = generateConsolidatedAttKeyForSite(site, config.getConsoParameterKey(), PERIOD_FRAG, campaign);
+        Optional<Attribute> consoatt = attributeService.findByIdAndOrgaId(consoAttKey, orgaId);
+        if (consoatt.isPresent() && consoatt.get().getIsAgg()) {
+            attribute.setHasConfigError(true);
+            attribute.setConfigError("Consolidated attribute should not be a consolidable one");
+            attributeService.save(attribute);
+        }
+    }
+
+    private void validateResource(Resource resource, Attribute attribute, Campaign campaign, @NonNull String orgaId) {
+        if (!attribute.getIsAgg()) {
+            return;
+        }
+        AttributeConfig config = attributeConfigService.findByOrgaIdAndId(attribute.getConfigId(), orgaId).get();
+        String consoAttKey = generateConsolidatedAttKeyForResource(resource, config.getConsoParameterKey(), PERIOD_FRAG, campaign);
         Optional<Attribute> consoatt = attributeService.findByIdAndOrgaId(consoAttKey, orgaId);
         if (consoatt.isPresent() && consoatt.get().getIsAgg()) {
             attribute.setHasConfigError(true);
@@ -162,6 +201,17 @@ public class ComputeService {
         );
     }
 
+    private void applyCampaignOnResourcesForResourceAndKeyConfigsMap(
+        Campaign campaign,
+        Resource resource,
+        Map<String, List<AttributeConfig>> keyOrderedConfigsMaps,
+        @NonNull String orgaId
+    ) {
+        keyOrderedConfigsMaps.forEach((configKey, configs) ->
+            this.applyCampaignOnResourcesForResourceAndKeyConfigs(campaign, resource, configKey, configs, orgaId)
+        );
+    }
+
     private void applyCampaignForSiteAndKeyConfigs(
         Campaign campaign,
         Site site,
@@ -184,6 +234,30 @@ public class ComputeService {
         }
         List<Site> children = siteService.getChildren(site, orgaId);
         children.stream().forEach(s -> applyCampaignForSiteAndKeyConfigs(campaign, s, configKey, orderedConfigs, orgaId));
+    }
+
+    private void applyCampaignOnResourcesForResourceAndKeyConfigs(
+        Campaign campaign,
+        Resource resource,
+        String configKey,
+        List<AttributeConfig> orderedConfigs,
+        @NonNull String orgaId
+    ) {
+        boolean found = false;
+        int i = 0;
+        while (!found && i < orderedConfigs.size()) {
+            AttributeConfig config = orderedConfigs.get(i);
+            if (isResourceEligible(resource, config, campaign)) {
+                this.createOrUpdateAttribute(AssetKey.resource, null, resource, null, configKey, campaign, config, orgaId);
+                found = true;
+            }
+            i++;
+        }
+        if (!found) {
+            attributeService.deleteAttributesForResourceAndConfigKey(resource.getId(), configKey, orgaId);
+        }
+        List<Resource> children = resourceService.getChildren(resource, orgaId);
+        children.stream().forEach(r -> applyCampaignOnResourcesForResourceAndKeyConfigs(campaign, r, configKey, orderedConfigs, orgaId));
     }
 
     private boolean isEligible(Site site, AttributeConfig config, Campaign campaign) {
@@ -238,6 +312,58 @@ public class ComputeService {
         return (sitesCheck && parentsCheck && campaignCheck && tagsCheck && childrenTagsOneOfCheck);
     }
 
+    private boolean isResourceEligible(Resource r, AttributeConfig config, Campaign campaign) {
+        if (config.getConfigOrder() == null) {
+            throw new RuntimeException("config order can't be null");
+        }
+
+        // sitesCheck
+        boolean resourcesCheck = false;
+        if (CollectionUtils.isEmpty(config.getSiteIds())) {
+            resourcesCheck = true;
+        } else {
+            if (config.getSiteIds().contains(r.getId())) {
+                resourcesCheck = true;
+            }
+        }
+
+        // parentsCheck
+        boolean parentsCheck;
+        if (CollectionUtils.isEmpty(config.getParentSiteIds())) {
+            parentsCheck = true;
+        } else {
+            Set<String> intersection = config
+                .getParentSiteIds()
+                .stream()
+                .distinct()
+                .filter(psId -> r.getAncestorIds().contains(psId))
+                .collect(Collectors.toSet());
+            parentsCheck = !CollectionUtils.isEmpty(intersection);
+        }
+
+        // childrenTagsOneOfCheck
+        boolean childrenTagsOneOfCheck;
+        if (CollectionUtils.isEmpty(config.getChildrenTagsOneOf())) {
+            childrenTagsOneOfCheck = true;
+        } else {
+            Set<Tag> intersection = config
+                .getChildrenTagsOneOf()
+                .stream()
+                .distinct()
+                .filter(r.getChildrenTags()::contains)
+                .collect(Collectors.toSet());
+            childrenTagsOneOfCheck = !CollectionUtils.isEmpty(intersection);
+        }
+
+        // tags
+        boolean tagsCheck = CollectionUtils.isEmpty(config.getTags()) || this.matchAtLeastOneTag(r.getTags(), config.getTags());
+
+        // campaignCheck
+        boolean campaignCheck = campaign.getId().equals(config.getCampaignId());
+
+        return (resourcesCheck && parentsCheck && campaignCheck && tagsCheck && childrenTagsOneOfCheck);
+    }
+
     private AttributeConfig fetchNextApplyableConfig(AttributeConfig configForSite, AttributeConfig applyableConfig) {
         if (configForSite == null) {
             if (applyableConfig != null) {
@@ -286,7 +412,11 @@ public class ComputeService {
             attribute.setIsAgg(true);
             attribute.setAggInfo(attribute.getAggInfo() != null ? attribute.getAggInfo() : AggInfo.builder().build());
         }
-        attribute.setTags(site.getTags());
+        if (site != null) {
+            attribute.setTags(site.getTags());
+        } else if (resource != null) {
+            attribute.setTags(resource.getTags());
+        }
         attributeService.save(attribute);
     }
 
@@ -308,8 +438,12 @@ public class ComputeService {
         //        fetchImpactersForConfigAndApplyToAttribute(config, attribute, orgaId);
     }
 
-    private String generateConsolidatedAttKey(Site site, String consoParameterKey, String period, Campaign campaign) {
+    private String generateConsolidatedAttKeyForSite(Site site, String consoParameterKey, String period, Campaign campaign) {
         return AttributeKeyUtils.siteKey(site.getId(), consoParameterKey, period, campaign.getId());
+    }
+
+    private String generateConsolidatedAttKeyForResource(Resource resource, String consoParameterKey, String period, Campaign campaign) {
+        return AttributeKeyUtils.resourceKey(resource.getId(), consoParameterKey, period, campaign.getId());
     }
 
     private boolean matchAtLeastOneTag(Set<Tag> tags1, Set<Tag> tags2) {

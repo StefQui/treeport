@@ -1,7 +1,9 @@
 package com.sm.service.mapper;
 
 import com.sm.domain.Resource;
+import com.sm.domain.ResourceWithValues;
 import com.sm.service.dto.ResourceDTO;
+import com.sm.service.dto.ResourceWithValuesDTO;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +20,7 @@ public class ResourceMapper {
 
     private OrganisationMapper organisationMapper;
     private TagMapper tagMapper;
+    private AttributeValueMapper attributeValueMapper;
 
     public ResourceDTO toDto(Resource a) {
         return ResourceDTO
@@ -69,5 +72,24 @@ public class ResourceMapper {
 
     private List<String> toBasicEntitys(List<ResourceDTO> children) {
         return children.stream().map(ResourceDTO::getId).collect(Collectors.toList());
+    }
+
+    public ResourceWithValuesDTO toDtoWithValues(ResourceWithValues resourceWithValues) {
+        ResourceDTO rDTO = toDto(resourceWithValues);
+        ResourceWithValuesDTO result = ResourceWithValuesDTO
+            .builder()
+            .id(rDTO.getId())
+            .name(rDTO.getName())
+            .childrenCount((long) resourceWithValues.getChildrenIds().size())
+            .tags(tagMapper.toDto(resourceWithValues.getTags()))
+            .attributeValues(
+                resourceWithValues
+                    .getAttributeValues()
+                    .entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(e -> e.getKey(), e -> attributeValueMapper.toDto(e.getValue())))
+            )
+            .build();
+        return result;
     }
 }

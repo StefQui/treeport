@@ -2,9 +2,13 @@ package com.sm.web.rest;
 
 import com.sm.domain.Resource;
 import com.sm.repository.ResourceRepository;
+import com.sm.service.ComputeService;
 import com.sm.service.ResourceService;
 import com.sm.service.SiteService;
 import com.sm.service.dto.ResourceDTO;
+import com.sm.service.dto.ResourceUpdateRequestDTO;
+import com.sm.service.dto.ResourceWithValuesAndImpactersDTO;
+import com.sm.service.dto.ResourceWithValuesDTO;
 import com.sm.service.dto.filter.ResourceSearchDTO;
 import com.sm.service.dto.filter.ResourceType;
 import com.sm.web.rest.errors.BadRequestAlertException;
@@ -13,6 +17,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,14 +43,21 @@ public class ResourceResource {
     private final ResourceService resourceService;
     private final SiteService siteService;
     private final ResourceRepository resourceRepository;
+    private final ComputeService computeService;
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    public ResourceResource(ResourceService resourceService, SiteService siteService, ResourceRepository resourceRepository) {
+    public ResourceResource(
+        ResourceService resourceService,
+        SiteService siteService,
+        ResourceRepository resourceRepository,
+        ComputeService computeService
+    ) {
         this.resourceService = resourceService;
         this.resourceRepository = resourceRepository;
         this.siteService = siteService;
+        this.computeService = computeService;
     }
 
     /**
@@ -56,17 +68,34 @@ public class ResourceResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<ResourceDTO> createResource(@RequestBody ResourceDTO resourceDTO) throws URISyntaxException {
-        log.debug("REST request to save Resource : {}", resourceDTO);
+    public ResponseEntity<ResourceWithValuesAndImpactersDTO> createResource(
+        @RequestBody ResourceUpdateRequestDTO request,
+        @PathVariable String orgaId
+    ) throws URISyntaxException {
+        log.debug("REST request to save Resource : {}", request);
         /*
         if (resourceDTO.getId() != null) {
             throw new BadRequestAlertException("A new resource cannot already have an ID", ENTITY_NAME, "idexists");
         }
 */
-        ResourceDTO result = resourceService.save(resourceDTO);
+        Resource r = resourceService.saveWithAttributes(request.getResourceToUpdate(), orgaId);
+        computeService.applyCampaignsForResource(orgaId, r, List.of("2023"));
+        Set<String> impacteds = computeService.reCalculateAllAttributes(orgaId);
+
+        ResourceWithValuesDTO resourceWithAttributes = resourceService.getResourceWithAttributes(
+            r.getId(),
+            orgaId,
+            request.getColumnDefinitions()
+        );
+        ResourceWithValuesAndImpactersDTO result = ResourceWithValuesAndImpactersDTO
+            .builder()
+            .impactedIds(impacteds)
+            .resource(resourceWithAttributes)
+            .build();
+
         return ResponseEntity
-            .created(new URI("/api/resources/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId()))
+            .created(new URI("/api/resources/" + result.getResource().getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getResource().getId()))
             .body(result);
     }
 
@@ -81,15 +110,16 @@ public class ResourceResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<ResourceDTO> updateResource(
+    public ResponseEntity<ResourceWithValuesAndImpactersDTO> updateResource(
         @PathVariable(value = "id", required = false) final String id,
-        @RequestBody ResourceDTO resourceDTO
+        @RequestBody ResourceUpdateRequestDTO request,
+        @PathVariable String orgaId
     ) throws URISyntaxException {
-        log.debug("REST request to update Resource : {}, {}", id, resourceDTO);
-        if (resourceDTO.getId() == null) {
+        log.debug("REST request to update Resource : {}, {}", id, request);
+        if (request.getResourceToUpdate().getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, resourceDTO.getId())) {
+        if (!Objects.equals(id, request.getResourceToUpdate().getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -98,10 +128,25 @@ public class ResourceResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        ResourceDTO result = resourceService.update(resourceDTO);
+        Resource r = resourceService.update(request.getResourceToUpdate(), orgaId);
+
+        computeService.applyCampaignsForResource(orgaId, r, List.of("2023"));
+        Set<String> impacteds = computeService.reCalculateAllAttributes(orgaId);
+
+        ResourceWithValuesDTO resourceWithAttributes = resourceService.getResourceWithAttributes(
+            r.getId(),
+            orgaId,
+            request.getColumnDefinitions()
+        );
+        ResourceWithValuesAndImpactersDTO result = ResourceWithValuesAndImpactersDTO
+            .builder()
+            .impactedIds(impacteds)
+            .resource(resourceWithAttributes)
+            .build();
+
         return ResponseEntity
             .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, resourceDTO.getId()))
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, request.getResourceToUpdate().getId()))
             .body(result);
     }
 
@@ -211,6 +256,8 @@ public class ResourceResource {
         Page page;
         if (ResourceType.SITE.equals(type)) {
             page = siteService.search(resourceSearch, orgaId);
+        } else if (ResourceType.RESOURCE.equals(type)) {
+            page = resourceService.search(resourceSearch, orgaId);
         } else {
             throw new RuntimeException("to implement...");
         }

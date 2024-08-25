@@ -10,16 +10,19 @@ import java.util.List;
 import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.NonFinal;
+import lombok.experimental.SuperBuilder;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Document("resource")
+@NoArgsConstructor
 public class Resource implements Serializable {
 
     private static final long serialVersionUID = 1L;

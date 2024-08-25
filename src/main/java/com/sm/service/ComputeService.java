@@ -76,6 +76,11 @@ public class ComputeService {
         //        campaignService.findAllCampaigns().stream().forEach(c -> this.applyCampaign(c, orgaId));
     }
 
+    public void applyCampaignsForResource(@NonNull String orgaId, Resource r, List<String> ids) {
+        campaignService.findAllByIdsAndOrgaId(ids, orgaId).stream().forEach(c -> this.applyCampaignForResource(c, r, orgaId));
+        //        campaignService.findAllCampaigns().stream().forEach(c -> this.applyCampaign(c, orgaId));
+    }
+
     private void applyCampaignOnSite(Campaign campaign, @NonNull String orgaId) {
         Map<String, List<AttributeConfig>> keyOrderedConfigsMaps = getOrderedConfigs(orgaId, campaign);
         siteService
@@ -107,6 +112,15 @@ public class ComputeService {
 
         this.applyCampaignForSiteAndKeyConfigsMap(campaign, site, keyOrderedConfigsMaps, orgaId);
         this.validateForCampaignAndSite(campaign, site, orgaId);
+
+        treeShake(keyOrderedConfigsMaps, campaign, orgaId);
+    }
+
+    private void applyCampaignForResource(Campaign campaign, Resource r, @NonNull String orgaId) {
+        Map<String, List<AttributeConfig>> keyOrderedConfigsMaps = getOrderedConfigs(orgaId, campaign);
+
+        this.applyCampaignOnResourcesForResourceAndKeyConfigsMap(campaign, r, keyOrderedConfigsMaps, orgaId);
+        this.validateForCampaignAndResource(campaign, r, orgaId);
 
         treeShake(keyOrderedConfigsMaps, campaign, orgaId);
     }

@@ -6,7 +6,7 @@ import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 import Site from './site';
 import SiteDetail from './site-detail';
 import SiteUpdate from './site-update';
-import SiteDeleteDialog from './site-delete-dialog';
+import SiteDeleteDialog from '../resource/resource-delete-dialog';
 
 const SiteRoutes = () => (
   <ErrorBoundaryRoutes>

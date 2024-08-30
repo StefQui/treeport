@@ -5,7 +5,7 @@ import { SmRefToResource } from './sm-resource-content';
 import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
 import { buildPath } from './shared';
 import { DataSetListParams, RuleDefinition, RenderingSliceState } from './type';
-import { useSiteList } from './dataset';
+import { useResourceList } from './dataset';
 
 export const SmDatasetList = (props: {
   params: DataSetListParams;
@@ -19,9 +19,10 @@ export const SmDatasetList = (props: {
   const data: RuleDefinition = props.params.data;
   const resourceIdForDetail: string = props.params.resourceIdForDetail;
 
-  const siteListProp = useSiteList(props, data);
+  const resourceListProp = useResourceList(props, data);
 
-  const siteList: IResourceWithValue[] = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.entities : null;
+  const resourceList: IResourceWithValue[] =
+    resourceListProp && !resourceListProp.loading && resourceListProp.value ? resourceListProp.value.entities : null;
 
   const loading = useAppSelector((state: RenderingSliceState) =>
     state.rendering.componentsState[builtPath] &&
@@ -31,34 +32,34 @@ export const SmDatasetList = (props: {
       : false,
   );
 
-  const totalItems = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.totalItems : null;
+  const totalItems = resourceListProp && !resourceListProp.loading && resourceListProp.value ? resourceListProp.value.totalItems : null;
   console.log('totalItems', totalItems);
 
   // const refToContextRuleDefinition: RefToLocalContextRuleDefinition = data as RefToLocalContextRuleDefinition;
 
-  const renderItems = siteList => {
-    return siteList.map((site, i) => renderItem(site, i));
+  const renderItems = resourceList => {
+    return resourceList.map((resource, i) => renderItem(resource, i));
   };
 
-  const renderItem = (site, i) => {
+  const renderItem = (resource, i) => {
     return resourceIdForDetail ? (
       <SmRefToResource
         currentPath=""
         path=""
-        params={{ resourceId: 'siteDetail' }}
-        itemParam={site}
+        params={{ resourceId: 'resourceDetail' }}
+        itemParam={resource}
         localContextPath=""
         depth="0"
       ></SmRefToResource>
     ) : (
       <p>
-        {site.id} - {site.name}
+        {resource.id} - {resource.name}
       </p>
     );
 
-    // return <SmRefToResource props= {props} key={'item-' + i}>{site.name}</SmRefToResource>;
-    // return <h1 key={'item-' + i}>{site.name}</h1>;
+    // return <SmRefToResource props= {props} key={'item-' + i}>{resource.name}</SmRefToResource>;
+    // return <h1 key={'item-' + i}>{resource.name}</h1>;
   };
 
-  return <div>{siteList ? renderItems(siteList) : '----'}</div>;
+  return <div>{resourceList ? renderItems(resourceList) : '----'}</div>;
 };

@@ -10,13 +10,13 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { IOrganisation } from 'app/shared/model/organisation.model';
 import { getEntities as getOrganisations } from 'app/entities/organisation/organisation.reducer';
-import { getEntities as getSites } from 'app/entities/site/site.reducer';
 import { IAttributeConfig } from 'app/shared/model/attribute-config.model';
 import { getEntities as getAttributeConfigs } from 'app/entities/attribute-config/attribute-config.reducer';
 import { ITag } from 'app/shared/model/tag.model';
 import { getEntities as getTags } from 'app/entities/tag/tag.reducer';
 import { IAttribute } from 'app/shared/model/attribute.model';
 import { getEntity, updateEntity, createEntity, reset } from './attribute.reducer';
+import { getResources } from '../resource/resource.reducer';
 
 export const AttributeUpdate = () => {
   const dispatch = useAppDispatch();
@@ -47,7 +47,7 @@ export const AttributeUpdate = () => {
     }
 
     dispatch(getOrganisations({}));
-    dispatch(getSites({}));
+    dispatch(getResources({}));
     dispatch(getAttributeConfigs({}));
     dispatch(getTags({}));
   }, []);

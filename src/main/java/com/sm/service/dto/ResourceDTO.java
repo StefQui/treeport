@@ -24,6 +24,7 @@ public class ResourceDTO implements Serializable {
     private String name;
 
     private String content;
+    private String type;
 
     private OrganisationDTO orga;
 

@@ -2,7 +2,6 @@ import axios from 'axios';
 import { createAsyncThunk, createSlice, isFulfilled, isPending, isRejected } from '@reduxjs/toolkit';
 
 import { IQueryParams, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
-import { ISite } from 'app/shared/model/site.model';
 import { IAttribute, IAttributeWithValue } from 'app/shared/model/attribute.model';
 import { IAttributeIdExploded } from 'app/shared/model/attribute-id-exploded';
 import { IResource } from 'app/shared/model/resource.model';
@@ -22,7 +21,7 @@ import {
   ChildLocalContextPathTarget,
   PageContextPathTarget,
   SpecificLocalContextPathTarget,
-  FetchSiteRequestModel,
+  FetchResourceRequestModel,
 } from './type';
 import { handleDataTree } from './datatree';
 
@@ -35,38 +34,41 @@ const initialState: RenderingState = {
   currentPageId: null,
 };
 
-// const siteApiUrlzzzz = `api/sites${ff}`;
+// const resourceApiUrlzzzz = `api/resources${ff}`;
 const attributeApiUrl = 'api/attributes';
 export const resourceApiUrl = 'api/resources';
 const computeApiUrl = 'api/compute';
 
 // Actions
 
-export const getSites = createAsyncThunk(`rendering/fetch_site_list`, async ({ page, size, sort, orgaId }: IQueryParams) => {
-  const requestUrl = `api/orga/${orgaId}/sites?type=SITE&${
+export const getResources = createAsyncThunk(`rendering/fetch_resource_list`, async ({ page, size, sort, orgaId }: IQueryParams) => {
+  const requestUrl = `api/orga/${orgaId}/resources?type=RESOURCE&${
     sort ? `page=${page}&size=${size}&sort=${sort}&` : ''
   }cacheBuster=${new Date().getTime()}`;
-  return axios.get<ISite[]>(requestUrl);
+  return axios.get<IResource[]>(requestUrl);
 });
 
 export const searchResources = createAsyncThunk(
   `rendering/search`,
   async ({ searchModel, orgaId }: { searchModel: ResourceSearchModel; orgaId: string } & TargetInfo) => {
-    const requestUrl = `${resourceApiUrl}/orga/${orgaId}/search`;
+    const requestUrl = `api/orga/${orgaId}/resources/search`;
     return axios.post<IResourceWithValue[]>(requestUrl, searchModel);
   },
 );
 
-export const getResourceForPageResources = createAsyncThunk(`rendering/fetch_resource`, async ({ resourceId }: { resourceId: string }) => {
-  const requestUrl = `${resourceApiUrl}/${resourceId}`;
-  return axios.get<IResourceWithValue[]>(requestUrl);
-});
+export const getResourceForPageResources = createAsyncThunk(
+  `renderingForPage/fetch_resource`,
+  async ({ resourceId, orgaId }: { resourceId: string; orgaId: string }) => {
+    const requestUrl = `api/orga/${orgaId}/resources/${resourceId}`;
+    return axios.get<IResourceWithValue[]>(requestUrl);
+  },
+);
 
-export const getSiteForRenderingStateParameters = createAsyncThunk(
-  `rendering/fetch_site`,
-  async ({ siteId, orgaId }: FetchSiteRequestModel) => {
-    const requestUrl = `api/orga/${orgaId}/sites/${siteId}`;
-    return axios.get<ISite[]>(requestUrl);
+export const getResourceForRenderingStateParameters = createAsyncThunk(
+  `rendering/fetch_resource`,
+  async ({ resourceId, orgaId }: FetchResourceRequestModel) => {
+    const requestUrl = `api/orga/${orgaId}/resources/${resourceId}`;
+    return axios.get<IResource[]>(requestUrl);
   },
 );
 
@@ -191,6 +193,7 @@ export const RenderingSlice = createSlice({
       .addMatcher(isFulfilled(searchResources), (state: RenderingState, action): RenderingState => {
         const { data, headers } = action.payload;
         const { mainTarget, secondaryTarget } = action.meta.arg;
+        console.log('sendValueTo2...1');
         return sendValueTo2(state, mainTarget, secondaryTarget, {
           loading: false,
           value: {
@@ -216,6 +219,7 @@ export const RenderingSlice = createSlice({
       })
       .addMatcher(isPending(searchResources), (state: RenderingState, action): RenderingState => {
         const { mainTarget, secondaryTarget } = action.meta.arg;
+        console.log('sendValueTo2...2');
         return sendValueTo2(state, mainTarget, secondaryTarget, 'loading');
 
         // return putInRenderingStateSelf(state, path, {
@@ -231,6 +235,7 @@ export const RenderingSlice = createSlice({
       })
       .addMatcher(isRejected(searchResources), (state: RenderingState, action): RenderingState => {
         const { mainTarget, secondaryTarget } = action.meta.arg;
+        console.log('sendValueTo2...3');
         return sendValueTo2(state, mainTarget, secondaryTarget, {
           errorMessage: 'Cannot get the search result',
           loading: false,
@@ -247,7 +252,7 @@ export const RenderingSlice = createSlice({
         //   },
         // });
       })
-      .addMatcher(isFulfilled(getSites), (state: RenderingState, action): RenderingState => {
+      .addMatcher(isFulfilled(getResources), (state: RenderingState, action): RenderingState => {
         const { data, headers } = action.payload;
         const { path } = action.meta.arg;
 
@@ -262,7 +267,7 @@ export const RenderingSlice = createSlice({
           },
         });
       })
-      .addMatcher(isPending(getSites), (state: RenderingState, action): RenderingState => {
+      .addMatcher(isPending(getResources), (state: RenderingState, action): RenderingState => {
         const { path } = action.meta.arg;
 
         return putInRenderingStateSelf(state, path, {
@@ -310,24 +315,27 @@ export const RenderingSlice = createSlice({
           },
         });
       })
-      .addMatcher(isFulfilled(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
+      .addMatcher(isFulfilled(getResourceForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
         const { mainTarget, secondaryTarget } = action.meta.arg;
+        console.log('sendValueTo2...4');
         return sendValueTo2(state, mainTarget, secondaryTarget, {
           value: action.payload.data,
           loading: false,
         });
       })
-      .addMatcher(isPending(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
+      .addMatcher(isPending(getResourceForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
         const { mainTarget, secondaryTarget } = action.meta.arg;
+        console.log('sendValueTo2...5');
         return sendValueTo2(state, mainTarget, secondaryTarget, {
           loading: true,
         });
       })
-      .addMatcher(isRejected(getSiteForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
+      .addMatcher(isRejected(getResourceForRenderingStateParameters), (state: RenderingState, action): RenderingState => {
         const { mainTarget, secondaryTarget } = action.meta.arg;
+        console.log('sendValueTo2...6');
         return sendValueTo2(state, mainTarget, secondaryTarget, {
           loading: false,
-          error: 'Cannot load site...',
+          error: 'Cannot load resource...',
         });
       })
       .addMatcher(isFulfilled(getFieldAttributesAndConfig), (state: RenderingState, action): RenderingState => {

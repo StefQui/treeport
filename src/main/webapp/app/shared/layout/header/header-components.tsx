@@ -6,7 +6,7 @@ import { NavLink as Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { stubbedResources } from 'app/entities/rendering/fake-resource';
 import { ComponentResource } from 'app/entities/rendering/type';
-import { createEntity, getEntities, updateEntity } from 'app/entities/resource/resource.reducer';
+import { createResource, getResources, updateResource } from 'app/entities/resource/resource.reducer';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 export const BrandIcon = props => (
@@ -44,10 +44,11 @@ export const SaveResources = () => {
 
   const getAllEntities = () => {
     dispatch(
-      getEntities({
+      getResources({
         page: 0,
         size: 100,
         sort: 'id',
+        orgaId: 'coca',
       }),
     );
   };
@@ -63,18 +64,26 @@ export const SaveResources = () => {
     const ressource: ComponentResource = stubbedResources[key];
     if (resourceList.find(r => r.id == key)) {
       dispatch(
-        updateEntity({
-          id: key,
-          content: JSON.stringify(ressource.content),
-          orga: { id: 'coca' },
+        updateResource({
+          entity: {
+            id: key,
+            content: JSON.stringify(ressource.content),
+            orga: { id: 'coca' },
+          },
+          orgaId: 'coca',
+          columnDefinitions: [],
         }),
       );
     } else {
       dispatch(
-        createEntity({
-          id: key,
-          content: JSON.stringify(ressource.content),
-          orga: { id: 'coca' },
+        createResource({
+          entity: {
+            id: key,
+            content: JSON.stringify(ressource.content),
+            orga: { id: 'coca' },
+          },
+          orgaId: 'coca',
+          columnDefinitions: [],
         }),
       );
     }

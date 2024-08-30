@@ -6,8 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
-import { getEntity } from './site.reducer';
 import { MyRend } from '../rendering/sm-resource-content';
+import { getResource } from '../resource/resource.reducer';
 
 export const SiteDetail = () => {
   const dispatch = useAppDispatch();
@@ -16,7 +16,7 @@ export const SiteDetail = () => {
   const { orgaId } = useParams<'orgaId'>();
 
   useEffect(() => {
-    dispatch(getEntity({ id, orgaId }));
+    dispatch(getResource({ id, orgaId }));
   }, []);
 
   const siteEntity = useAppSelector(state => state.site.entity);

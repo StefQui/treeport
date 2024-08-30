@@ -34,13 +34,13 @@ import {
   AttributeColumnDefinition,
   RefToLocalContextRuleDefinition,
 } from './type';
-import { useSiteList } from './dataset';
+import { useResourceList } from './dataset';
 
 export const usePaginationProp = (props, data) => {
   const dataProp = useFoundValue(props, data);
   const [pagination, setPagination] = useState(null);
   useEffect(() => {
-    // console.log('siteListProp has changed', siteListProp);
+    // console.log('resourceListProp has changed', resourceListProp);
     if (dataProp && dataProp.paginationState) {
       setPagination(dataProp.paginationState);
     }
@@ -69,11 +69,12 @@ export const SmDatasetTable = (props: {
 
   const data: RuleDefinition = props.params.data;
 
-  const siteListProp = useSiteList(props, data);
+  const resourceListProp = useResourceList(props, data);
 
   const paginationProp = usePaginationProp(props, data);
 
-  const siteList: IResourceWithValue[] = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.entities : null;
+  const resourceList: IResourceWithValue[] =
+    resourceListProp && !resourceListProp.loading && resourceListProp.value ? resourceListProp.value.entities : null;
 
   const loading = useAppSelector((state: RenderingSliceState) =>
     state.rendering.componentsState[builtPath] &&
@@ -83,7 +84,7 @@ export const SmDatasetTable = (props: {
       : false,
   );
 
-  const totalItems = siteListProp && !siteListProp.loading && siteListProp.value ? siteListProp.value.totalItems : null;
+  const totalItems = resourceListProp && !resourceListProp.loading && resourceListProp.value ? resourceListProp.value.totalItems : null;
   // console.log(
   //   'totalItems',
   //   totalItems,
@@ -102,16 +103,16 @@ export const SmDatasetTable = (props: {
   }, []);
 
   const handleSelect = selected => () => {
-    console.log('handleSelect', props.localContextPath, props.params.selectedSiteKeyInLocalContext, selected);
+    console.log('handleSelect', props.localContextPath, props.params.selectedResourceKeyInLocalContext, selected);
     // dispatch(setInLocalState({ localContextPath: props.localContextPath,       parameterKey: props.params[PARAMS_SITE_LIST_SELECTED_SITE_KEY],value: { value: { entityType: 'SITE', [ENTITY_KEY]: selected } , loading: false} }));
     dispatch(
       setInLocalState({
         localContextPath: props.localContextPath,
-        parameterKey: props.params.selectedSiteKeyInLocalContext,
+        parameterKey: props.params.selectedResourceKeyInLocalContext,
         value: { value: selected.id, loading: false },
       }),
     );
-    dispatch(setAction({ source: builtPath, actionType: 'selectSite', entity: { entityType: 'SITE', entity: selected } }));
+    dispatch(setAction({ source: builtPath, actionType: 'selectResource', entity: { entityType: 'SITE', entity: selected } }));
   };
 
   const refToContextRuleDefinition: RefToLocalContextRuleDefinition = data as RefToLocalContextRuleDefinition;
@@ -142,18 +143,18 @@ export const SmDatasetTable = (props: {
     dispatch(
       setInLocalState({
         localContextPath: props.localContextPath,
-        parameterKey: props.params.selectedSiteKeyInLocalContext,
+        parameterKey: props.params.selectedResourceKeyInLocalContext,
         value: { value: null, loading: false },
       }),
     );
-    // dispatch(setAction({ source: builtPath, actionType: 'selectSite', entity: { entityType: 'SITE', entity: selected } }));
+    // dispatch(setAction({ source: builtPath, actionType: 'selectResource', entity: { entityType: 'SITE', entity: selected } }));
   };
 
   return (
     <div>
-      {paginationProp && siteList ? (
+      {paginationProp && resourceList ? (
         <div>
-          <h2 id="site-heading" data-cy="SiteHeading">
+          <h2 id="resource-heading" data-cy="ResourceHeading">
             DataSet
             <div className="d-flex justify-content-end">
               <Button className="me-2" color="info" onClick={handleCancelSelection} disabled={loading}>
@@ -161,17 +162,17 @@ export const SmDatasetTable = (props: {
               </Button>
               <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
                 <FontAwesomeIcon icon="sync" spin={loading} />{' '}
-                <Translate contentKey="treeportApp.site.home.refreshListLabel">Refresh List</Translate>
+                <Translate contentKey="treeportApp.resource.home.refreshListLabel">Refresh List</Translate>
               </Button>
-              <Link to="/site/new" className="btn btn-primary jh-create-entity" id="jh-create-entity" data-cy="entityCreateButton">
+              <Link to="/resource/new" className="btn btn-primary jh-create-entity" id="jh-create-entity" data-cy="entityCreateButton">
                 <FontAwesomeIcon icon="plus" />
                 &nbsp;
-                <Translate contentKey="treeportApp.site.home.createLabel">Create new Site</Translate>
+                <Translate contentKey="treeportApp.resource.home.createLabel">Create new Resource</Translate>
               </Link>
             </div>
           </h2>
           <div className="table-responsive">
-            {siteList && siteList.length > 0 ? (
+            {resourceList && resourceList.length > 0 ? (
               <Table responsive>
                 <thead>
                   <tr>
@@ -180,21 +181,27 @@ export const SmDatasetTable = (props: {
                   </tr>
                 </thead>
                 <tbody>
-                  {siteList.map((site, i) => (
+                  {resourceList.map((resource, i) => (
                     <tr key={`entity-${i}`} data-cy="entityTable">
-                      {displayColumns(columnDefinitions, site)}
+                      {displayColumns(columnDefinitions, resource)}
                       <td className="text-end">
                         <div className="btn-group flex-btn-group-container">
-                          <Button onClick={handleSelect(site)} color="info" size="sm" data-cy="entitySelectButton">
+                          <Button onClick={handleSelect(resource)} color="info" size="sm" data-cy="entitySelectButton">
                             <FontAwesomeIcon icon="eye" />{' '}
                             <span className="d-none d-md-inline">
                               <Translate contentKey="entity.action.select">Select</Translate>
                             </span>
                           </Button>
-                          <Button tag={Link} to={`/coca/render/rpage2?sid=${site.id}`} color="info" size="sm" data-cy="entitySelectButton">
+                          <Button
+                            tag={Link}
+                            to={`/coca/render/rpage2?sid=${resource.id}`}
+                            color="info"
+                            size="sm"
+                            data-cy="entitySelectButton"
+                          >
                             <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">Open </span>
                           </Button>
-                          <Button tag={Link} to={`/site/${site.id}`} color="info" size="sm" data-cy="entityDetailsButton">
+                          <Button tag={Link} to={`/resource/${resource.id}`} color="info" size="sm" data-cy="entityDetailsButton">
                             <FontAwesomeIcon icon="eye" />{' '}
                             <span className="d-none d-md-inline">
                               <Translate contentKey="entity.action.view">View</Translate>
@@ -202,7 +209,7 @@ export const SmDatasetTable = (props: {
                           </Button>
                           <Button
                             tag={Link}
-                            to={`/site/${site.id}/edit?page=${paginationProp.activePage}&sort=${paginationProp.sort},${paginationProp.order}`}
+                            to={`/resource/${resource.id}/edit?page=${paginationProp.activePage}&sort=${paginationProp.sort},${paginationProp.order}`}
                             color="primary"
                             size="sm"
                             data-cy="entityEditButton"
@@ -214,7 +221,7 @@ export const SmDatasetTable = (props: {
                           </Button>
                           <Button
                             onClick={() =>
-                              (location.href = `/site/${site.id}/delete?page=${paginationProp.activePage}&sort=${paginationProp.sort},${paginationProp.order}`)
+                              (location.href = `/resource/${resource.id}/delete?page=${paginationProp.activePage}&sort=${paginationProp.sort},${paginationProp.order}`)
                             }
                             color="danger"
                             size="sm"
@@ -234,13 +241,13 @@ export const SmDatasetTable = (props: {
             ) : (
               !loading && (
                 <div className="alert alert-warning">
-                  <Translate contentKey="treeportApp.site.home.notFound">No Sites found</Translate>
+                  <Translate contentKey="treeportApp.resource.home.notFound">No Resources found</Translate>
                 </div>
               )
             )}
           </div>
           {totalItems ? (
-            <div className={siteList && siteList.length > 0 ? '' : 'd-none'}>
+            <div className={resourceList && resourceList.length > 0 ? '' : 'd-none'}>
               <div className="justify-content-center d-flex">
                 <JhiItemCount page={paginationProp.activePage} total={totalItems} itemsPerPage={paginationProp.itemsPerPage} i18nEnabled />
               </div>
@@ -264,15 +271,15 @@ export const SmDatasetTable = (props: {
     </div>
   );
 };
-const displayColumns = (columnDefinitions: ColumnDefinition[], site: IResourceWithValue) => {
+const displayColumns = (columnDefinitions: ColumnDefinition[], resource: IResourceWithValue) => {
   return columnDefinitions.map((colDef, i) => {
     const key = 'colkey' + i;
     if (colDef.columnType === 'ATTRIBUTE') {
-      return displayAttributeColumn(colDef as AttributeColumnDefinition, site, key);
+      return displayAttributeColumn(colDef as AttributeColumnDefinition, resource, key);
     } else if (colDef.columnType === 'ID') {
-      return <td key={key}>{site.id}</td>;
+      return <td key={key}>{resource.id}</td>;
     } else if (colDef.columnType === 'NAME') {
-      return <td key={key}>{site.name}</td>;
+      return <td key={key}>{resource.name}</td>;
     } else if (colDef.columnType === 'BUTTON') {
       return <td key={key}>Button...</td>;
     } else {
@@ -281,11 +288,11 @@ const displayColumns = (columnDefinitions: ColumnDefinition[], site: IResourceWi
   });
 };
 
-const displayAttributeColumn = (colDef: AttributeColumnDefinition, site: IResourceWithValue, key) => {
-  if (!site.attributeValues) {
+const displayAttributeColumn = (colDef: AttributeColumnDefinition, resource: IResourceWithValue, key) => {
+  if (!resource.attributeValues) {
     return <td key={key}>-</td>;
   }
-  const val: IAttributeValue = site.attributeValues[generateLabel(colDef)];
+  const val: IAttributeValue = resource.attributeValues[generateLabel(colDef)];
   if (!val) {
     return <td key={key}>--</td>;
   }

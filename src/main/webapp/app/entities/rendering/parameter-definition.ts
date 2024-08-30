@@ -11,7 +11,7 @@ import {
   useCalculatedValueState,
   useChangingCalculatedValueState,
 } from './shared';
-import { getSiteForRenderingStateParameters, setAnyInCorrectState } from './rendering.reducer';
+import { getResourceForRenderingStateParameters, setAnyInCorrectState } from './rendering.reducer';
 import {
   ValueInState,
   Parameters,
@@ -22,7 +22,7 @@ import {
   ActionState,
   SetCurrentPageAction,
   ParameterDefinition,
-  RefToSiteDefinition,
+  RefToResourceDefinition,
   DatasetDefinition,
   ParameterTarget,
   RefToPageContextRuleDefinition,
@@ -139,8 +139,8 @@ export const initLocalContext = (parameterDefinitions: ParameterDefinition[], pr
 export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
   const dispatch = useAppDispatch();
   const target = pdef.target;
-  if (pdef.definition.ruleType === 'refToSite') {
-    handleRefToSite(target, pdef.definition as RefToSiteDefinition, props);
+  if (pdef.definition.ruleType === 'refToResource') {
+    handleRefToResource(target, pdef.definition as RefToResourceDefinition, props);
     // } else if (pdef.definition.ruleType === 'datasetFilter') {
     //   handleDatasetFilter(key, target, pdef.definition as DatasetFilterDefinition, props);
   } else if (pdef.definition.ruleType === 'dataset') {
@@ -245,13 +245,13 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
 //   );
 // };
 
-// const handleDataSet = (key: string, target: ParameterTarget, refToSiteDefinition: DatasetDefinition, props) => {
+// const handleDataSet = (key: string, target: ParameterTarget, refToResourceDefinition: DatasetDefinition, props) => {
 //   const dispatch = useAppDispatch();
-//   const filter = useCalculatedValueState(props, refToSiteDefinition.filter);
-//   const initialPaginationState = refToSiteDefinition.initialPaginationState;
+//   const filter = useCalculatedValueState(props, refToResourceDefinition.filter);
+//   const initialPaginationState = refToResourceDefinition.initialPaginationState;
 //   const setCurrentPageAction = useSetCurrentPageAction(props, initialPaginationState);
 
-//   const dsfDef = refToSiteDefinition.valueFilter as ResourceFilter;
+//   const dsfDef = refToResourceDefinition.valueFilter as ResourceFilter;
 //   const changingFilter: ValueInState = useChangingCalculatedFilterState(props, dsfDef, target);
 //   // const changing = useChangingCalculatedValueState(props, pdef, target);
 //   // useEffect(() => {
@@ -282,11 +282,11 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
 //     'handleDataSet.......handleDataSet',
 //     props.localContextPath,
 //     applyPath(props.localContextPath, ''),
-//     refToSiteDefinition.filter,
+//     refToResourceDefinition.filter,
 //   );
 
-//   // const activePage = useCalculatedValueState(props, refToSiteDefinition.paginationState);
-//   // const paginationState = useCalculatedValueState(props, refToSiteDefinition.paginationState);
+//   // const activePage = useCalculatedValueState(props, refToResourceDefinition.paginationState);
+//   // const paginationState = useCalculatedValueState(props, refToResourceDefinition.paginationState);
 //   // const ps = {
 //   //   activePage: 1,
 //   //   itemsPerPage: 10,
@@ -318,7 +318,7 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
 //       searchResources({
 //         searchModel: {
 //           resourceType: 'SITE',
-//           columnDefinitions: refToSiteDefinition.columnDefinitions,
+//           columnDefinitions: refToResourceDefinition.columnDefinitions,
 //           filter: changingFilter ? changingFilter.value : null,
 //           page: paginationProp.activePage - 1,
 //           size: paginationProp.itemsPerPage,
@@ -334,23 +334,24 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
 //   }, [paginationProp, changingFilter]);
 // };
 
-const handleRefToSite = (target: ParameterTarget, refToSiteDefinition: RefToSiteDefinition, props) => {
+const handleRefToResource = (target: ParameterTarget, refToResourceDefinition: RefToResourceDefinition, props) => {
   const dispatch = useAppDispatch();
   const { orgaId } = useParams<'orgaId'>();
-  const siteIdRef = refToSiteDefinition.sourceSiteId;
-  if (!siteIdRef) {
+  const resourceIdRef = refToResourceDefinition.sourceResourceId;
+  if (!resourceIdRef) {
     return {
       loading: false,
-      error: `sourceSiteId must be defined for refToSite ruleDefinition`,
+      error: `sourceResourceId must be defined for refToResource ruleDefinition`,
     };
   }
-  const siteId = useCalculatedValueState(props, siteIdRef);
+  const resourceId = useCalculatedValueState(props, resourceIdRef);
   useEffect(() => {
-    if (siteId && siteId.value) {
+    if (resourceId && resourceId.value) {
       // pkeys.forEach(paramKey => {
+      console.log('enrichToMainTarget(target, props.localContextPath)', resourceId, enrichToMainTarget(target, props.localContextPath));
       dispatch(
-        getSiteForRenderingStateParameters({
-          siteId: siteId.value,
+        getResourceForRenderingStateParameters({
+          resourceId: resourceId.value,
           mainTarget: enrichToMainTarget(target, props.localContextPath),
           secondaryTarget: {
             secondaryTargetType: 'anyValueInTarget',
@@ -360,7 +361,7 @@ const handleRefToSite = (target: ParameterTarget, refToSiteDefinition: RefToSite
       );
       // });
     }
-  }, [siteId]);
+  }, [resourceId]);
 };
 
 export const calculateTargetLocalContextPath = (childResource = true, props) => {

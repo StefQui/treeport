@@ -19,23 +19,23 @@ import {
 } from './type';
 import { enrichToMainTarget } from './datatree';
 
-export const useSiteList = (props, data) => {
+export const useResourceList = (props, data) => {
   const dataProp = useFoundValue(props, data);
-  const [siteList, setSiteList] = useState(null);
+  const [resourceList, setResourceList] = useState(null);
   useEffect(() => {
-    // console.log('siteListProp has changed', siteListProp);
+    // console.log('resourceListProp has changed', resourceListProp);
     if (dataProp && dataProp.listState) {
-      setSiteList(dataProp.listState);
+      setResourceList(dataProp.listState);
     }
   }, [dataProp]);
-  return siteList;
+  return resourceList;
 };
 
 export const usePaginationProp = (props, data) => {
   const dataProp = useFoundValue(props, data);
   const [pagination, setPagination] = useState(null);
   useEffect(() => {
-    // console.log('siteListProp has changed', siteListProp);
+    // console.log('resourceListProp has changed', resourceListProp);
     if (dataProp && dataProp.paginationState) {
       setPagination(dataProp.paginationState);
     }
@@ -91,14 +91,14 @@ const setPaginationTo = (pagination: PaginationState, props, target: ParameterTa
   );
 };
 
-export const handleDataSet = (target: ParameterTarget, refToSiteDefinition: DatasetDefinition, props) => {
+export const handleDataSet = (target: ParameterTarget, refToResourceDefinition: DatasetDefinition, props) => {
   const dispatch = useAppDispatch();
-  // const filter = useCalculatedValueState(props, refToSiteDefinition.filter);
-  const initialPaginationState = refToSiteDefinition.initialPaginationState;
+  // const filter = useCalculatedValueState(props, refToResourceDefinition.filter);
+  const initialPaginationState = refToResourceDefinition.initialPaginationState;
   const setCurrentPageAction = useSetCurrentPageAction(props, initialPaginationState);
   const refreshDatasetAction = useRefreshDatasetAction(props);
 
-  const dsfDef = refToSiteDefinition.valueFilter as ResourceFilter;
+  const dsfDef = refToResourceDefinition.valueFilter as ResourceFilter;
 
   const changingFilter: ValueInState = useChangingCalculatedFilterState(props, dsfDef, target);
 
@@ -116,7 +116,7 @@ export const handleDataSet = (target: ParameterTarget, refToSiteDefinition: Data
   //   'handleDataSet.......handleDataSet',
   //   props.localContextPath,
   //   applyPath(props.localContextPath, ''),
-  //   refToSiteDefinition.filter,
+  //   refToResourceDefinition.filter,
   // );
 
   const [previousFilter, setPreviousFilter] = useState({ loading: true });
@@ -135,8 +135,8 @@ export const handleDataSet = (target: ParameterTarget, refToSiteDefinition: Data
 
     const request: SearchResourceRequestModel = {
       searchModel: {
-        resourceType: 'SITE',
-        columnDefinitions: refToSiteDefinition.columnDefinitions,
+        resourceType: 'RESOURCE',
+        columnDefinitions: refToResourceDefinition.columnDefinitions,
         filter: changingFilter ? changingFilter.value : null,
         page: paginationProp.activePage - 1,
         size: paginationProp.itemsPerPage,

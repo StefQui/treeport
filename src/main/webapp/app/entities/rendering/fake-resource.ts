@@ -91,11 +91,11 @@ const r3: ComponentResource = {
       //   ],
       // },
       {
-        componentType: 'siteList',
-        path: 'vsmsiteList',
+        componentType: 'resourceList',
+        path: 'vsmresourceList',
         col: 8,
         params: {
-          selectedSiteKeyInLocalContext: 'sid99',
+          selectedResourceKeyInLocalContext: 'sid99',
         },
       },
       {
@@ -131,7 +131,7 @@ const r3: ComponentResource = {
                 },
               },
               // {
-              //   parameterKey: 'site2',
+              //   parameterKey: 'resource2',
               //   definition: {
               //     ruleType: 'refToPageContext',
               //     path: '/layout-content',
@@ -140,7 +140,7 @@ const r3: ComponentResource = {
               // },
               {
                 target: {
-                  parameterKey: 'siteIdFromSiteList',
+                  parameterKey: 'resourceIdFromResourceList',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -162,12 +162,12 @@ const r3: ComponentResource = {
               },
               {
                 target: {
-                  parameterKey: 'thesite44',
+                  parameterKey: 'theresource44',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
-                  ruleType: 'refToSite',
-                  sourceSiteId: {
+                  ruleType: 'refToResource',
+                  sourceResourceId: {
                     ruleType: 'refToLocalContext',
                     path: '/layout-content',
                     sourceParameterKey: 'myInputContent',
@@ -176,12 +176,12 @@ const r3: ComponentResource = {
               },
               {
                 target: {
-                  parameterKey: 'thesiteFromTheList',
+                  parameterKey: 'theresourceFromTheList',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
-                  ruleType: 'refToSite',
-                  sourceSiteId: {
+                  ruleType: 'refToResource',
+                  sourceResourceId: {
                     ruleType: 'refToLocalContext',
                     path: '/layout-content',
                     sourceParameterKey: 'sid99',
@@ -221,7 +221,7 @@ const r3: ComponentResource = {
             },
             parameterDefinitions: [
               // {
-              //   parameterKey: 'siteIdFromSiteList',
+              //   parameterKey: 'resourceIdFromResourceList',
               //   target: {
               //     targetType: 'currentLocalContextPath',
               //   },
@@ -232,13 +232,13 @@ const r3: ComponentResource = {
               //   },
               // },
               // {
-              //   parameterKey: 'thesiteFromTheList',
+              //   parameterKey: 'theresourceFromTheList',
               //   target: {
               //     targetType: 'childLocalContextPath',
               //   },
               //   definition: {
-              //     ruleType: 'refToSite',
-              //     sourceSiteId: {
+              //     ruleType: 'refToResource',
+              //     sourceResourceId: {
               //       ruleType: 'refToLocalContext',
               //       path: '/layout-content',
               //       sourceParameterKey: 'sid99',
@@ -263,7 +263,7 @@ const r3: ComponentResource = {
         params: {
           textValue: {
             ruleType: 'constant',
-            constValue: 'Select a site...',
+            constValue: 'Select a resource...',
           },
         },
       },
@@ -275,7 +275,7 @@ const r3: ComponentResource = {
       //     resourceId: 'rform',
       //     arguments: {
       //       selectedResource: {
-      //         refToPath: '/pag/vp8/vp/vsmsiteList',
+      //         refToPath: '/pag/vp8/vp/vsmresourceList',
       //         property: 'selected',
       //       },
       //     },
@@ -399,11 +399,11 @@ const r5: ComponentResource = {
       // },
       // {
       //   componentType: 'SmText',
-      //   path: 'ref-to-local-siteName',
+      //   path: 'ref-to-local-resourceName',
       //   params: {
       //     textValue: {
       //       refToLocalContext: {
-      //         parameterKey: 'site1',
+      //         parameterKey: 'resource1',
       //         property: 'name',
       //       },
       //     },
@@ -454,24 +454,24 @@ const r5: ComponentResource = {
       },
       {
         componentType: 'SmText',
-        path: 'ref-to-thesite44',
+        path: 'ref-to-theresource44',
         params: {
           textValue: {
             ruleType: 'refToLocalContext',
             path: '..',
-            sourceParameterKey: 'thesite44',
+            sourceParameterKey: 'theresource44',
             sourceParameterProperty: 'parent.id',
           },
         },
       },
       {
         componentType: 'SmText',
-        path: 'ref-to-thesite',
+        path: 'ref-to-theresource',
         params: {
           textValue: {
             ruleType: 'refToLocalContext',
             path: '..',
-            sourceParameterKey: 'thesiteFromTheList',
+            sourceParameterKey: 'theresourceFromTheList',
             sourceParameterProperty: 'parent.id',
           },
         },
@@ -489,10 +489,10 @@ const r5: ComponentResource = {
       //   },
       // },
       // {
-      //   componentType: 'SmSiteRef',
+      //   componentType: 'SmResourceRef',
       //   path: 'vsm8800',
       //   params: {
-      //     siteValue: {
+      //     resourceValue: {
       //       refToPath: {
       //         path: '../..',
       //         property: 'selectedResource',
@@ -507,14 +507,14 @@ const r5: ComponentResource = {
       //   params: {
       //     textValue: {
       //       const: {
-      //         constValue: 'To site',
+      //         constValue: 'To resource',
       //       },
       //     },
       //   },
       // },
       // {
       //   componentType: 'SmAttRef',
-      //   path: 'attRefToSite',
+      //   path: 'attRefToResource',
       //   col: 6,
       //   params: {
       //     resourceId: {
@@ -530,7 +530,7 @@ const r5: ComponentResource = {
       //     },
       //     attConfig: {
       //       const: {
-      //         constValue: 'toSite',
+      //         constValue: 'toResource',
       //       },
       //     },
       //   },
@@ -605,10 +605,10 @@ const r5: ComponentResource = {
   ],
 };
 
-const siteDetail: ComponentResource = {
+const resourceDetail: ComponentResource = {
   content: {
     componentType: 'verticalPanel',
-    path: 'vp-rds-sitedetail',
+    path: 'vp-rds-resourcedetail',
     border: true,
     items: [
       {
@@ -712,7 +712,7 @@ const rDsList: ComponentResource = {
             path: '',
             sourceParameterKey: 'myds',
           },
-          resourceIdForDetail: 'siteDetail',
+          resourceIdForDetail: 'resourceDetail',
         },
       },
     ],
@@ -778,7 +778,7 @@ const rDtTree: ComponentResource = {
             path: '',
             sourceParameterKey: 'mydt1',
           },
-          resourceIdForDetail: 'siteDetail',
+          resourceIdForDetail: 'resourceDetail',
         },
       },
     ],
@@ -906,7 +906,7 @@ const rDsWithForm: ComponentResource = {
                 path: '',
                 sourceParameterKey: 'myds',
               },
-              selectedSiteKeyInLocalContext: 'sid98',
+              selectedResourceKeyInLocalContext: 'sid98',
             },
           },
         ],
@@ -944,7 +944,7 @@ const rDsWithForm: ComponentResource = {
                 },
               },
               // {
-              //   parameterKey: 'site2',
+              //   parameterKey: 'resource2',
               //   definition: {
               //     ruleType: 'refToPageContext',
               //     path: '/layout-content',
@@ -953,7 +953,7 @@ const rDsWithForm: ComponentResource = {
               // },
               {
                 target: {
-                  parameterKey: 'siteIdFromSiteList',
+                  parameterKey: 'resourceIdFromResourceList',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
@@ -975,12 +975,12 @@ const rDsWithForm: ComponentResource = {
               },
               {
                 target: {
-                  parameterKey: 'thesite44',
+                  parameterKey: 'theresource44',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
-                  ruleType: 'refToSite',
-                  sourceSiteId: {
+                  ruleType: 'refToResource',
+                  sourceResourceId: {
                     ruleType: 'refToLocalContext',
                     path: '/layout-content',
                     sourceParameterKey: 'myInputContent',
@@ -989,12 +989,12 @@ const rDsWithForm: ComponentResource = {
               },
               {
                 target: {
-                  parameterKey: 'thesiteFromTheList',
+                  parameterKey: 'theresourceFromTheList',
                   targetType: 'currentLocalContextPath',
                 },
                 definition: {
-                  ruleType: 'refToSite',
-                  sourceSiteId: {
+                  ruleType: 'refToResource',
+                  sourceResourceId: {
                     ruleType: 'refToLocalContext',
                     path: '/layout-content',
                     sourceParameterKey: 'sid98',
@@ -1034,7 +1034,7 @@ const rDsWithForm: ComponentResource = {
             },
             parameterDefinitions: [
               // {
-              //   parameterKey: 'siteIdFromSiteList',
+              //   parameterKey: 'resourceIdFromResourceList',
               //   target: {
               //     targetType: 'currentLocalContextPath',
               //   },
@@ -1045,13 +1045,13 @@ const rDsWithForm: ComponentResource = {
               //   },
               // },
               // {
-              //   parameterKey: 'thesiteFromTheListzzzzzz',
+              //   parameterKey: 'theresourceFromTheListzzzzzz',
               //   target: {
               //     targetType: 'childLocalContextPath',
               //   },
               //   definition: {
-              //     ruleType: 'refToSite',
-              //     sourceSiteId: {
+              //     ruleType: 'refToResource',
+              //     sourceResourceId: {
               //       ruleType: 'refToLocalContext',
               //       path: '/layout-content',
               //       sourceParameterKey: 'sid98',
@@ -1076,7 +1076,7 @@ const rDsWithForm: ComponentResource = {
         params: {
           textValue: {
             ruleType: 'constant',
-            constValue: 'Select a site here...',
+            constValue: 'Select a resource here...',
           },
         },
       },
@@ -1280,7 +1280,7 @@ const rAgGridServer: ComponentResource = {
             path: '',
             sourceParameterKey: 'mydt1',
           },
-          resourceIdForDetail: 'siteDetail',
+          resourceIdForDetail: 'resourceDetail',
           columnDefinitions: [
             { columnType: 'ID' },
             { columnType: 'NAME' },
@@ -1307,12 +1307,12 @@ const rform: ComponentResource = {
     items: [
       // {
       //   componentType: 'SmText',
-      //   path: 'ref-to-thesite',
+      //   path: 'ref-to-theresource',
       //   params: {
       //     textValue: {
       //       ruleType: 'refToLocalContext',
       //       path: '..',
-      //       sourceParameterKey: 'thesiteFromTheList',
+      //       sourceParameterKey: 'theresourceFromTheList',
       //       sourceParameterProperty: 'name',
       //     },
       //   },
@@ -1325,7 +1325,7 @@ const rform: ComponentResource = {
             resourceId: {
               ruleType: 'refToLocalContext',
               path: '..',
-              sourceParameterKey: 'thesiteFromTheList',
+              sourceParameterKey: 'theresourceFromTheList',
               sourceParameterProperty: 'id',
             },
             campaignId: {
@@ -1336,7 +1336,7 @@ const rform: ComponentResource = {
           fields: [
             {
               fieldType: 'Field',
-              fieldId: 'theToSite',
+              fieldId: 'theToResource',
               attributeConfigId: 'toSite',
               campaignId: {
                 useCurrent: true,
@@ -1370,7 +1370,7 @@ const rform: ComponentResource = {
                   textValue: {
                     ruleType: 'refToLocalContext',
                     path: '..',
-                    sourceParameterKey: 'thesiteFromTheList',
+                    sourceParameterKey: 'theresourceFromTheList',
                     sourceParameterProperty: 'name',
                   },
                 },
@@ -1378,7 +1378,7 @@ const rform: ComponentResource = {
               {
                 componentType: 'AttributeField',
                 path: 'vsmatt',
-                fieldId: 'theToSite',
+                fieldId: 'theToResource',
               },
               {
                 componentType: 'AttributeField',
@@ -1665,7 +1665,7 @@ export const stubbedResources = {
   r3,
   r4,
   r5,
-  siteDetail,
+  resourceDetail,
   rmenuTop,
   rlayout,
   rpage1,

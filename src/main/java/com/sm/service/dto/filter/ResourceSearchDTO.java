@@ -19,7 +19,7 @@ import lombok.extern.jackson.Jacksonized;
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class ResourceSearchDTO {
 
-    private ResourceType resourceType;
+    private String resourceType;
     private List<ColumnDefinitionDTO> columnDefinitions;
     private ResourceFilterDTO filter;
     private Long page;

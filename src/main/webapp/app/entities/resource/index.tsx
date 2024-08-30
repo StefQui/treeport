@@ -15,7 +15,6 @@ const ResourceRoutes = () => (
     <Route path=":id">
       <Route index element={<ResourceDetail />} />
       <Route path="edit" element={<ResourceUpdate />} />
-      <Route path="delete" element={<ResourceDeleteDialog />} />
     </Route>
   </ErrorBoundaryRoutes>
 );

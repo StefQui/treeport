@@ -10,9 +10,8 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { IOrganisation } from 'app/shared/model/organisation.model';
 import { getEntities as getOrganisations } from 'app/entities/organisation/organisation.reducer';
-import { getEntities as getResources } from 'app/entities/resource/resource.reducer';
 import { IResource } from 'app/shared/model/resource.model';
-import { getEntity, updateEntity, createEntity, reset } from './resource.reducer';
+import { getResource, reset } from './resource.reducer';
 
 export const ResourceUpdate = () => {
   const dispatch = useAppDispatch();
@@ -37,11 +36,11 @@ export const ResourceUpdate = () => {
     if (isNew) {
       dispatch(reset());
     } else {
-      dispatch(getEntity(id));
+      // dispatch(getResource(id));
     }
 
     dispatch(getOrganisations({}));
-    dispatch(getResources({}));
+    // dispatch(getResources({}));
   }, []);
 
   useEffect(() => {
@@ -61,9 +60,9 @@ export const ResourceUpdate = () => {
     };
 
     if (isNew) {
-      dispatch(createEntity(entity));
+      // dispatch(createEntity(entity));
     } else {
-      dispatch(updateEntity(entity));
+      // dispatch(updateEntity(entity));
     }
   };
 

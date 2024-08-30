@@ -1,5 +1,4 @@
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { getEntity } from 'app/entities/resource/resource.reducer';
 import { IAttribute, IAttributeValue, IAttributeWithValue, IBooleanValue, IDoubleValue } from 'app/shared/model/attribute.model';
 import React, { useEffect, useState } from 'react';
 import { FieldValues, useForm, UseFormReset } from 'react-hook-form';

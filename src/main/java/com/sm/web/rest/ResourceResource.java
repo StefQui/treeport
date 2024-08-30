@@ -10,7 +10,6 @@ import com.sm.service.dto.ResourceUpdateRequestDTO;
 import com.sm.service.dto.ResourceWithValuesAndImpactersDTO;
 import com.sm.service.dto.ResourceWithValuesDTO;
 import com.sm.service.dto.filter.ResourceSearchDTO;
-import com.sm.service.dto.filter.ResourceType;
 import com.sm.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,7 +34,7 @@ import tech.jhipster.web.util.ResponseUtil;
  * REST controller for managing {@link Resource}.
  */
 @RestController
-@RequestMapping("/api/resources")
+@RequestMapping("/api/orga/{orgaId}/resources")
 public class ResourceResource {
 
     private static final String ENTITY_NAME = "resource";
@@ -164,6 +163,7 @@ public class ResourceResource {
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<ResourceDTO> partialUpdateResource(
         @PathVariable(value = "id", required = false) final String id,
+        @PathVariable String orgaId,
         @RequestBody ResourceDTO resourceDTO
     ) throws URISyntaxException {
         log.debug("REST request to partial update Resource partially : {}, {}", id, resourceDTO);
@@ -197,7 +197,8 @@ public class ResourceResource {
     public ResponseEntity<List<ResourceDTO>> getAllResources(
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         @RequestParam(required = false) String path,
-        @RequestParam(required = false) String type
+        @RequestParam(required = false) String type,
+        @PathVariable String orgaId
     ) {
         log.debug("REST request to get a page of Sites");
         Page<ResourceDTO> page;
@@ -218,7 +219,7 @@ public class ResourceResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the resourceDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ResourceDTO> getResource(@PathVariable String id) {
+    public ResponseEntity<ResourceDTO> getResource(@PathVariable String id, @PathVariable String orgaId) {
         log.debug("REST request to get Resource : {}", id);
         Optional<ResourceDTO> resourceDTO = resourceService.findById(id);
         return ResponseUtil.wrapOrNotFound(resourceDTO);
@@ -231,13 +232,13 @@ public class ResourceResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteResource(@PathVariable String id) {
+    public ResponseEntity<Void> deleteResource(@PathVariable String id, @PathVariable String orgaId) {
         log.debug("REST request to delete Resource : {}", id);
         resourceService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
     }
 
-    @PostMapping("/orga/{orgaId}/search")
+    @PostMapping("/search")
     public ResponseEntity<List> search(@PathVariable(value = "orgaId") final String orgaId, @RequestBody ResourceSearchDTO resourceSearch)
         throws URISyntaxException {
         log.debug("REST search resource : {}", resourceSearch.toString());
@@ -252,15 +253,17 @@ public class ResourceResource {
         }
 */
         //        Optional<List<String>> map = computeService.saveAttributes(orgaId, attributesToSave);
-        ResourceType type = resourceSearch.getResourceType();
+        String type = resourceSearch.getResourceType();
+        Page page = resourceService.search(resourceSearch, orgaId);
+        /*
         Page page;
         if (ResourceType.SITE.equals(type)) {
-            page = siteService.search(resourceSearch, orgaId);
         } else if (ResourceType.RESOURCE.equals(type)) {
             page = resourceService.search(resourceSearch, orgaId);
         } else {
             throw new RuntimeException("to implement...");
         }
+*/
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

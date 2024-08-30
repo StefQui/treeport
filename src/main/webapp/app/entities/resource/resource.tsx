@@ -8,8 +8,6 @@ import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.cons
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
-import { getEntities } from './resource.reducer';
-
 export const Resource = () => {
   const dispatch = useAppDispatch();
 
@@ -25,13 +23,13 @@ export const Resource = () => {
   const totalItems = useAppSelector(state => state.resource.totalItems);
 
   const getAllEntities = () => {
-    dispatch(
-      getEntities({
-        page: paginationState.activePage - 1,
-        size: paginationState.itemsPerPage,
-        sort: `${paginationState.sort},${paginationState.order}`,
-      }),
-    );
+    // dispatch(
+    //   getEntities({
+    //     page: paginationState.activePage - 1,
+    //     size: paginationState.itemsPerPage,
+    //     sort: `${paginationState.sort},${paginationState.order}`,
+    //   }),
+    // );
   };
 
   const sortEntities = () => {

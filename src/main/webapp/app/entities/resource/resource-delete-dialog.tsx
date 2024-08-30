@@ -5,47 +5,56 @@ import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { getEntity, deleteEntity } from './resource.reducer';
+// import { deleteEntity } from './resource.reducer';
 
-export const ResourceDeleteDialog = () => {
+export const ResourceDeleteDialog = ({ showModal, setShowModal, resourceId, onSuccessDelete, onCancelDelete }) => {
   const dispatch = useAppDispatch();
 
   const pageLocation = useLocation();
   const navigate = useNavigate();
   const { id } = useParams<'id'>();
+  const { orgaId } = useParams<'orgaId'>();
 
   const [loadModal, setLoadModal] = useState(false);
-
-  useEffect(() => {
-    dispatch(getEntity(id));
-    setLoadModal(true);
-  }, []);
-
   const resourceEntity = useAppSelector(state => state.resource.entity);
+
+  // useEffect(() => {
+  //   dispatch(getEntity({ id, orgaId }));
+  //   setLoadModal(true);
+  // }, []);
+
+  // const resourceEntity = useAppSelector(state => state.resource.entity);
   const updateSuccess = useAppSelector(state => state.resource.updateSuccess);
 
   const handleClose = () => {
-    navigate('/resource' + pageLocation.search);
+    setShowModal(false);
+    // onCloseDelete(resourceId);
   };
 
   useEffect(() => {
-    if (updateSuccess && loadModal) {
-      handleClose();
-      setLoadModal(false);
+    if (updateSuccess) {
+      console.log('');
+      if (resourceEntity.id) {
+        return;
+      }
+
+      setShowModal(false);
+      onSuccessDelete();
+      // setLoadModal(false);
     }
   }, [updateSuccess]);
 
   const confirmDelete = () => {
-    dispatch(deleteEntity(resourceEntity.id));
+    // dispatch(deleteEntity({ id: resourceId, orgaId }));
   };
 
   return (
-    <Modal isOpen toggle={handleClose}>
+    <Modal isOpen={showModal} toggle={handleClose}>
       <ModalHeader toggle={handleClose} data-cy="resourceDeleteDialogHeading">
         <Translate contentKey="entity.delete.title">Confirm delete operation</Translate>
       </ModalHeader>
       <ModalBody id="treeportApp.resource.delete.question">
-        <Translate contentKey="treeportApp.resource.delete.question" interpolate={{ id: resourceEntity.id }}>
+        <Translate contentKey="treeportApp.resource.delete.question" interpolate={{ id: resourceId }}>
           Are you sure you want to delete this Resource?
         </Translate>
       </ModalBody>

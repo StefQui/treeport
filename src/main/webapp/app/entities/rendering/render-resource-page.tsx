@@ -24,6 +24,8 @@ export const isError = (resourceState: ValueInState) => {
   return resourceState && resourceState.error;
 };
 
+const orgaId = 'coca';
+
 export const useResourceFromPageResources = (resourceId: string, fetchedResourceState: ValueInState): IResource | null => {
   const [resource, setResource] = useState();
   const dispatch = useAppDispatch();
@@ -37,6 +39,7 @@ export const useResourceFromPageResources = (resourceId: string, fetchedResource
       dispatch(
         getResourceForPageResources({
           resourceId,
+          orgaId,
         }),
       );
     }

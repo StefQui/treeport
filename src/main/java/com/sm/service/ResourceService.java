@@ -196,8 +196,11 @@ public class ResourceService {
 
     private AggregationOperation generateSearchMatch(ResourceSearchDTO search, String orgaId) {
         final Document matchCrit = generateSearch(search.getFilter());
+        List<Document> ands = search.getResourceType() == null
+            ? List.of(matchCrit)
+            : List.of(new Document("theType", new Document("$eq", search.getResourceType())), matchCrit);
         if (matchCrit != null) {
-            Document match = new Document("$match", matchCrit);
+            Document match = new Document("$match", new Document("$and", ands));
             return Aggregation.stage(match.toJson());
         }
         return null;

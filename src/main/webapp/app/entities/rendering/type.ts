@@ -9,7 +9,7 @@ export const RENDERING_SLICE_KEY = 'rendering';
 // export const STATE_LAYOUT_ELEMENTS_KEY = 'layoutElements';
 
 export type PARAMETER_SOURCE_TYPE = 'pageContext' | 'localContext';
-export type PARAMETER_TYPE = 'site' | 'string';
+export type PARAMETER_TYPE = 'resource' | 'string';
 export type PARAMETER_SOURCE = {
   source: PARAMETER_SOURCE_TYPE;
   sourceParameterKey: string;
@@ -115,9 +115,9 @@ export type SmAttRefResourceContent = CommonContent & {
   params: AttRefParams;
 };
 
-export type SiteListResourceContent = CommonContent & {
-  componentType: 'siteList';
-  params: SiteListParams;
+export type ResourceListResourceContent = CommonContent & {
+  componentType: 'resourceList';
+  params: ResourceListParams;
 };
 
 export type PageResourceContent = CommonContent & {
@@ -151,7 +151,7 @@ export type ComponentResourceContent =
   | SmRefToResourceResourceContent
   | FormResourceContent
   | SmAttRefResourceContent
-  | SiteListResourceContent
+  | ResourceListResourceContent
   | PageResourceContent
   | MenuResourceContent
   | LayoutElementResourceContent
@@ -187,7 +187,7 @@ export type RENDERING_CONTEXT = { [key: string]: ValueInState };
 export type TargetInfo = { mainTarget: MainTarget; secondaryTarget: SecondaryTarget };
 
 export type SearchResourceRequestModel = { searchModel: ResourceSearchModel; orgaId: string } & TargetInfo;
-export type FetchSiteRequestModel = { siteId: string; orgaId: string } & TargetInfo;
+export type FetchResourceRequestModel = { resourceId: string; orgaId: string } & TargetInfo;
 
 // export const ELEM_LAYOUT_ELEMENT = 'layoutElement';
 // export const ELEM_REF_TO_RESOURCE_ELEMENT = 'SmRefToResource';
@@ -198,14 +198,21 @@ export type FetchSiteRequestModel = { siteId: string; orgaId: string } & TargetI
 // export const RULE_TYPE = 'ruleType';
 // export const DEFINITIONS = 'definitions';
 // export const CONST_VALUE = 'constValue';
-// export const RULE_SOURCE_SITE_ID_VALUE = 'sourceSiteId';
+// export const RULE_SOURCE_SITE_ID_VALUE = 'sourceResourceId';
 
 export const LOCAL_CONTEXT = 'localContext';
 
-export type RuleType = 'constant' | 'refToLocalContext' | 'refToPageContext' | 'refToSite' | 'dataset' | 'itemParamProperty' | 'datatree';
-export type TransformTo = 'site';
+export type RuleType =
+  | 'constant'
+  | 'refToLocalContext'
+  | 'refToPageContext'
+  | 'refToResource'
+  | 'dataset'
+  | 'itemParamProperty'
+  | 'datatree';
+export type TransformTo = 'resource';
 export type ConstantRuleDefinition = { ruleType: 'constant'; constValue: any };
-export type RefToSiteDefinition = { ruleType: 'refToSite'; sourceSiteId: RuleDefinition };
+export type RefToResourceDefinition = { ruleType: 'refToResource'; sourceResourceId: RuleDefinition };
 export type DatasetDefinition = {
   ruleType: 'dataset';
   columnDefinitions: ColumnDefinition[];
@@ -258,8 +265,8 @@ export type RefToLocalContextRuleDefinition = {
   sourceParameterKey: string;
   sourceParameterProperty?: string;
   // transformTo?: TransformTo;
-  // siteIdSourceParameterKey?: string; // if transformTo is 'site'
-  // siteIdSourceParameterProperty?: string; // if transformTo is 'site'
+  // resourceIdSourceParameterKey?: string; // if transformTo is 'resource'
+  // resourceIdSourceParameterProperty?: string; // if transformTo is 'resource'
 };
 export type RefToPageContextRuleDefinition = {
   ruleType: 'refToPageContext';
@@ -267,14 +274,14 @@ export type RefToPageContextRuleDefinition = {
   sourceParameterKey: string;
   sourceParameterProperty?: string;
   // transformTo?: TransformTo;
-  // siteIdSourceParameterKey?: string; // if transformTo is 'site'
-  // siteIdSourceParameterProperty?: string; // if transformTo is 'site'
+  // resourceIdSourceParameterKey?: string; // if transformTo is 'resource'
+  // resourceIdSourceParameterProperty?: string; // if transformTo is 'resource'
 };
 export type RuleDefinition =
   | RefToLocalContextRuleDefinition
   | RefToPageContextRuleDefinition
   | ConstantRuleDefinition
-  | RefToSiteDefinition
+  | RefToResourceDefinition
   | DatasetDefinition
   | DatatreeDefinition
   | ItemParamPropertyRuleDefinition
@@ -315,7 +322,7 @@ export type ParameterDefinition = {
 export type ParameterDefinitions = { parameterDefinitions: ParameterDefinition[] };
 export type LocalContext = { [LOCAL_CONTEXT]: ParameterDefinition[] };
 
-export type SiteListParams = { selectedSiteKeyInLocalContext: string };
+export type ResourceListParams = { selectedResourceKeyInLocalContext: string };
 export type InputParams = { outputParameterKey: string; defaultValue?: RuleDefinition };
 // export type HasParameterDefinitions = { parameterDefinitions?: ParameterDefinition[] };
 export type TextParams = { textValue: RuleDefinition };
@@ -342,7 +349,7 @@ export type ColumnDefinition = IdColumnDefinition | NameColumnDefinition | Attri
 export type DataSetParams = {
   columnDefinitions: ColumnDefinition[];
   data: RuleDefinition;
-  selectedSiteKeyInLocalContext?: string;
+  selectedResourceKeyInLocalContext?: string;
 };
 
 export type DataSetListParams = {
@@ -444,7 +451,7 @@ export type PropertyFilterValue = {
 export type ResourceFilter = AndFilter | OrFilter | PropertyFilter;
 export type ResourceFilterValue = AndFilterValue | OrFilterValue | PropertyFilterValue;
 export type ResourceSearchModel = {
-  resourceType: 'SITE' | 'RESOURCE';
+  resourceType: string;
   columnDefinitions: ColumnDefinition[];
   filter?: ResourceFilterValue;
   page?: number;
@@ -476,7 +483,7 @@ export type FormParams = {
 };
 export type HasTargetChildrenResource = { resourceId: string };
 export type RefToResourceParams = HasTargetChildrenResource;
-export type Params = RefToResourceParams | SiteListParams | TextParams | InputParams | AttRefParams | FormParams;
+export type Params = RefToResourceParams | ResourceListParams | TextParams | InputParams | AttRefParams | FormParams;
 
 export type CommonProps = {
   depth: string;
@@ -507,7 +514,7 @@ export type CurrentPageIdState = string | null;
 export type ActionState = SetCurrentPageAction | UpdateAttributeAction | RefreshDataSetAction | OpenNodeAction | CloseNodeAction;
 // export type EntityAction = {
 //   source: string;
-//   actionType: 'selectSite' | 'updateAttribute' | 'refreshDataset';
+//   actionType: 'selectResource' | 'updateAttribute' | 'refreshDataset';
 //   entity: { entityType: 'SITE' | 'RESOURCE' | 'ATTRIBUTES'; entity?: any; entityIds?: any };
 // } | null;
 export type SetCurrentPageAction = {

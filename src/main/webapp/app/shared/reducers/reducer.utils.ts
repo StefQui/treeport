@@ -8,6 +8,7 @@ import {
   ValidateSliceCaseReducers,
 } from '@reduxjs/toolkit';
 import { AxiosError } from 'axios';
+import { IResourceAndImpacters } from '../model/resource-and-impacters.model';
 import { ISiteAndImpacters } from '../model/site-and-impacters.model';
 
 /**
@@ -73,7 +74,7 @@ export interface EntityState<T> {
   errorMessage: string | null;
   entities: ReadonlyArray<T>;
   entity: T;
-  entityAndImpacters?: ISiteAndImpacters;
+  entityAndImpacters?: IResourceAndImpacters;
   links?: any;
   updating: boolean;
   totalItems?: number;

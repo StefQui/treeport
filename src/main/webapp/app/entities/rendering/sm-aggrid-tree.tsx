@@ -13,7 +13,7 @@ import {
   RuleDefinition,
   SearchResourceRequestModel,
 } from './type';
-import { useSiteTree } from './datatree';
+// import { useSiteTree } from './datatree';
 import { resourceApiUrl, setAction, TreeNode, TreeNodeWrapper } from './rendering.reducer';
 import { Button, Collapse, ListGroup, ListGroupItem } from 'reactstrap';
 
@@ -43,15 +43,16 @@ import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
 import axios from 'axios';
 import { IAttributeValue } from 'app/shared/model/attribute.model';
 import { actionsRenderer } from './aggrid/ActionsCellRenderer';
-import SiteDeleteDialog from '../site/site-delete-dialog';
-import SiteUpdateDialog from '../site/site-update-dialog';
+import ResourceDeleteDialog from '../resource/resource-delete-dialog';
+import ResourceUpdateDialog from '../resource/resource-update-dialog';
 import { handleParameterDefinition } from './parameter-definition';
 import { useParams } from 'react-router';
-import { getEntity } from '../site/site.reducer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ISiteAndImpacters } from 'app/shared/model/site-and-impacters.model';
 import tagReducer, { TagSlice } from '../tag/tag.reducer';
 import { ITag } from 'app/shared/model/tag.model';
+import { IResourceAndImpacters } from 'app/shared/model/resource-and-impacters.model';
+
+export const SITE_TYPE = 'site';
 
 export const SmAggridTree = (props: {
   params: DataSetTreeParams2;
@@ -63,9 +64,9 @@ export const SmAggridTree = (props: {
   const dispatch = useAppDispatch();
   const builtPath = buildPath(props);
   const data: RuleDefinition = props.params.data;
-  const siteTree: TreeNode = useSiteTree(props, data);
+  // const resourceTree: TreeNode = useResourceTree(props, data);
   const columnDefinitions: ColumnDefinition[] = props.params.columnDefinitions;
-  const siteEntity = useAppSelector(state => state.site.entity);
+  const resourceEntity = useAppSelector(state => state.resource.entity);
 
   const [gridParams, setGridParams] = useState(null);
 
@@ -73,13 +74,13 @@ export const SmAggridTree = (props: {
   const [paramsMap, setParamsMap] = useState(null);
   const [rootsParam, setRootsParam] = useState<IServerSideGetRowsParams>();
   const { orgaId } = useParams<'orgaId'>();
-  const apiUrl = `api/resources/orga/${orgaId}/search`;
+  const apiUrl = `api/orga/${orgaId}/resources/search`;
   const [currentAction, setCurrentAction] = useState('init');
 
-  // const siteTree: TreeNode = useSiteTree(props, data);
-  const getChildrenSite = (treePath: string[]): ResourceSearchModel => {
+  // const resourceTree: TreeNode = useResourceTree(props, data);
+  const getChildrenResource = (treePath: string[]): ResourceSearchModel => {
     return {
-      resourceType: 'SITE',
+      resourceType: SITE_TYPE, // TODO CONVERT to parameter
       columnDefinitions,
       filter: {
         filterType: 'AND',
@@ -103,12 +104,12 @@ export const SmAggridTree = (props: {
     };
   };
 
-  const getSitesForPath: (params: IServerSideGetRowsParams) => Promise<any> = async (params: IServerSideGetRowsParams) => {
+  const getResourcesForPath: (params: IServerSideGetRowsParams) => Promise<any> = async (params: IServerSideGetRowsParams) => {
     var request = params.request;
     console.log('paramsparams=', params, request.groupKeys, paramsMap);
     console.log('props.params=', props.params);
 
-    const data = await axios.post<IResourceWithValue[]>(apiUrl, getChildrenSite(request.groupKeys));
+    const data = await axios.post<IResourceWithValue[]>(apiUrl, getChildrenResource(request.groupKeys));
 
     params.success({ rowData: data.data.map(a => ({ ...a, group: a.childrenCount > 0 })) });
   };
@@ -117,126 +118,126 @@ export const SmAggridTree = (props: {
     const dataSource: IServerSideDatasource = {
       getRows: (params: IServerSideGetRowsParams) => {
         console.log('ServerSideDatasource.getRows: params = ', params);
-        getSitesForPath(params);
+        getResourcesForPath(params);
       },
     };
     return dataSource;
   };
 
-  const onCloseEdit = (siteId, isNew) => {
-    // console.log('onCloseEdit... ')
-    setShowUpdateModal(false);
-    // if (isNew) {
-    //   setCurrentAction('add');
-    // } else {
-    //   setCurrentAction('update');
-    // }
-    // if (siteId && currentAction == 'update') {
-    //   console.log('onCloseEdit', siteId, updatingNode, siteEntity);
-    //   updatingNode.updateData(siteEntity);
-    //   // updatingNode.setData(siteEntity);
-    // } else if (parentSiteId && currentAction == 'add') {
-    //   console.log('onCloseEdit parentSiteId', siteEntity);
-    //   gridParams.api.applyServerSideTransaction({
-    //     route: parentRoute,
-    //     add: [siteEntity],
-    //   });
+  // const onCloseEdit = (resourceId, isNew) => {
+  //   // console.log('onCloseEdit... ')
+  //   setShowUpdateModal(false);
+  //   // if (isNew) {
+  //   //   setCurrentAction('add');
+  //   // } else {
+  //   //   setCurrentAction('update');
+  //   // }
+  //   // if (resourceId && currentAction == 'update') {
+  //   //   console.log('onCloseEdit', resourceId, updatingNode, resourceEntity);
+  //   //   updatingNode.updateData(resourceEntity);
+  //   //   // updatingNode.setData(resourceEntity);
+  //   // } else if (parentResourceId && currentAction == 'add') {
+  //   //   console.log('onCloseEdit parentResourceId', resourceEntity);
+  //   //   gridParams.api.applyServerSideTransaction({
+  //   //     route: parentRoute,
+  //   //     add: [resourceEntity],
+  //   //   });
 
-    //   // dispatch(getEntity({ id: parentSiteId, orgaId }));
-    //   // updatingNode.setData(siteEntity);
-    // }
-  };
+  //   //   // dispatch(getEntity({ id: parentResourceId, orgaId }));
+  //   //   // updatingNode.setData(resourceEntity);
+  //   // }
+  // };
   const onSuccessDelete = () => {
     setShowDeleteModal(false);
-    if (siteIdToRemove && currentAction == 'remove') {
-      // console.log('onCloseEdit', siteId, updatingNode, siteEntity);
+    if (resourceIdToRemove && currentAction == 'remove') {
+      // console.log('onCloseEdit', resourceId, updatingNode, resourceEntity);
       gridParams.api.applyServerSideTransaction({
         route: parentRoute,
-        remove: [{ id: siteIdToRemove }],
+        remove: [{ id: resourceIdToRemove }],
       });
       setCurrentAction('none');
-      setParentSiteId(null);
+      setParentResourceId(null);
 
-      // updatingNode.updateData(siteEntity);
-      // updatingNode.setData(siteEntity);
+      // updatingNode.updateData(resourceEntity);
+      // updatingNode.setData(resourceEntity);
     }
   };
   const onCancelDelete = () => {
-    console.log('onCancelDelete', siteId, updatingNode, siteEntity);
-    // updatingNode.setData(updatedSite);
+    console.log('onCancelDelete', resourceId, updatingNode, resourceEntity);
+    // updatingNode.setData(updatedResource);
     setCurrentAction('none');
   };
 
   // useEffect(() => {
-  //    if (siteEntity && currentAction == 'update' && siteId) {
-  //     console.log('onCloseEdit', siteId, updatingNode, siteEntity);
-  //     updatingNode.setData(siteEntity);
+  //    if (resourceEntity && currentAction == 'update' && resourceId) {
+  //     console.log('onCloseEdit', resourceId, updatingNode, resourceEntity);
+  //     updatingNode.setData(resourceEntity);
   //     setCurrentAction('none');
 
-  //     // updatingNode.setData(siteEntity);
-  //   } else if (parentSiteId && siteEntity && currentAction == 'add' && !siteId && !siteIdToRemove) {
-  //     console.log('onCloseEdit parentSiteId', parentRoute, siteEntity);
+  //     // updatingNode.setData(resourceEntity);
+  //   } else if (parentResourceId && resourceEntity && currentAction == 'add' && !resourceId && !resourceIdToRemove) {
+  //     console.log('onCloseEdit parentResourceId', parentRoute, resourceEntity);
   //     gridParams.api.applyServerSideTransaction({
   //       route: parentRoute,
-  //       add: [siteEntity],
+  //       add: [resourceEntity],
   //     });
   //     setCurrentAction('none');
-  //     setParentSiteId(null);
+  //     setParentResourceId(null);
   //   }
 
-  // }, [siteEntity]);
+  // }, [resourceEntity]);
 
   const checkUpdates = (impactedIds: string[]) => {
     const attColDefs: AttributeColumnDefinition[] = columnDefinitions
       .filter(colDef => colDef.columnType === 'ATTRIBUTE')
       .map(colDef => colDef as AttributeColumnDefinition);
     const attPosts = attColDefs.map(colDef => `:${colDef.attributeConfigId}:period:${colDef.campaignId}`);
-    const pre = 'site:'.length;
-    const matchingSiteIds = new Set<string>();
+    const pre = 'resource:'.length;
+    const matchingResourceIds = new Set<string>();
     attPosts.forEach(attPost => {
       impactedIds
         .filter(impacted => impacted.endsWith(attPost))
-        .forEach(impacted => matchingSiteIds.add(impacted.substring(pre, impacted.length - attPost.length)));
+        .forEach(impacted => matchingResourceIds.add(impacted.substring(pre, impacted.length - attPost.length)));
     });
-    console.log('matchingSiteIds', matchingSiteIds);
+    console.log('matchingResourceIds', matchingResourceIds);
     gridParams.api.forEachNode(rowNode => {
-      if (matchingSiteIds.has(rowNode.data.id)) {
+      if (matchingResourceIds.has(rowNode.data.id)) {
         rowNode.updateData({ ...rowNode.data, childrenCount: 100 });
         console.log('updaterowNode', rowNode.data.id);
       }
     });
   };
 
-  const onSuccessUpdate = (entityAndImpacters: ISiteAndImpacters) => {
-    console.log('onSuccessUpdate', entityAndImpacters.site, updatingNode, siteEntity);
-    updatingNode.setData(entityAndImpacters.site);
+  const onSuccessUpdate = (entityAndImpacters: IResourceAndImpacters) => {
+    console.log('onSuccessUpdate', entityAndImpacters.resource, updatingNode, resourceEntity);
+    updatingNode.setData(entityAndImpacters.resource);
     checkUpdates(entityAndImpacters.impactedIds);
     setCurrentAction('none');
-    setSiteId(null);
+    setResourceId(null);
   };
 
-  const onSuccessAdd = (entityAndImpacters: ISiteAndImpacters) => {
+  const onSuccessAdd = (entityAndImpacters: IResourceAndImpacters) => {
     console.log('onSuccessAdd', updatingNode);
     if (updatingNode) {
       updatingNode.updateData({ ...updatingNode.data, group: true });
       console.log('onSuccessAdd 2', entityAndImpacters, parentRoute, { ...updatingNode.data, group: true, childrenCount: 10 });
       gridParams.api.applyServerSideTransaction({
         route: parentRoute,
-        add: [entityAndImpacters.site],
+        add: [entityAndImpacters.resource],
       });
       setCurrentAction('none');
     } else {
       gridParams.api.applyServerSideTransaction({
         route: [],
-        add: [entityAndImpacters.site],
+        add: [entityAndImpacters.resource],
       });
       setCurrentAction('none');
     }
-    setSiteId(null);
+    setResourceId(null);
   };
   const onCancelEdit = () => {
-    console.log('onCancelEdit', siteId, updatingNode, siteEntity);
-    // updatingNode.setData(updatedSite);
+    console.log('onCancelEdit', resourceId, updatingNode, resourceEntity);
+    // updatingNode.setData(updatedResource);
     setCurrentAction('none');
   };
 
@@ -249,19 +250,19 @@ export const SmAggridTree = (props: {
 
   const handleEdit = (node: any) => {
     console.log('handleEdit', node.data.id, node.key);
-    setSiteId(node.data.id);
-    setSiteIdToRemove(null);
+    setResourceId(node.data.id);
+    setResourceIdToRemove(null);
     setCurrentAction('update');
     setUpdatingNode(node);
     setShowUpdateModal(true);
-    // alert('site: ' + site.id);
+    // alert('resource: ' + resource.id);
   };
 
   const handleRemove = (node: any) => {
     console.log('handleRemove', node.data.id, node.key);
     setCurrentAction('remove');
-    setSiteIdToRemove(node.data.id);
-    setSiteId(null);
+    setResourceIdToRemove(node.data.id);
+    setResourceId(null);
     setUpdatingNode(null);
     const route = getRouteToNode(node);
     setParentRoute(route.slice(0, route.length - 1));
@@ -275,12 +276,12 @@ export const SmAggridTree = (props: {
     setUpdatingNode(node);
     setParentRoute(route);
 
-    setParentSiteId(node?.data.id);
-    setSiteId(null);
-    setSiteIdToRemove(null);
+    setParentResourceId(node?.data.id);
+    setResourceId(null);
+    setResourceIdToRemove(null);
     setUpdatingNode(node);
     setShowUpdateModal(true);
-    // alert('site: ' + site.id);
+    // alert('resource: ' + resource.id);
   };
 
   const handleCreateRoot = () => {
@@ -288,9 +289,9 @@ export const SmAggridTree = (props: {
     setUpdatingNode(null);
     setParentRoute([]);
 
-    setParentSiteId(null);
-    setSiteId(null);
-    setSiteIdToRemove(null);
+    setParentResourceId(null);
+    setResourceId(null);
+    setResourceIdToRemove(null);
     setUpdatingNode(null);
     setShowUpdateModal(true);
   };
@@ -299,9 +300,9 @@ export const SmAggridTree = (props: {
   const gridStyle = useMemo(() => ({ height: '100%', width: '100%' }), []);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [siteId, setSiteId] = useState(null);
-  const [siteIdToRemove, setSiteIdToRemove] = useState(null);
-  const [parentSiteId, setParentSiteId] = useState(null);
+  const [resourceId, setResourceId] = useState(null);
+  const [resourceIdToRemove, setResourceIdToRemove] = useState(null);
+  const [parentResourceId, setParentResourceId] = useState(null);
   const [parentRoute, setParentRoute] = useState(null);
 
   const gridOptions: GridOptions = {
@@ -433,23 +434,23 @@ export const SmAggridTree = (props: {
           onGridReady={onGridReady}
         />
       </div>
-      <SiteUpdateDialog
+      <ResourceUpdateDialog
         showModal={showUpdateModal}
         setShowModal={setShowUpdateModal}
         onSuccessUpdate={onSuccessUpdate}
         onSuccessAdd={onSuccessAdd}
         onCancelEdit={onCancelEdit}
         columnDefinitions={columnDefinitions}
-        siteId={siteId}
-        parentSiteId={parentSiteId}
-      ></SiteUpdateDialog>
-      <SiteDeleteDialog
+        resourceId={resourceId}
+        parentResourceId={parentResourceId}
+      ></ResourceUpdateDialog>
+      <ResourceDeleteDialog
         showModal={showDeleteModal}
         setShowModal={setShowDeleteModal}
         onSuccessDelete={onSuccessDelete}
         onCancelDelete={onCancelDelete}
-        siteId={siteIdToRemove}
-      ></SiteDeleteDialog>
+        resourceId={resourceIdToRemove}
+      ></ResourceDeleteDialog>
     </div>
   );
 };

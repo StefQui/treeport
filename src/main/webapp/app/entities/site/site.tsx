@@ -7,8 +7,7 @@ import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons'
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-
-import { getEntities } from './site.reducer';
+import { getResources } from '../resource/resource.reducer';
 
 export const Site = () => {
   const dispatch = useAppDispatch();
@@ -26,7 +25,7 @@ export const Site = () => {
 
   const getAllEntities = () => {
     dispatch(
-      getEntities({
+      getResources({
         page: paginationState.activePage - 1,
         size: paginationState.itemsPerPage,
         sort: `${paginationState.sort},${paginationState.order}`,

@@ -4,12 +4,10 @@ import attribute from 'app/entities/attribute/attribute.reducer';
 import tag from 'app/entities/tag/tag.reducer';
 import campaign from 'app/entities/campaign/campaign.reducer';
 import resource from 'app/entities/resource/resource.reducer';
-import site from 'app/entities/site/site.reducer';
 /* jhipster-needle-add-reducer-import - JHipster will add reducer here */
 
 const entitiesReducers = {
   organisation,
-  site,
   resource,
   attributeConfig,
   attribute,

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
-import { getEntity } from './resource.reducer';
+// import { getEntity } from './resource.reducer';
 import { MyRend } from '../rendering/sm-resource-content';
 
 export const ResourceDetail = () => {
@@ -15,7 +15,7 @@ export const ResourceDetail = () => {
   const { id } = useParams<'id'>();
 
   useEffect(() => {
-    dispatch(getEntity(id));
+    // dispatch(getEntity(id));
   }, []);
 
   const resourceEntity = useAppSelector(state => state.resource.entity);

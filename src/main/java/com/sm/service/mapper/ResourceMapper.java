@@ -29,6 +29,7 @@ public class ResourceMapper {
             .id(a.getId())
             .name(a.getName())
             .content(a.getContent())
+            .type(a.getType())
             .parent(toBasicDto(a.getParentId()))
             .childrens(toDtos(a.getChildrenIds()))
             .tags(tagMapper.toDto(a.getTags()))
@@ -47,6 +48,7 @@ public class ResourceMapper {
         return Resource
             .builder()
             .id(resourceDTO.getId())
+            .type(resourceDTO.getType())
             .orgaId(resourceDTO.getOrga().getId())
             .name(resourceDTO.getName())
             .content(resourceDTO.getContent())
@@ -63,6 +65,7 @@ public class ResourceMapper {
     public void partialUpdate(Resource existingResource, ResourceDTO resourceDTO) {
         existingResource.setName(resourceDTO.getName());
         existingResource.setContent(resourceDTO.getContent());
+        existingResource.setType(resourceDTO.getType());
         existingResource.setOrgaId(resourceDTO.getOrga().getId());
         existingResource.setParentId(resourceDTO.getParent() != null ? resourceDTO.getParent().getId() : null);
         existingResource.setChildrenIds(
@@ -80,6 +83,7 @@ public class ResourceMapper {
             .builder()
             .id(rDTO.getId())
             .name(rDTO.getName())
+            .type(rDTO.getType())
             .childrenCount((long) resourceWithValues.getChildrenIds().size())
             .tags(tagMapper.toDto(resourceWithValues.getTags()))
             .attributeValues(

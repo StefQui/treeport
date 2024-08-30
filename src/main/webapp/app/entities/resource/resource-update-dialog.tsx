@@ -5,32 +5,31 @@ import { translate, Translate, ValidatedField, ValidatedForm } from 'react-jhips
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { getEntities as getOrganisations } from 'app/entities/organisation/organisation.reducer';
-import { getEntities as getSites } from 'app/entities/site/site.reducer';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { getEntity, updateEntity, createEntity, reset } from './site.reducer';
 import { is } from 'immer/dist/internal';
+import { createResource, getResource, reset, updateResource } from './resource.reducer';
 
-export const SiteUpdateDialog = ({
+export const ResourceUpdateDialog = ({
   showModal,
   setShowModal,
-  siteId,
+  resourceId,
   onSuccessUpdate,
   onSuccessAdd,
   onCancelEdit,
-  parentSiteId,
+  parentResourceId,
   columnDefinitions,
 }) => {
   const dispatch = useAppDispatch();
 
   const organisations = useAppSelector(state => state.organisation.entities);
-  const sites = useAppSelector(state => state.site.entities);
-  const siteEntity = useAppSelector(state => state.site.entity);
-  const entityAndImpacters = useAppSelector(state => state.site.entityAndImpacters);
-  const updateSuccess = useAppSelector(state => state.site.updateSuccess);
+  const resources = useAppSelector(state => state.resource.entities);
+  const resourceEntity = useAppSelector(state => state.resource.entity);
+  const entityAndImpacters = useAppSelector(state => state.resource.entityAndImpacters);
+  const updateSuccess = useAppSelector(state => state.resource.updateSuccess);
 
-  const loading = useAppSelector(state => state.site.loading);
-  const updating = useAppSelector(state => state.site.updating);
+  const loading = useAppSelector(state => state.resource.loading);
+  const updating = useAppSelector(state => state.resource.updating);
 
   const [isNew, setIsNew] = useState(false);
 
@@ -38,18 +37,18 @@ export const SiteUpdateDialog = ({
   const { orgaId } = useParams<'orgaId'>();
 
   // useEffect(() => {
-  //   console.log('updating site', siteId);
-  //   dispatch(getEntity(siteId));
+  //   console.log('updating resource', resourceId);
+  //   dispatch(getEntity(resourceId));
   //   setLoadModal(true);
   // }, []);
 
   useEffect(() => {
-    if (!siteId) {
+    if (!resourceId) {
       dispatch(reset());
     } else {
-      dispatch(getEntity({ id: siteId, orgaId }));
+      dispatch(getResource({ id: resourceId, orgaId }));
     }
-  }, [siteId]);
+  }, [resourceId]);
 
   const handleClose = () => {
     setShowModal(false);
@@ -59,63 +58,63 @@ export const SiteUpdateDialog = ({
     if (updateSuccess) {
       // handleClose();
       // setLoadModal(false);
-      console.log('useEffect', isNew, entityAndImpacters, siteId);
+      console.log('useEffect', isNew, entityAndImpacters, resourceId);
       setShowModal(false);
-      if (!isNew && entityAndImpacters && entityAndImpacters.site && entityAndImpacters.site.id === siteId) {
+      if (!isNew && entityAndImpacters && entityAndImpacters.resource && entityAndImpacters.resource.id === resourceId) {
         onSuccessUpdate(entityAndImpacters);
-      } else if (isNew && entityAndImpacters && entityAndImpacters.site && entityAndImpacters.site.id) {
+      } else if (isNew && entityAndImpacters && entityAndImpacters.resource && entityAndImpacters.resource.id) {
         onSuccessAdd(entityAndImpacters);
       }
     }
   }, [updateSuccess]);
 
   const defaultValues = () =>
-    !siteId
+    !resourceId
       ? {
-          parent: { id: parentSiteId },
+          parent: { id: parentResourceId },
           orga: { orga: orgaId },
           childrens: [],
           tags: [],
           tagsAsString: '',
         }
       : {
-          ...siteEntity,
-          tagsAsString: siteEntity.tags ? siteEntity.tags.map(t => t.id).join(',') : '',
-          // orga: siteEntity?.orga?.id,
-          // parent: siteEntity?.parent?.id,
-          // childrens: siteEntity?.childrens?.map(e => e.id.toString()),
+          ...resourceEntity,
+          tagsAsString: resourceEntity.tags ? resourceEntity.tags.map(t => t.id).join(',') : '',
+          // orga: resourceEntity?.orga?.id,
+          // parent: resourceEntity?.parent?.id,
+          // childrens: resourceEntity?.childrens?.map(e => e.id.toString()),
         };
 
   // eslint-disable-next-line complexity
   const saveEntity = values => {
     const entity = {
-      ...siteEntity,
+      ...resourceEntity,
       ...values,
       tags: values.tagsAsString.split(',').length > 0 ? values.tagsAsString.split(',').map(t => ({ id: t, orga: { id: orgaId } })) : [],
       tagsAsString: undefined,
       childrenCount: undefined,
     };
 
-    if (!siteId) {
+    if (!resourceId) {
       setIsNew(true);
-      dispatch(createEntity({ entity, orgaId, columnDefinitions }));
+      dispatch(createResource({ entity, orgaId, columnDefinitions }));
     } else {
       setIsNew(false);
-      dispatch(updateEntity({ entity, orgaId, columnDefinitions }));
+      dispatch(updateResource({ entity, orgaId, columnDefinitions }));
     }
   };
 
   return (
     <Modal isOpen={showModal} toggle={handleClose}>
-      <ModalHeader toggle={handleClose} data-cy="siteDeleteDialogHeading">
+      <ModalHeader toggle={handleClose} data-cy="resourceDeleteDialogHeading">
         <Translate contentKey="entity.delete.title">Confirm delete operation</Translate>
       </ModalHeader>
-      <ModalBody id="treeportApp.site.delete.question">
+      <ModalBody id="treeportApp.resource.delete.question">
         <div>
           <Row className="justify-content-center">
             <Col md="8">
-              <h2 id="treeportApp.site.home.createOrEditLabel" data-cy="SiteCreateUpdateHeading">
-                <Translate contentKey="treeportApp.site.home.createOrEditLabel">Create or edit a Site</Translate>
+              <h2 id="treeportApp.resource.home.createOrEditLabel" data-cy="ResourceCreateUpdateHeading">
+                <Translate contentKey="treeportApp.resource.home.createOrEditLabel">Create or edit a Resource</Translate>
               </h2>
             </Col>
           </Row>
@@ -128,16 +127,23 @@ export const SiteUpdateDialog = ({
                   <ValidatedField
                     name="id"
                     required
-                    id="site-id"
-                    readOnly={siteId}
+                    id="resource-id"
+                    readOnly={resourceId}
                     label={translate('global.field.id')}
                     validate={{ required: true }}
                   />
-                  <ValidatedField label={translate('treeportApp.site.name')} id="site-name" name="name" data-cy="name" type="text" />
-                  <ValidatedField label={'Tags'} id="site-tagsAsString" name="tagsAsString" data-cy="name" type="text" />
+                  <ValidatedField label={'Type'} id="resource-type" name="type" data-cy="type" type="text" />
                   <ValidatedField
-                    label={translate('treeportApp.site.content')}
-                    id="site-content"
+                    label={translate('treeportApp.resource.name')}
+                    id="resource-name"
+                    name="name"
+                    data-cy="name"
+                    type="text"
+                  />
+                  <ValidatedField label={'Tags'} id="resource-tagsAsString" name="tagsAsString" data-cy="name" type="text" />
+                  <ValidatedField
+                    label={translate('treeportApp.resource.content')}
+                    id="resource-content"
                     name="content"
                     data-cy="content"
                     type="textarea"
@@ -160,7 +166,7 @@ export const SiteUpdateDialog = ({
           &nbsp;
           <Translate contentKey="entity.action.cancel">Cancel</Translate>
         </Button>
-        {/* <Button id="jhi-confirm-delete-site" data-cy="entityConfirmDeleteButton" color="danger" onClick={confirmDelete}>
+        {/* <Button id="jhi-confirm-delete-resource" data-cy="entityConfirmDeleteButton" color="danger" onClick={confirmDelete}>
           <FontAwesomeIcon icon="trash" />
           &nbsp;
           <Translate contentKey="entity.action.delete">Delete</Translate>
@@ -170,4 +176,4 @@ export const SiteUpdateDialog = ({
   );
 };
 
-export default SiteUpdateDialog;
+export default ResourceUpdateDialog;

@@ -22,7 +22,7 @@ const useExplodedAttVal = (resourceIdVal, campaignIdVal, attConfigVal): string |
 const loadAttribute = (props, resourceIdVal, attConfigVal, campaignIdVal) =>
   getAttribute({
     exploded: {
-      siteId: resourceIdVal,
+      resourceId: resourceIdVal,
       campaignId: campaignIdVal,
       key: attConfigVal,
     },

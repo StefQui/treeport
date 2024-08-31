@@ -149,6 +149,7 @@ export const SmAggridTree = (props: {
   // };
   const onSuccessDelete = () => {
     setShowDeleteModal(false);
+    console.log('onSuccessDelete', resourceIdToRemove, currentAction, parentRoute);
     if (resourceIdToRemove && currentAction == 'remove') {
       // console.log('onCloseEdit', resourceId, updatingNode, resourceEntity);
       gridParams.api.applyServerSideTransaction({
@@ -389,7 +390,7 @@ export const SmAggridTree = (props: {
   }, []);
   const isServerSideGroupOpenByDefault = useCallback((params: IsServerSideGroupOpenByDefaultParams) => {
     // open first two levels by default
-    return params.rowNode.level < 2;
+    return params.rowNode.level < 0;
   }, []);
   const isServerSideGroup = useCallback((dataItem: any) => {
     // indicate if node is a group

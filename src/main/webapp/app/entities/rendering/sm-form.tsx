@@ -257,5 +257,5 @@ const renderFormAttributeField = (props, attribute: IAttributeWithValue) => {
 };
 
 export const buildAttributeIdFormExploded = (resourceIdVal, attConfigVal, campaignIdVal): string => {
-  return `site:${resourceIdVal}:${attConfigVal}:period:${campaignIdVal}`;
+  return `resource:${resourceIdVal}:${attConfigVal}:period:${campaignIdVal}`;
 };

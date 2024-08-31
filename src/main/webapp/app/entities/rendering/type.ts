@@ -3,10 +3,6 @@ import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
 import { MainTarget, SecondaryTarget } from './rendering.reducer';
 
 export const RENDERING_SLICE_KEY = 'rendering';
-// export const STATE_CURRENT_PAGE_ID_KEY = 'currentPageId';
-// export const STATE_PAGE_RESOURCES_KEY = 'pageResources';
-// export const STATE_PAGE_CONTEXT_KEY = 'pageContext';
-// export const STATE_LAYOUT_ELEMENTS_KEY = 'layoutElements';
 
 export type PARAMETER_SOURCE_TYPE = 'pageContext' | 'localContext';
 export type PARAMETER_TYPE = 'resource' | 'string';

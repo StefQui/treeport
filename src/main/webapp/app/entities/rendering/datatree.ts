@@ -105,7 +105,7 @@ export const handleDataTree = (target: ParameterTarget, refToSiteDefinition: Dat
   const getChildrenSite = (treePath: string[]): SearchResourceRequestModel => {
     return {
       searchModel: {
-        resourceType: 'SITE',
+        resourceType: 'site',
         columnDefinitions: refToSiteDefinition.columnDefinitions,
         filter: {
           filterType: 'AND',

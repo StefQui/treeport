@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 public class InitialLoadService {
 
     public static final String R_SITE = "site";
-    public static final String R_RESOURCE = "resource";
+    public static final String R_UI_COMPONENT = "ui-component";
 
     public static final String COCA = "coca";
     public static final String ROOT = "root";
@@ -358,7 +358,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_1)
                 .name("Resource r1")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r1SourceFile))
                 .childrenIds(List.of())
@@ -369,7 +369,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_2)
                 .name("Resource r2")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r2SourceFile))
                 .childrenIds(List.of())
@@ -380,7 +380,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_3)
                 .name("Resource r3")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r3SourceFile))
                 .childrenIds(List.of())
@@ -391,7 +391,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_4)
                 .name("Resource r4")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r4SourceFile))
                 .childrenIds(List.of())
@@ -402,7 +402,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_5)
                 .name("Resource r5")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(r5SourceFile))
                 .childrenIds(List.of())
@@ -413,7 +413,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_SITE_DETAIL)
                 .name("Resource siteDetail")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(siteDetailSourceFile))
                 .childrenIds(List.of())
@@ -424,7 +424,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_DS)
                 .name("Resource rds")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rdsSourceFile))
                 .childrenIds(List.of())
@@ -435,7 +435,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_DS_WITH_FORM)
                 .name("Resource rds with form")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rDsWithFormSourceFile))
                 .childrenIds(List.of())
@@ -446,7 +446,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_DS_LIST)
                 .name("Resource rds with list")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rDsListSourceFile))
                 .childrenIds(List.of())
@@ -457,7 +457,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_DT_TREE)
                 .name("Resource rdt with tree")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rDtTreeSourceFile))
                 .childrenIds(List.of())
@@ -468,7 +468,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGEDS)
                 .name("Resource rpageDs")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageDsSourceFile))
                 .childrenIds(List.of())
@@ -479,7 +479,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGEDS_WITH_FORM)
                 .name("Resource rpageDsWithForm")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageDsWithFormSourceFile))
                 .childrenIds(List.of())
@@ -490,7 +490,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGE_AG_GRID)
                 .name("Resource page agGrid")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageAgGrid))
                 .childrenIds(List.of())
@@ -501,7 +501,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_AG_GRID)
                 .name("Resource agGrid")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rAgGrid))
                 .childrenIds(List.of())
@@ -512,7 +512,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGEDS_LIST)
                 .name("Resource rpageDsList")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageDsListSourceFile))
                 .childrenIds(List.of())
@@ -523,7 +523,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGEDT_TREE)
                 .name("Resource rpageDtTree")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpageDtTreeSourceFile))
                 .childrenIds(List.of())
@@ -534,7 +534,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_FORM)
                 .name("Resource form")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rFormSourceFile))
                 .childrenIds(List.of())
@@ -545,7 +545,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_LAYOUT)
                 .name("Resource layout")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rlayoutSourceFile))
                 .childrenIds(List.of())
@@ -556,7 +556,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGE1)
                 .name("Resource page 1")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpage1SourceFile))
                 .childrenIds(List.of())
@@ -567,7 +567,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_PAGE2)
                 .name("Resource page 2")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rpage2SourceFile))
                 .childrenIds(List.of())
@@ -578,7 +578,7 @@ public class InitialLoadService {
                 .builder()
                 .id(R_MENU_TOP)
                 .name("Resource menutop")
-                .type(R_RESOURCE)
+                .type(R_UI_COMPONENT)
                 .orgaId(COCA)
                 .content(UtilsResourceFile.asString(rmenutopSourceFile))
                 .childrenIds(List.of())
@@ -656,8 +656,8 @@ public class InitialLoadService {
 
         String attId3 = "resource:s1:toSite:period:2023";
         String attId4 = "resource:s1:isCert:period:2023";
-        Optional<Attribute> attOpt3 = attributeService.findByIdAndOrgaId(attId1, COCA);
-        Optional<Attribute> attOpt4 = attributeService.findByIdAndOrgaId(attId2, COCA);
+        Optional<Attribute> attOpt3 = attributeService.findByIdAndOrgaId(attId3, COCA);
+        Optional<Attribute> attOpt4 = attributeService.findByIdAndOrgaId(attId4, COCA);
         Attribute att3 = attOpt3.get().toBuilder().attributeValue(DoubleValue.builder().value(121.).build()).build();
         Attribute att4 = attOpt4.get().toBuilder().attributeValue(BooleanValue.builder().value(false).build()).build();
         attributeService.save(att3);

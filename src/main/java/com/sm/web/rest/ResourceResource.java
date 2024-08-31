@@ -234,7 +234,7 @@ public class ResourceResource {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteResource(@PathVariable String id, @PathVariable String orgaId) {
         log.debug("REST request to delete Resource : {}", id);
-        resourceService.delete(id);
+        resourceService.delete(id, orgaId);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
     }
 

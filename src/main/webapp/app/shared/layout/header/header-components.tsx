@@ -67,6 +67,7 @@ export const SaveResources = () => {
         updateResource({
           entity: {
             id: key,
+            type: 'ui-component',
             content: JSON.stringify(ressource.content),
             orga: { id: 'coca' },
           },
@@ -79,6 +80,7 @@ export const SaveResources = () => {
         createResource({
           entity: {
             id: key,
+            type: 'ui-component',
             content: JSON.stringify(ressource.content),
             orga: { id: 'coca' },
           },

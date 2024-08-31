@@ -20,7 +20,7 @@ const initialState: EntityState<IResource> = {
 const apiUrl = 'api/resources';
 
 // Actions
-export const getResources = createAsyncThunk('resources/fetch_entity_list', async ({ page, size, sort, orgaId }: IQueryParams) => {
+export const getResources = createAsyncThunk('resources/fetch_resource_list', async ({ page, size, sort, orgaId }: IQueryParams) => {
   const requestUrl = `api/orga/${orgaId}/resources?${
     sort ? `page=${page}&size=${size}&sort=${sort}&` : ''
   }cacheBuster=${new Date().getTime()}`;
@@ -43,7 +43,7 @@ export const createResource = createAsyncThunk(
       resourceToUpdate: cleanEntity(entity),
       columnDefinitions,
     });
-    thunkAPI.dispatch(getResources({}));
+    // thunkAPI.dispatch(getResources({}));
     return result;
   },
   { serializeError: serializeAxiosError },
@@ -56,7 +56,7 @@ export const updateResource = createAsyncThunk(
       resourceToUpdate: cleanEntity(entity),
       columnDefinitions,
     });
-    thunkAPI.dispatch(getResources({}));
+    // thunkAPI.dispatch(getResources({}));
     return result;
   },
   { serializeError: serializeAxiosError },
@@ -67,22 +67,22 @@ export const deleteResource = createAsyncThunk(
   async ({ id, orgaId }: { id: string | number; orgaId: string }, thunkAPI) => {
     const requestUrl = `api/orga/${orgaId}/resources/${id}`;
     const result = await axios.delete<IResource>(requestUrl);
-    thunkAPI.dispatch(getResources({}));
+    // thunkAPI.dispatch(getResources({}));
     return result;
   },
   { serializeError: serializeAxiosError },
 );
 
-export const deleteEntity = createAsyncThunk(
-  'resource/delete_entity',
-  async (id: string | number, thunkAPI) => {
-    const requestUrl = `${apiUrl}/${id}`;
-    const result = await axios.delete<IResource>(requestUrl);
-    thunkAPI.dispatch(getResources({}));
-    return result;
-  },
-  { serializeError: serializeAxiosError },
-);
+// export const deleteEntity = createAsyncThunk(
+//   'resource/delete_entity',
+//   async ({id: string | number, orgaId: string}, thunkAPI) => {
+//     const requestUrl = `${apiUrl}/${id}`;
+//     const result = await axios.delete<IResource>(requestUrl);
+//     thunkAPI.dispatch(getResources({}));
+//     return result;
+//   },
+//   { serializeError: serializeAxiosError },
+// );
 
 // slice
 
@@ -95,7 +95,7 @@ export const ResourceSlice = createEntitySlice({
         state.loading = false;
         state.entity = action.payload.data;
       })
-      .addCase(deleteEntity.fulfilled, state => {
+      .addCase(deleteResource.fulfilled, state => {
         state.updating = false;
         state.updateSuccess = true;
         state.entity = {};
@@ -121,7 +121,7 @@ export const ResourceSlice = createEntitySlice({
         state.updateSuccess = false;
         state.loading = true;
       })
-      .addMatcher(isPending(createResource, updateResource, deleteEntity), state => {
+      .addMatcher(isPending(createResource, updateResource, deleteResource), state => {
         state.errorMessage = null;
         state.updateSuccess = false;
         state.updating = true;

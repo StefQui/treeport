@@ -25,6 +25,7 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 /**
  * Service Implementation for managing {@link Resource}.
@@ -35,13 +36,20 @@ public class ResourceService {
     private final Logger log = LoggerFactory.getLogger(ResourceService.class);
 
     private final ResourceRepository resourceRepository;
+    private final AttributeService attributeService;
     private final ResourceMapper resourceMapper;
     private final MongoTemplate mongoTemplate;
 
-    public ResourceService(ResourceRepository resourceRepository, ResourceMapper resourceMapper, MongoTemplate mongoTemplate) {
+    public ResourceService(
+        ResourceRepository resourceRepository,
+        AttributeService attributeService,
+        ResourceMapper resourceMapper,
+        MongoTemplate mongoTemplate
+    ) {
         this.resourceRepository = resourceRepository;
         this.resourceMapper = resourceMapper;
         this.mongoTemplate = mongoTemplate;
+        this.attributeService = attributeService;
     }
 
     /**
@@ -196,10 +204,18 @@ public class ResourceService {
 
     private AggregationOperation generateSearchMatch(ResourceSearchDTO search, String orgaId) {
         final Document matchCrit = generateSearch(search.getFilter());
-        List<Document> ands = search.getResourceType() == null
-            ? List.of(matchCrit)
-            : List.of(new Document("theType", new Document("$eq", search.getResourceType())), matchCrit);
-        if (matchCrit != null) {
+        List<Document> ands = new ArrayList<>();
+        if (search.getResourceType() == null) {
+            if (matchCrit != null) {
+                ands.add(matchCrit);
+            }
+        } else {
+            ands.add(new Document("theType", new Document("$eq", search.getResourceType())));
+            if (matchCrit != null) {
+                ands.add(matchCrit);
+            }
+        }
+        if (matchCrit != null || search.getResourceType() != null) {
             Document match = new Document("$match", new Document("$and", ands));
             return Aggregation.stage(match.toJson());
         }
@@ -388,10 +404,20 @@ public class ResourceService {
      *
      * @param id the id of the entity.
      */
-    public void delete(String id) {
+    public void delete(String id, String orgaId) {
         log.debug("Request to delete Resource : {}", id);
-        Optional<Resource> existing = resourceRepository.findByResourceId(id);
-        resourceRepository.deleteByResourceId(existing.get().getId());
+
+        Resource existing = resourceRepository.findByResourceId(id).get();
+        if (!CollectionUtils.isEmpty(existing.getChildrenIds())) {
+            throw new RuntimeException("Cannot delete resource with children");
+        }
+        if (existing.getParentId() != null) {
+            Resource parent = resourceRepository.findByIdAndOrgaId(existing.getParentId(), orgaId).get(0);
+            parent.getChildrenIds().remove(id);
+            resourceRepository.save(parent);
+        }
+        resourceRepository.deleteByResourceId(existing.getId());
+        attributeService.deleteAttributesForSite(existing.getId(), orgaId);
     }
 
     public List<Resource> findAllRootResources(String orgaId) {

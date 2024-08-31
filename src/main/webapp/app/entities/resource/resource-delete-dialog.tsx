@@ -5,6 +5,7 @@ import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+import { deleteResource } from './resource.reducer';
 // import { deleteEntity } from './resource.reducer';
 
 export const ResourceDeleteDialog = ({ showModal, setShowModal, resourceId, onSuccessDelete, onCancelDelete }) => {
@@ -45,7 +46,7 @@ export const ResourceDeleteDialog = ({ showModal, setShowModal, resourceId, onSu
   }, [updateSuccess]);
 
   const confirmDelete = () => {
-    // dispatch(deleteEntity({ id: resourceId, orgaId }));
+    dispatch(deleteResource({ id: resourceId, orgaId }));
   };
 
   return (

@@ -19,6 +19,8 @@ public class AssetKeyUtils {
             return a.getSiteId();
         } else if (resourceResource.equals(a.getAssetKey()) || resourceUser.equals(a.getAssetKey())) {
             return null;
+        } else if (resource.equals(a.getAssetKey())) {
+            return a.getSiteId();
         }
         throw new RuntimeException("to implement extractSite " + a.getAssetKey());
     }
@@ -27,6 +29,8 @@ public class AssetKeyUtils {
         if (site.equals(a.getAssetKey()) || (siteResource.equals(a.getAssetKey()))) {
             return null;
         } else if (resourceResource.equals(a.getAssetKey()) || resourceUser.equals(a.getAssetKey())) {
+            return a.getResourceId();
+        } else if (resource.equals(a.getAssetKey())) {
             return a.getResourceId();
         }
         throw new RuntimeException("to implement extractResource " + a.getAssetKey());
@@ -37,6 +41,8 @@ public class AssetKeyUtils {
             return null;
         } else if (resourceResource.equals(aDTO.getAssetKey()) || resourceUser.equals(aDTO.getAssetKey())) {
             return aDTO.getResource().getId();
+        } else if (resource.equals(aDTO.getAssetKey())) {
+            return aDTO.getResource().getId();
         }
         throw new RuntimeException("to implement extractAssetFromDTO " + aDTO.getAssetKey());
     }
@@ -44,7 +50,9 @@ public class AssetKeyUtils {
     public static String extractSiteFromDTO(AttributeDTO aDTO) {
         if (site.equals(aDTO.getAssetKey()) || (siteResource.equals(aDTO.getAssetKey()))) {
             return aDTO.getSite().getId();
-        } else if (resourceResource.equals(aDTO.getAssetKey()) || resourceUser.equals(aDTO.getAssetKey())) {
+        } else if (
+            resourceResource.equals(aDTO.getAssetKey()) || resourceUser.equals(aDTO.getAssetKey()) || resource.equals(aDTO.getAssetKey())
+        ) {
             return null;
         }
         throw new RuntimeException("to implement extractAssetFromDTO " + aDTO.getAssetKey());
@@ -53,7 +61,7 @@ public class AssetKeyUtils {
     public static String extractResource2FromDTO(AttributeDTO aDTO) {
         if (resourceResource.equals(aDTO.getAssetKey()) || (siteResource.equals(aDTO.getAssetKey()))) {
             return aDTO.getResource2().getId();
-        } else if (site.equals(aDTO.getAssetKey()) || resourceUser.equals(aDTO.getAssetKey())) {
+        } else if (site.equals(aDTO.getAssetKey()) || resourceUser.equals(aDTO.getAssetKey()) || resource.equals(aDTO.getAssetKey())) {
             return null;
         }
         throw new RuntimeException("to implement extractAsset2FromDTO " + aDTO.getAssetKey());

@@ -135,7 +135,7 @@ export const handleDataSet = (target: ParameterTarget, refToResourceDefinition: 
 
     const request: SearchResourceRequestModel = {
       searchModel: {
-        resourceType: 'RESOURCE',
+        resourceType: 'site',
         columnDefinitions: refToResourceDefinition.columnDefinitions,
         filter: changingFilter ? changingFilter.value : null,
         page: paginationProp.activePage - 1,

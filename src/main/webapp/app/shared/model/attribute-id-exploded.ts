@@ -4,7 +4,8 @@ import { ITag } from 'app/shared/model/tag.model';
 import { ISite } from './site.model';
 
 export interface IAttributeIdExploded {
-  siteId?: string;
+  // siteId?: string;
+  resourceId?: string;
   campaignId?: string;
   key?: string;
 }

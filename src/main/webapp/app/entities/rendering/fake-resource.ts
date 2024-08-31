@@ -1437,7 +1437,7 @@ const rlayout: ComponentResource = {
         params: {
           resourceId: {
             ruleType: 'constant',
-            constValue: 'root',
+            constValue: 's1',
           },
           campaignId: {
             ruleType: 'constant',

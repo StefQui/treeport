@@ -1228,22 +1228,59 @@ const rAgGridServer: ComponentResource = {
     border: true,
     items: [
       {
-        componentType: 'SmText',
-        path: 'const',
-        params: {
-          textValue: {
-            ruleType: 'constant',
-            constValue: 'Exemple de Aggrid tree',
-          },
-        },
-        parameterDefinitions: [
+        componentType: 'verticalPanel',
+        path: 'vp-agg1',
+        border: true,
+        col: 8,
+        items: [
           {
-            target: {
-              parameterKey: 'mydt1',
-              targetType: 'currentLocalContextPath',
+            componentType: 'SmText',
+            path: 'const',
+            params: {
+              textValue: {
+                ruleType: 'constant',
+                constValue: 'Exemple de Aggrid tree',
+              },
             },
-            definition: {
-              ruleType: 'datatree',
+            parameterDefinitions: [
+              {
+                target: {
+                  parameterKey: 'mydt1',
+                  targetType: 'currentLocalContextPath',
+                },
+                definition: {
+                  ruleType: 'datatree',
+                  columnDefinitions: [
+                    { columnType: 'ID' },
+                    { columnType: 'NAME' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
+                    { columnType: 'BUTTON', action: 'select' },
+                  ],
+                  // filter: {
+                  //   ruleType: 'refToLocalContext',
+                  //   path: '',
+                  //   sourceParameterKey: 'theFilter',
+                  // },
+                  initialPaginationState: {
+                    activePage: 1,
+                    itemsPerPage: 5,
+                    sort: 'id',
+                    order: 'asc',
+                  },
+                  valueFilter: {
+                    filterType: 'AND',
+                    items: [],
+                  },
+                },
+              },
+            ],
+          },
+          {
+            componentType: 'aggridTree',
+            path: 'aggridtree',
+            params: {
               columnDefinitions: [
                 { columnType: 'ID' },
                 { columnType: 'NAME' },
@@ -1252,17 +1289,6 @@ const rAgGridServer: ComponentResource = {
                 { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
                 { columnType: 'BUTTON', action: 'select' },
               ],
-              // filter: {
-              //   ruleType: 'refToLocalContext',
-              //   path: '',
-              //   sourceParameterKey: 'theFilter',
-              // },
-              initialPaginationState: {
-                activePage: 1,
-                itemsPerPage: 5,
-                sort: 'id',
-                order: 'asc',
-              },
               valueFilter: {
                 filterType: 'AND',
                 items: [],
@@ -1271,27 +1297,173 @@ const rAgGridServer: ComponentResource = {
           },
         ],
       },
+
       {
-        componentType: 'aggridTree',
-        path: 'aggridtree',
-        params: {
-          data: {
+        componentType: 'verticalPanel',
+        path: 'vp-rds-with-form-right',
+        border: true,
+        col: 4,
+        display: {
+          valueExists: {
             ruleType: 'refToLocalContext',
-            path: '',
-            sourceParameterKey: 'mydt1',
+            path: '/layout-content',
+            sourceParameterKey: 'sid98',
           },
-          resourceIdForDetail: 'resourceDetail',
-          columnDefinitions: [
-            { columnType: 'ID' },
-            { columnType: 'NAME' },
-            { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
-            { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
-            { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
-            { columnType: 'BUTTON', action: 'select' },
-          ],
-          valueFilter: {
-            filterType: 'AND',
-            items: [],
+        },
+
+        items: [
+          {
+            componentType: 'SmRefToResource',
+            path: 'ref-to-r5',
+            col: 12,
+            params: {
+              resourceId: 'r5',
+            },
+            parameterDefinitions: [
+              {
+                target: {
+                  parameterKey: 'const1',
+                  targetType: 'currentLocalContextPath',
+                },
+                definition: {
+                  ruleType: 'constant',
+                  constValue: 'aaa111',
+                },
+              },
+              // {
+              //   parameterKey: 'resource2',
+              //   definition: {
+              //     ruleType: 'refToPageContext',
+              //     path: '/layout-content',
+              //     sourceParameterKey: 'sid',
+              //   },
+              // },
+              {
+                target: {
+                  parameterKey: 'resourceIdFromResourceList',
+                  targetType: 'currentLocalContextPath',
+                },
+                definition: {
+                  ruleType: 'refToLocalContext',
+                  path: '/layout-content',
+                  sourceParameterKey: 'sid98',
+                },
+              },
+              {
+                target: {
+                  parameterKey: 'theoutputFromInput',
+                  targetType: 'currentLocalContextPath',
+                },
+                definition: {
+                  ruleType: 'refToLocalContext',
+                  path: '/layout-content',
+                  sourceParameterKey: 'myInputContent',
+                },
+              },
+              {
+                target: {
+                  parameterKey: 'theresource44',
+                  targetType: 'currentLocalContextPath',
+                },
+                definition: {
+                  ruleType: 'refToResource',
+                  sourceResourceId: {
+                    ruleType: 'refToLocalContext',
+                    path: '/layout-content',
+                    sourceParameterKey: 'myInputContent',
+                  },
+                },
+              },
+              {
+                target: {
+                  parameterKey: 'theresourceFromTheList',
+                  targetType: 'currentLocalContextPath',
+                },
+                definition: {
+                  ruleType: 'refToResource',
+                  sourceResourceId: {
+                    ruleType: 'refToLocalContext',
+                    path: '/layout-content',
+                    sourceParameterKey: 'sid98',
+                  },
+                },
+              },
+            ],
+          },
+          {
+            componentType: 'SmAttRef',
+            path: 'attRefToConso',
+            col: 6,
+            params: {
+              resourceId: {
+                ruleType: 'refToLocalContext',
+                path: '/layout-content',
+                sourceParameterKey: 'sid98',
+              },
+              campaignId: {
+                ruleType: 'constant',
+                constValue: '2023',
+              },
+              attConfig: {
+                ruleType: 'constant',
+                constValue: 'toConso',
+              },
+            },
+          },
+
+          {
+            componentType: 'SmRefToResource',
+            path: 'ref-to-fform',
+            col: 12,
+
+            params: {
+              resourceId: 'rform',
+            },
+            parameterDefinitions: [
+              // {
+              //   parameterKey: 'resourceIdFromResourceList',
+              //   target: {
+              //     targetType: 'currentLocalContextPath',
+              //   },
+              //   definition: {
+              //     ruleType: 'refToLocalContext',
+              //     path: '/layout-content',
+              //     sourceParameterKey: 'sid98',
+              //   },
+              // },
+              // {
+              //   parameterKey: 'theresourceFromTheListzzzzzz',
+              //   target: {
+              //     targetType: 'childLocalContextPath',
+              //   },
+              //   definition: {
+              //     ruleType: 'refToResource',
+              //     sourceResourceId: {
+              //       ruleType: 'refToLocalContext',
+              //       path: '/layout-content',
+              //       sourceParameterKey: 'sid98',
+              //     },
+              //   },
+              // },
+            ],
+          },
+        ],
+      },
+      {
+        componentType: 'SmText',
+        path: 'vp13',
+        col: 4,
+        display: {
+          valueDoesNotExist: {
+            ruleType: 'refToLocalContext',
+            path: '/layout-content',
+            sourceParameterKey: 'sid98',
+          },
+        },
+        params: {
+          textValue: {
+            ruleType: 'constant',
+            constValue: 'Select a resource here...',
           },
         },
       },

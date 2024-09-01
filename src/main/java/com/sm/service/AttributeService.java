@@ -7,12 +7,13 @@ import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
-import com.sm.domain.Site;
+import com.sm.domain.Resource;
 import com.sm.domain.attribute.AggInfo;
 import com.sm.domain.attribute.Attribute;
 import com.sm.domain.operation.RefOperation;
 import com.sm.repository.AttributeConfigRepository;
 import com.sm.repository.AttributeRepository;
+import com.sm.repository.ResourceRepository;
 import com.sm.repository.SiteRepository;
 import com.sm.service.dto.attribute.AttributeDTO;
 import com.sm.service.mapper.AttributeMapper;
@@ -40,19 +41,22 @@ public class AttributeService {
     private final AttributeMapper attributeMapper;
     private final AttributeValueMapper attributeValueMapper;
     private final SiteRepository siteRepository;
+    private final ResourceRepository resourceRepository;
 
     public AttributeService(
         AttributeRepository attributeRepository,
         AttributeConfigRepository attributeConfigRepository,
         SiteRepository siteRepository,
         AttributeMapper attributeMapper,
-        AttributeValueMapper attributeValueMapper
+        AttributeValueMapper attributeValueMapper,
+        ResourceRepository resourceRepository
     ) {
         this.attributeRepository = attributeRepository;
         this.attributeConfigRepository = attributeConfigRepository;
         this.siteRepository = siteRepository;
         this.attributeMapper = attributeMapper;
         this.attributeValueMapper = attributeValueMapper;
+        this.resourceRepository = resourceRepository;
     }
 
     /**
@@ -239,12 +243,12 @@ public class AttributeService {
 
     public List<Attribute> getAttributesForSiteChildrenAndConfig(String attId, String configKey, String orgaId) {
         AttributeKeyAsObj attIdAsObj = fromString(attId);
-        List<Site> sites = siteRepository.findByIdAndOrgaId(attIdAsObj.getAssetId(), orgaId);
-        if (sites.isEmpty()) {
+        List<Resource> resources = resourceRepository.findByIdAndOrgaId(attIdAsObj.getAssetId(), orgaId);
+        if (resources.isEmpty()) {
             throw new RuntimeException(format("cannot find site %s %s %s", attId, configKey, orgaId));
         }
-        Site site = sites.get(0);
-        List<String> keys = site
+        Resource resource = resources.get(0);
+        List<String> keys = resource
             .getChildrenIds()
             .stream()
             .map(childrenId ->

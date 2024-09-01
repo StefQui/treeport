@@ -1,4 +1,5 @@
 import { IAttributeWithValue } from 'app/shared/model/attribute.model';
+import { IResourceAndImpacters } from 'app/shared/model/resource-and-impacters.model';
 import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
 import { MainTarget, SecondaryTarget } from './rendering.reducer';
 
@@ -359,7 +360,6 @@ export type DataSetTreeParams = {
 };
 
 export type DataSetTreeParams2 = {
-  data: RuleDefinition;
   resourceIdForDetail?: string;
   columnDefinitions: ColumnDefinition[];
   valueFilter: ResourceFilter;
@@ -507,21 +507,41 @@ export type LocalContextsState = {
 export type PageContextState = { [path: string]: any };
 export type PageResourcesState = { [path: string]: any };
 export type CurrentPageIdState = string | null;
-export type ActionState = SetCurrentPageAction | UpdateAttributeAction | RefreshDataSetAction | OpenNodeAction | CloseNodeAction;
+export type ActionState = (
+  | SelectResourceAction
+  | SetCurrentPageAction
+  | UpdatedResourceAction
+  | UpdateAttributeAction
+  | RefreshDataSetAction
+  | OpenNodeAction
+  | CloseNodeAction
+) & { timestamp: Date };
 // export type EntityAction = {
 //   source: string;
 //   actionType: 'selectResource' | 'updateAttribute' | 'refreshDataset';
 //   entity: { entityType: 'SITE' | 'RESOURCE' | 'ATTRIBUTES'; entity?: any; entityIds?: any };
 // } | null;
+
 export type SetCurrentPageAction = {
   source: string;
   actionType: 'setCurrentPage';
   currentPage: number;
   targetDataset: string;
 } | null;
+export type UpdatedResourceAction = {
+  source: string;
+  actionType: 'updatedResource';
+  resourceAndImpacters: IResourceAndImpacters;
+} | null;
+export type SelectResourceAction = {
+  source: string;
+  actionType: 'selectResource';
+  entity: { entityType: 'SITE' | 'RESOURCE' | 'ATTRIBUTES'; entity?: any; entityIds?: any };
+} | null;
 export type OpenNodeAction = {
   source: string;
   actionType: 'openNode';
+  entity: { entityType: 'SITE' | 'RESOURCE' | 'ATTRIBUTES'; entity?: any; entityIds?: any };
   treeNodePath: string[];
   forced: boolean;
   childrenAreLoaded: boolean;
@@ -530,6 +550,7 @@ export type OpenNodeAction = {
 export type CloseNodeAction = {
   source: string;
   actionType: 'closeNode';
+  entity: { entityType: 'SITE' | 'RESOURCE' | 'ATTRIBUTES'; entity?: any; entityIds?: any };
   treeNodePath: string[];
   targetDataset: string;
 } | null;

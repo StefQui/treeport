@@ -45,7 +45,7 @@ export const actionsRenderer = ({ editAction, addAction, removeAction }) => {
         <Button color="info" onClick={() => handleSelect(node)} size="sm" data-cy="entitySelectButton">
           <FontAwesomeIcon icon="eye" />{' '}
           <span className="d-none d-md-inline">
-            <Translate contentKey="entity.action.select">Select</Translate>
+            <Translate contentKey="entity.action.select">Sel</Translate>
           </span>
         </Button>
         <Button color="info" onClick={() => handleAdd(node)} size="sm" data-cy="entitySelectButton">

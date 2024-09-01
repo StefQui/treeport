@@ -112,7 +112,14 @@ export const SmDatasetTable = (props: {
         value: { value: selected.id, loading: false },
       }),
     );
-    dispatch(setAction({ source: builtPath, actionType: 'selectResource', entity: { entityType: 'SITE', entity: selected } }));
+    dispatch(
+      setAction({
+        source: builtPath,
+        actionType: 'selectResource',
+        entity: { entityType: 'SITE', entity: selected },
+        timestamp: new Date(),
+      }),
+    );
   };
 
   const refToContextRuleDefinition: RefToLocalContextRuleDefinition = data as RefToLocalContextRuleDefinition;
@@ -125,7 +132,7 @@ export const SmDatasetTable = (props: {
       targetDataset: refToContextRuleDefinition.sourceParameterKey,
     };
 
-    dispatch(setAction(action));
+    dispatch(setAction({ ...action, timestamp: new Date() }));
   };
 
   const handleSyncList = () => {

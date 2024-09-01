@@ -182,7 +182,7 @@ export const RenderingSlice = createSlice({
       return { ...state, componentsState: { ...state.componentsState, ...aaa } };
     },
     // setAction(action: { source: any; actionType: string; entity: { entityType: string; entity: any; }; }): any {
-    setAction(state: RenderingState, action): RenderingState {
+    setAction(state: RenderingState, action: { payload: ActionState }): RenderingState {
       const payload: ActionState = action.payload;
 
       return { ...state, action: payload };

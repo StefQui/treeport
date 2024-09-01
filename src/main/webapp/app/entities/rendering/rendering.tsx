@@ -17,6 +17,7 @@ import { useRefToLocalContext } from './parameter-definition';
 import { SmDatasetTree } from './sm-dataset-tree';
 import { SmAgGrid } from './sm-ag-grid';
 import { SmAggridTree } from './sm-aggrid-tree';
+import { UpdateResourceDialog } from '../resource/resource-update-dialog';
 
 export const initialFilter: ValueInState = { loading: true, value: null };
 
@@ -152,7 +153,7 @@ export const MyWrapper = ({ children, ...props }) => {
   );
 };
 
-const hasChanged = (previous?: ValueInState, next?: ValueInState) => {
+export const hasChanged = (previous?: ValueInState, next?: ValueInState) => {
   if (!previous) {
     return !!next;
   }
@@ -190,7 +191,7 @@ const useShouldDisplay = (props): boolean => {
   }
 };
 
-const evaluateValueExistsShouldDisplay = valueExists => {
+export const evaluateValueExistsShouldDisplay = valueExists => {
   if (valueExists) {
     if (valueExists.loading) {
       return false;

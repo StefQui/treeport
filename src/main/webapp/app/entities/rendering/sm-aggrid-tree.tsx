@@ -4,17 +4,20 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { SmRefToResource } from './sm-resource-content';
 import { buildPath } from './shared';
 import {
+  ActionState,
   AttributeColumnDefinition,
   ColumnDefinition,
   DataSetListParams,
   DataSetTreeParams,
   DataSetTreeParams2,
+  RenderingSliceState,
   ResourceSearchModel,
   RuleDefinition,
   SearchResourceRequestModel,
+  UpdatedResourceAction,
 } from './type';
 // import { useSiteTree } from './datatree';
-import { resourceApiUrl, setAction, TreeNode, TreeNodeWrapper } from './rendering.reducer';
+import { resourceApiUrl, setAction, setInLocalState, TreeNode, TreeNodeWrapper } from './rendering.reducer';
 import { Button, Collapse, ListGroup, ListGroupItem } from 'reactstrap';
 
 import 'ag-grid-community/styles/ag-theme-quartz.css';
@@ -51,6 +54,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import tagReducer, { TagSlice } from '../tag/tag.reducer';
 import { ITag } from 'app/shared/model/tag.model';
 import { IResourceAndImpacters } from 'app/shared/model/resource-and-impacters.model';
+import {
+  CreatedResourceEvent,
+  publishEditResourceForAddEvent,
+  publishEditResourceForUpdateEvent,
+  subscribeToCreatedResource,
+  subscribeToUpdatedResource,
+} from './action.utils';
 
 export const SITE_TYPE = 'site';
 
@@ -63,7 +73,7 @@ export const SmAggridTree = (props: {
 }) => {
   const dispatch = useAppDispatch();
   const builtPath = buildPath(props);
-  const data: RuleDefinition = props.params.data;
+  // const data: RuleDefinition = props.params.data;
   // const resourceTree: TreeNode = useResourceTree(props, data);
   const columnDefinitions: ColumnDefinition[] = props.params.columnDefinitions;
   const resourceEntity = useAppSelector(state => state.resource.entity);
@@ -74,9 +84,40 @@ export const SmAggridTree = (props: {
   const [paramsMap, setParamsMap] = useState(null);
   const [rootsParam, setRootsParam] = useState<IServerSideGetRowsParams>();
   const { orgaId } = useParams<'orgaId'>();
-  const apiUrl = `api/orga/${orgaId}/resources/search`;
+  const apiUrl = `api/orga/${orgaId}/resources`;
   const [currentAction, setCurrentAction] = useState('init');
+  const [first, setFirst] = useState(true);
+  // const updatedResourceAction = useUpdatedResourceAction(props);
 
+  const setResourceToUpdate = (arg0?: { resource: IResourceWithValue[]; route: string[] }) => {
+    dispatch(
+      setInLocalState({
+        localContextPath: props.localContextPath,
+        parameterKey: 'resourceToUpdate',
+        value: { value: arg0, loading: false },
+      }),
+    );
+  };
+
+  // useEffect(() => {
+  //   subscribeUpdatedResourceEvent(updatedResourceListener);
+  //   return () => {
+  //     unsubscribeUpdatedResourceEvent(updatedResourceListener);
+  //   };
+  // }, []);
+
+  if (first) {
+    setResourceToUpdate();
+    setFirst(false);
+  }
+
+  // useEffect(() => {
+  //   console.log('firsttree', first);
+  //   if (first) {
+  //     setResourceToUpdate(undefined);
+  //     setFirst(false);
+  //   }
+  // }, [first]);
   // const resourceTree: TreeNode = useResourceTree(props, data);
   const getChildrenResource = (treePath: string[]): ResourceSearchModel => {
     return {
@@ -109,7 +150,7 @@ export const SmAggridTree = (props: {
     console.log('paramsparams=', params, request.groupKeys, paramsMap);
     console.log('props.params=', props.params);
 
-    const data = await axios.post<IResourceWithValue[]>(apiUrl, getChildrenResource(request.groupKeys));
+    const data = await axios.post<IResourceWithValue[]>(`${apiUrl}/search`, getChildrenResource(request.groupKeys));
 
     params.success({ rowData: data.data.map(a => ({ ...a, group: a.childrenCount > 0 })) });
   };
@@ -209,13 +250,76 @@ export const SmAggridTree = (props: {
     });
   };
 
-  const onSuccessUpdate = (entityAndImpacters: IResourceAndImpacters) => {
-    console.log('onSuccessUpdate', entityAndImpacters.resource, updatingNode, resourceEntity);
-    updatingNode.setData(entityAndImpacters.resource);
-    checkUpdates(entityAndImpacters.impactedIds);
-    setCurrentAction('none');
-    setResourceId(null);
-  };
+  const [updatedResource, setUpdatedResource] = useState<UpdatedResourceAction | null>(null);
+
+  useEffect(() => {
+    if (updatedResource) {
+      const resourceAndImpacters = updatedResource.resourceAndImpacters;
+      gridParams.api.forEachNode(rowNode => {
+        if (rowNode.data.id === resourceAndImpacters.resource.id) {
+          rowNode.setData(resourceAndImpacters.resource);
+        }
+      });
+      checkUpdates(resourceAndImpacters.impactedIds);
+    }
+  }, [updatedResource]);
+
+  subscribeToUpdatedResource((data: { detail: UpdatedResourceAction }) => {
+    setUpdatedResource(data.detail);
+  });
+
+  const [createdResource, setCreatedResource] = useState<CreatedResourceEvent | null>(null);
+
+  useEffect(() => {
+    if (createdResource) {
+      console.log('justaddded', createdResource);
+      const ri = createdResource.resourceAndImpacters;
+      if (createdResource.resourceParentId) {
+        gridParams.api.forEachNode(rowNode => {
+          if (rowNode.data.id === createdResource.resourceParentId) {
+            rowNode.updateData({ ...rowNode.data, group: true });
+          }
+        });
+        gridParams.api.applyServerSideTransaction({
+          route: createdResource.route,
+          add: [ri.resource],
+        });
+      } else {
+        gridParams.api.applyServerSideTransaction({
+          route: [],
+          add: [ri.resource],
+        });
+        setCurrentAction('none');
+      }
+
+      // gridParams.api.forEachNode(rowNode => {
+      //   if (rowNode.data.id === resourceAndImpacters.resource.id) {
+      //     rowNode.setData(resourceAndImpacters.resource);
+      //   }
+      // });
+      checkUpdates(ri.impactedIds);
+    }
+  }, [createdResource]);
+
+  subscribeToCreatedResource((data: { detail: CreatedResourceEvent }) => {
+    setCreatedResource(data.detail);
+  });
+
+  // const onSuccessUpdate = (entityAndImpacters: IResourceAndImpacters) => {
+  //   console.log('onSuccessUpdate', entityAndImpacters.resource, updatingNode, resourceEntity);
+  //   updatingNode.setData(entityAndImpacters.resource);
+  //   checkUpdates(entityAndImpacters.impactedIds);
+  //   setCurrentAction('none');
+  //   setResourceId(null);
+  // };
+
+  // useEffect(() => {
+  //   if (updatedResourceAction) {
+  //     if (!first) {
+  //       console.log('updatedResourceAction', updatedResourceAction);
+  //     }
+  //   }
+  // }, [updatedResourceAction[0]]);
 
   const onSuccessAdd = (entityAndImpacters: IResourceAndImpacters) => {
     console.log('onSuccessAdd', updatingNode);
@@ -249,14 +353,13 @@ export const SmAggridTree = (props: {
     return [...getRouteToNode(rowNode.parent), rowNode.key ? rowNode.key : rowNode.data.id];
   };
 
-  const handleEdit = (node: any) => {
-    console.log('handleEdit', node.data.id, node.key);
-    setResourceId(node.data.id);
-    setResourceIdToRemove(null);
-    setCurrentAction('update');
-    setUpdatingNode(node);
-    setShowUpdateModal(true);
-    // alert('resource: ' + resource.id);
+  const handleEdit = async (node: any) => {
+    const data = await axios.get<IResourceWithValue>(`${apiUrl}/${node.data.id}`);
+    publishEditResourceForUpdateEvent({
+      source: builtPath,
+      resourceToEdit: data.data,
+      columnDefinitions,
+    });
   };
 
   const handleRemove = (node: any) => {
@@ -273,15 +376,21 @@ export const SmAggridTree = (props: {
   const handleAdd = (node: any) => {
     const route = getRouteToNode(node);
     console.log('handleAdd', route);
-    setCurrentAction('add');
-    setUpdatingNode(node);
-    setParentRoute(route);
+    publishEditResourceForAddEvent({
+      source: builtPath,
+      resourceToAddParentId: node?.data.id,
+      route,
+      columnDefinitions,
+    });
+    // setCurrentAction('add');
+    // setUpdatingNode(node);
+    // setParentRoute(route);
 
-    setParentResourceId(node?.data.id);
-    setResourceId(null);
-    setResourceIdToRemove(null);
-    setUpdatingNode(node);
-    setShowUpdateModal(true);
+    // setParentResourceId(node?.data.id);
+    // setResourceId(null);
+    // setResourceIdToRemove(null);
+    // setUpdatingNode(node);
+    // setShowUpdateModal(true);
     // alert('resource: ' + resource.id);
   };
 
@@ -365,7 +474,11 @@ export const SmAggridTree = (props: {
     {
       field: 'actions2',
       headerName: 'Actions2',
-      cellRenderer: actionsRenderer({ editAction: handleEdit, addAction: handleAdd, removeAction: handleRemove }),
+      cellRenderer: actionsRenderer({
+        editAction: handleEdit,
+        addAction: handleAdd,
+        removeAction: handleRemove,
+      }),
     },
   ]);
   const defaultColDef = useMemo<ColDef>(() => {
@@ -390,7 +503,7 @@ export const SmAggridTree = (props: {
   }, []);
   const isServerSideGroupOpenByDefault = useCallback((params: IsServerSideGroupOpenByDefaultParams) => {
     // open first two levels by default
-    return params.rowNode.level < 0;
+    return params.rowNode.level < 2;
   }, []);
   const isServerSideGroup = useCallback((dataItem: any) => {
     // indicate if node is a group
@@ -405,13 +518,6 @@ export const SmAggridTree = (props: {
   const onGridReady = useCallback((params: GridReadyEvent) => {
     var datasource = createServerSideDatasource();
     params.api!.setGridOption('serverSideDatasource', datasource);
-    // fetch('https://www.ag-grid.com/example-assets/small-tree-data.json')
-    //       .then(resp => resp.json())
-    //       .then((data: any[]) => {
-    //         var fakeServer = createFakeServer(data);
-    //         var datasource = createServerSideDatasource(fakeServer);
-    //         params.api!.setGridOption('serverSideDatasource', datasource);
-    //       });
     setGridParams(params);
   }, []);
 
@@ -435,7 +541,7 @@ export const SmAggridTree = (props: {
           onGridReady={onGridReady}
         />
       </div>
-      <ResourceUpdateDialog
+      {/* <ResourceUpdateDialog
         showModal={showUpdateModal}
         setShowModal={setShowUpdateModal}
         onSuccessUpdate={onSuccessUpdate}
@@ -444,7 +550,8 @@ export const SmAggridTree = (props: {
         columnDefinitions={columnDefinitions}
         resourceId={resourceId}
         parentResourceId={parentResourceId}
-      ></ResourceUpdateDialog>
+        props={props}
+      ></ResourceUpdateDialog> */}
       <ResourceDeleteDialog
         showModal={showDeleteModal}
         setShowModal={setShowDeleteModal}

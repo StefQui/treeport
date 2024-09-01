@@ -7,6 +7,7 @@ import { getValueForPathInObject, getRootPath } from './shared';
 import { getResourceForPageResources, setInLocalState, setRenderingCurrentPageId, setRenderingPageContext } from './rendering.reducer';
 import { SmRefToResource } from './sm-resource-content';
 import { ValueInState, ComponentResource, ComponentResourceProperties, RENDERING_CONTEXT } from './type';
+import { UpdateResourceDialog } from '../resource/resource-update-dialog';
 
 export const existsAndHasAValue = (resourceState: ValueInState) => {
   return !!(resourceState && resourceState.value);
@@ -183,7 +184,7 @@ export const RenderResourcePage = () => {
       <h1>ResourceId: {resourceId}</h1>
       <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>
       {/* <MyElem input={toRender} params={{}} currentPath={getRootPath()} localContextPath={''} depth="0"></MyElem> */}
-
+      <UpdateResourceDialog></UpdateResourceDialog>
       <SmRefToResource currentPath="" path="" params={{ resourceId }} localContextPath="" depth="0"></SmRefToResource>
     </div>
   );

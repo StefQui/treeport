@@ -65,7 +65,7 @@ export const SmInput = (props: { params: InputParams; depth: string; currentPath
     //       },
     //     }),
     //   );
-    dispatch(setAction({ source: builtPath, actionType: 'textChanged', value: event.target.value }));
+    // dispatch(setAction({ source: builtPath, actionType: 'textChanged', value: event.target.value }));
   };
 
   return (

@@ -34,6 +34,7 @@ export const SmDatasetTree = (props: {
         childrenAreLoaded: tn.childrenAreLoaded,
         forced,
         targetDataset: 'mydt',
+        timestamp: new Date(),
       }),
     );
   };
@@ -46,6 +47,7 @@ export const SmDatasetTree = (props: {
         entity: { entityType: 'SITE', entity: 'mmmm' },
         treeNodePath: treePath,
         targetDataset: 'mydt',
+        timestamp: new Date(),
       }),
     );
   };

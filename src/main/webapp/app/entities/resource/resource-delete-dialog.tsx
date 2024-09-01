@@ -6,9 +6,23 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { deleteResource } from './resource.reducer';
+import { DeleteResourceEvent, publishDeletedResourceEvent, subscribeToDeleteResource } from '../rendering/action.utils';
+import axios from 'axios';
+import { IResource } from 'app/shared/model/resource.model';
 // import { deleteEntity } from './resource.reducer';
+export const DeleteResourceDialog = () => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [resourceToDeleteId, setResourceToDeleteId] = useState(null);
+  const [route, setRoute] = useState(null);
+  subscribeToDeleteResource((data: { detail: DeleteResourceEvent }) => {
+    setResourceToDeleteId(data.detail.resourceToDeleteId);
+    setRoute(data.detail.route);
+    setIsLoaded(true);
+  });
+  return isLoaded && <ResourceDeleteDialog resourceToDeleteId={resourceToDeleteId} route={route}></ResourceDeleteDialog>;
+};
 
-export const ResourceDeleteDialog = ({ showModal, setShowModal, resourceId, onSuccessDelete, onCancelDelete }) => {
+export const ResourceDeleteDialog = (props: { resourceToDeleteId: string; route: string[] | null }) => {
   const dispatch = useAppDispatch();
 
   const pageLocation = useLocation();
@@ -16,46 +30,68 @@ export const ResourceDeleteDialog = ({ showModal, setShowModal, resourceId, onSu
   const { id } = useParams<'id'>();
   const { orgaId } = useParams<'orgaId'>();
 
-  const [loadModal, setLoadModal] = useState(false);
-  const resourceEntity = useAppSelector(state => state.resource.entity);
+  const apiUrl = `api/orga/${orgaId}/resources`;
+  const [showDialog, setShowDialog] = useState(true);
+
+  const [resourceToDeleteId, setResourceToDeleteId] = useState(null);
+  const [route, setRoute] = useState(null);
 
   // useEffect(() => {
   //   dispatch(getEntity({ id, orgaId }));
   //   setLoadModal(true);
   // }, []);
-
-  // const resourceEntity = useAppSelector(state => state.resource.entity);
-  const updateSuccess = useAppSelector(state => state.resource.updateSuccess);
-
-  const handleClose = () => {
-    setShowModal(false);
-    // onCloseDelete(resourceId);
-  };
+  subscribeToDeleteResource((data: { detail: DeleteResourceEvent }) => {
+    setResourceToDeleteId(data.detail.resourceToDeleteId);
+    setRoute(data.detail.route);
+    setShowDialog(true);
+  });
 
   useEffect(() => {
-    if (updateSuccess) {
-      console.log('');
-      if (resourceEntity.id) {
-        return;
-      }
+    setResourceToDeleteId(props.resourceToDeleteId);
+    setRoute(props.route);
+  }, []);
 
-      setShowModal(false);
-      onSuccessDelete();
-      // setLoadModal(false);
+  const handleClose = () => {
+    setShowDialog(false);
+  };
+
+  // useEffect(() => {
+  //   if (updateSuccess) {
+  //     console.log('');
+  //     if (resourceEntity.id) {
+  //       return;
+  //     }
+
+  //     setShowModal(false);
+  //     onSuccessDelete();
+  //     // setLoadModal(false);
+  //   }
+  // }, [updateSuccess]);
+
+  const confirmDelete = async () => {
+    try {
+      const data = await axios.delete<IResource>(`${apiUrl}/${resourceToDeleteId}`);
+
+      publishDeletedResourceEvent({
+        source: 'noSource',
+        resourceId: resourceToDeleteId,
+        route,
+      });
+      handleClose();
+    } catch (err) {
+      console.log('cannoe delete', err);
     }
-  }, [updateSuccess]);
 
-  const confirmDelete = () => {
-    dispatch(deleteResource({ id: resourceId, orgaId }));
+    // dispatch(deleteResource({ id: resourceId, orgaId }));
   };
 
   return (
-    <Modal isOpen={showModal} toggle={handleClose}>
+    <Modal isOpen={showDialog} toggle={handleClose}>
       <ModalHeader toggle={handleClose} data-cy="resourceDeleteDialogHeading">
         <Translate contentKey="entity.delete.title">Confirm delete operation</Translate>
       </ModalHeader>
       <ModalBody id="treeportApp.resource.delete.question">
-        <Translate contentKey="treeportApp.resource.delete.question" interpolate={{ id: resourceId }}>
+        <Translate contentKey="treeportApp.resource.delete.question" interpolate={{ id: resourceToDeleteId }}>
           Are you sure you want to delete this Resource?
         </Translate>
       </ModalBody>

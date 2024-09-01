@@ -94,12 +94,14 @@ export const ResourceUpdateDialog = (props: {
     console.log('inDialogUpdate', data.detail);
     setResource(data.detail.resourceToEdit);
     setColumnDefinitions(data.detail.columnDefinitions);
+    setAction('update');
     setShowDialog(true);
   });
 
   subscribeToEditResourceForAdd((data: { detail: EditResourceForAddEvent }) => {
     setResourceParentId(data.detail.resourceToAddParentId);
     setColumnDefinitions(data.detail.columnDefinitions);
+    setAction('add');
     setRoute(data.detail.route);
     setShowDialog(true);
   });
@@ -163,7 +165,7 @@ export const ResourceUpdateDialog = (props: {
   // }, [updateSuccess]);
 
   const defaultValues = () =>
-    !resource || !resource.id
+    action == 'add'
       ? {
           parent: { id: resourceParentId },
           orga: { orga: orgaId },
@@ -220,7 +222,7 @@ export const ResourceUpdateDialog = (props: {
     action && (
       <Modal isOpen={showDialog} toggle={handleClose}>
         <ModalHeader toggle={handleClose} data-cy="resourceDeleteDialogHeading">
-          <Translate contentKey="entity.delete.title">Confirm delete operation</Translate>
+          Operation {action}
         </ModalHeader>
         <ModalBody id="treeportApp.resource.delete.question">
           <div>

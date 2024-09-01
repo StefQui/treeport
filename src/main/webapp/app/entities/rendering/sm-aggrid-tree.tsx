@@ -39,6 +39,9 @@ import {
   ITextCellEditorParams,
   GetRowIdParams,
   IRowNode,
+  SizeColumnsToFitGridStrategy,
+  SizeColumnsToFitProvidedWidthStrategy,
+  SizeColumnsToContentStrategy,
 } from 'ag-grid-community';
 import 'ag-grid-charts-enterprise';
 import { AgGridReact } from 'ag-grid-react';
@@ -56,9 +59,12 @@ import { ITag } from 'app/shared/model/tag.model';
 import { IResourceAndImpacters } from 'app/shared/model/resource-and-impacters.model';
 import {
   CreatedResourceEvent,
+  DeletedResourceEvent,
+  publishDeleteResourceEvent,
   publishEditResourceForAddEvent,
   publishEditResourceForUpdateEvent,
   subscribeToCreatedResource,
+  subscribeToDeletedResource,
   subscribeToUpdatedResource,
 } from './action.utils';
 
@@ -243,7 +249,11 @@ export const SmAggridTree = (props: {
     });
     console.log('matchingResourceIds', matchingResourceIds);
     gridParams.api.forEachNode(rowNode => {
-      if (matchingResourceIds.has(rowNode.data.id)) {
+      if (!rowNode.data) {
+        console.log('one rownode is null', rowNode);
+      }
+
+      if (rowNode.data && matchingResourceIds.has(rowNode.data.id)) {
         rowNode.updateData({ ...rowNode.data, childrenCount: 100 });
         console.log('updaterowNode', rowNode.data.id);
       }
@@ -305,6 +315,29 @@ export const SmAggridTree = (props: {
     setCreatedResource(data.detail);
   });
 
+  const [deletedResource, setDeletedResource] = useState<DeletedResourceEvent | null>(null);
+
+  useEffect(() => {
+    if (deletedResource) {
+      console.log('deletedResourcett', deletedResource);
+      const id = deletedResource.resourceId;
+
+      // gridParams.api.forEachNode(rowNode => {
+      //   if (rowNode.data.id === resourceAndImpacters.resource.id) {
+      //     rowNode.setData(resourceAndImpacters.resource);
+      //   }
+      // });
+      gridParams.api.applyServerSideTransaction({
+        route: deletedResource.route,
+        remove: [{ id: resourceIdToRemove }],
+      });
+    }
+  }, [deletedResource]);
+
+  subscribeToDeletedResource((data: { detail: DeletedResourceEvent }) => {
+    setDeletedResource(data.detail);
+  });
+
   // const onSuccessUpdate = (entityAndImpacters: IResourceAndImpacters) => {
   //   console.log('onSuccessUpdate', entityAndImpacters.resource, updatingNode, resourceEntity);
   //   updatingNode.setData(entityAndImpacters.resource);
@@ -321,25 +354,25 @@ export const SmAggridTree = (props: {
   //   }
   // }, [updatedResourceAction[0]]);
 
-  const onSuccessAdd = (entityAndImpacters: IResourceAndImpacters) => {
-    console.log('onSuccessAdd', updatingNode);
-    if (updatingNode) {
-      updatingNode.updateData({ ...updatingNode.data, group: true });
-      console.log('onSuccessAdd 2', entityAndImpacters, parentRoute, { ...updatingNode.data, group: true, childrenCount: 10 });
-      gridParams.api.applyServerSideTransaction({
-        route: parentRoute,
-        add: [entityAndImpacters.resource],
-      });
-      setCurrentAction('none');
-    } else {
-      gridParams.api.applyServerSideTransaction({
-        route: [],
-        add: [entityAndImpacters.resource],
-      });
-      setCurrentAction('none');
-    }
-    setResourceId(null);
-  };
+  // const onSuccessAdd = (entityAndImpacters: IResourceAndImpacters) => {
+  //   console.log('onSuccessAdd', updatingNode);
+  //   if (updatingNode) {
+  //     updatingNode.updateData({ ...updatingNode.data, group: true });
+  //     console.log('onSuccessAdd 2', entityAndImpacters, parentRoute, { ...updatingNode.data, group: true, childrenCount: 10 });
+  //     gridParams.api.applyServerSideTransaction({
+  //       route: parentRoute,
+  //       add: [entityAndImpacters.resource],
+  //     });
+  //     setCurrentAction('none');
+  //   } else {
+  //     gridParams.api.applyServerSideTransaction({
+  //       route: [],
+  //       add: [entityAndImpacters.resource],
+  //     });
+  //     setCurrentAction('none');
+  //   }
+  //   setResourceId(null);
+  // };
   const onCancelEdit = () => {
     console.log('onCancelEdit', resourceId, updatingNode, resourceEntity);
     // updatingNode.setData(updatedResource);
@@ -364,13 +397,21 @@ export const SmAggridTree = (props: {
 
   const handleRemove = (node: any) => {
     console.log('handleRemove', node.data.id, node.key);
-    setCurrentAction('remove');
-    setResourceIdToRemove(node.data.id);
-    setResourceId(null);
-    setUpdatingNode(null);
+    // setCurrentAction('remove');
+    // setResourceIdToRemove(node.data.id);
+    // setResourceId(null);
+    // setUpdatingNode(null);
+    // const route = getRouteToNode(node);
+
     const route = getRouteToNode(node);
-    setParentRoute(route.slice(0, route.length - 1));
-    setShowDeleteModal(true);
+    console.log('handleDelete', route);
+    publishDeleteResourceEvent({
+      source: builtPath,
+      resourceToDeleteId: node?.data.id,
+      route,
+    });
+    // setParentRoute(route.slice(0, route.length - 1));
+    // setShowDeleteModal(true);
   };
 
   const handleAdd = (node: any) => {
@@ -395,15 +436,24 @@ export const SmAggridTree = (props: {
   };
 
   const handleCreateRoot = () => {
-    setCurrentAction('add');
-    setUpdatingNode(null);
-    setParentRoute([]);
+    const route = [];
+    console.log('handleCreateRoot', route);
+    publishEditResourceForAddEvent({
+      source: builtPath,
+      resourceToAddParentId: null,
+      route,
+      columnDefinitions,
+    });
 
-    setParentResourceId(null);
-    setResourceId(null);
-    setResourceIdToRemove(null);
-    setUpdatingNode(null);
-    setShowUpdateModal(true);
+    // setCurrentAction('add');
+    // setUpdatingNode(null);
+    // setParentRoute([]);
+
+    // setParentResourceId(null);
+    // setResourceId(null);
+    // setResourceIdToRemove(null);
+    // setUpdatingNode(null);
+    // setShowUpdateModal(true);
   };
 
   const containerStyle = useMemo(() => ({ width: '100%', height: '800px' }), []);
@@ -474,6 +524,7 @@ export const SmAggridTree = (props: {
     {
       field: 'actions2',
       headerName: 'Actions2',
+      minWidth: 180,
       cellRenderer: actionsRenderer({
         editAction: handleEdit,
         addAction: handleAdd,
@@ -483,7 +534,6 @@ export const SmAggridTree = (props: {
   ]);
   const defaultColDef = useMemo<ColDef>(() => {
     return {
-      width: 240,
       flex: 1,
       sortable: false,
       editable: true,
@@ -493,6 +543,7 @@ export const SmAggridTree = (props: {
   const autoGroupColumnDef = useMemo<ColDef>(() => {
     return {
       field: 'id',
+      minWidth: 200,
       cellRendererParams: {
         innerRenderer: (params: ICellRendererParams) => {
           // display employeeName rather than group key (employeeId)
@@ -515,6 +566,15 @@ export const SmAggridTree = (props: {
     return dataItem.id;
   }, []);
 
+  const autoSizeStrategy = useMemo<
+    SizeColumnsToFitGridStrategy | SizeColumnsToFitProvidedWidthStrategy | SizeColumnsToContentStrategy
+  >(() => {
+    return {
+      type: 'fitGridWidth',
+      defaultMinWidth: 100,
+    };
+  }, []);
+
   const onGridReady = useCallback((params: GridReadyEvent) => {
     var datasource = createServerSideDatasource();
     params.api!.setGridOption('serverSideDatasource', datasource);
@@ -535,6 +595,7 @@ export const SmAggridTree = (props: {
           autoGroupColumnDef={autoGroupColumnDef}
           rowModelType={'serverSide'}
           treeData={true}
+          autoSizeStrategy={autoSizeStrategy}
           isServerSideGroupOpenByDefault={isServerSideGroupOpenByDefault}
           isServerSideGroup={isServerSideGroup}
           getServerSideGroupKey={getServerSideGroupKey}
@@ -552,13 +613,13 @@ export const SmAggridTree = (props: {
         parentResourceId={parentResourceId}
         props={props}
       ></ResourceUpdateDialog> */}
-      <ResourceDeleteDialog
+      {/* <ResourceDeleteDialog
         showModal={showDeleteModal}
         setShowModal={setShowDeleteModal}
         onSuccessDelete={onSuccessDelete}
         onCancelDelete={onCancelDelete}
         resourceId={resourceIdToRemove}
-      ></ResourceDeleteDialog>
+      ></ResourceDeleteDialog> */}
     </div>
   );
 };

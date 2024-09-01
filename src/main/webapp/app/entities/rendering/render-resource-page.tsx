@@ -8,6 +8,7 @@ import { getResourceForPageResources, setInLocalState, setRenderingCurrentPageId
 import { SmRefToResource } from './sm-resource-content';
 import { ValueInState, ComponentResource, ComponentResourceProperties, RENDERING_CONTEXT } from './type';
 import { UpdateResourceDialog } from '../resource/resource-update-dialog';
+import { DeleteResourceDialog } from '../resource/resource-delete-dialog';
 
 export const existsAndHasAValue = (resourceState: ValueInState) => {
   return !!(resourceState && resourceState.value);
@@ -185,6 +186,7 @@ export const RenderResourcePage = () => {
       <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>
       {/* <MyElem input={toRender} params={{}} currentPath={getRootPath()} localContextPath={''} depth="0"></MyElem> */}
       <UpdateResourceDialog></UpdateResourceDialog>
+      <DeleteResourceDialog></DeleteResourceDialog>
       <SmRefToResource currentPath="" path="" params={{ resourceId }} localContextPath="" depth="0"></SmRefToResource>
     </div>
   );

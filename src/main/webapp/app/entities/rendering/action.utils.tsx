@@ -11,6 +11,12 @@ export type CreatedResourceEvent = {
   route: string[];
 } | null;
 
+export type DeletedResourceEvent = {
+  source: string;
+  resourceId: string;
+  route: string[];
+} | null;
+
 export type EditResourceForUpdateEvent = {
   source: string;
   resourceToEdit: IResourceWithValue;
@@ -24,10 +30,32 @@ export type EditResourceForAddEvent = {
   columnDefinitions: ColumnDefinition[];
 } | null;
 
+export type DeleteResourceEvent = {
+  source: string;
+  resourceToDeleteId: string;
+  route: string[];
+} | null;
+
 const updatedResource = 'updatedResource';
 const createdResource = 'createdResource';
+const deletedResource = 'deletedResource';
 const editResourceForUpdate = 'editResourceForUpdate';
 const editResourceForadd = 'editResourceForadd';
+const deleteResource = 'deleteResource';
+
+export const subscribeToDeletedResource = (listener: (DeletedResourceAction) => void) => {
+  useEffect(() => {
+    document.addEventListener(deletedResource, listener as any);
+    return () => {
+      document.removeEventListener(deletedResource, listener as any);
+    };
+  }, []);
+};
+
+export const publishDeletedResourceEvent = (data: DeletedResourceEvent) => {
+  const event = new CustomEvent(deletedResource, { detail: data });
+  document.dispatchEvent(event);
+};
 
 export const subscribeToUpdatedResource = (listener: (UpdatedResourceAction) => void) => {
   useEffect(() => {
@@ -82,5 +110,19 @@ export const subscribeToEditResourceForAdd = (listener: (EditResourceForAddEvent
 
 export const publishEditResourceForAddEvent = (data: EditResourceForAddEvent) => {
   const event = new CustomEvent(editResourceForadd, { detail: data });
+  document.dispatchEvent(event);
+};
+
+export const subscribeToDeleteResource = (listener: (DeleteResourceEvent) => void) => {
+  useEffect(() => {
+    document.addEventListener(deleteResource, listener as any);
+    return () => {
+      document.removeEventListener(deleteResource, listener as any);
+    };
+  }, []);
+};
+
+export const publishDeleteResourceEvent = (data: DeleteResourceEvent) => {
+  const event = new CustomEvent(deleteResource, { detail: data });
   document.dispatchEvent(event);
 };

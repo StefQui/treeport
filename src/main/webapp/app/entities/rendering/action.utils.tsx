@@ -36,12 +36,18 @@ export type DeleteResourceEvent = {
   route: string[];
 } | null;
 
+export type EditUiResourceForUpdateEvent = {
+  source: string;
+  resourceIdToEdit: string;
+} | null;
+
 const updatedResource = 'updatedResource';
 const createdResource = 'createdResource';
 const deletedResource = 'deletedResource';
 const editResourceForUpdate = 'editResourceForUpdate';
 const editResourceForadd = 'editResourceForadd';
 const deleteResource = 'deleteResource';
+const editUiResourceForUpdate = 'editUiResourceForUpdate';
 
 export const subscribeToDeletedResource = (listener: (DeletedResourceAction) => void) => {
   useEffect(() => {
@@ -124,5 +130,19 @@ export const subscribeToDeleteResource = (listener: (DeleteResourceEvent) => voi
 
 export const publishDeleteResourceEvent = (data: DeleteResourceEvent) => {
   const event = new CustomEvent(deleteResource, { detail: data });
+  document.dispatchEvent(event);
+};
+
+export const subscribeToEditUiResourceForUpdate = (listener: (EditUiResourceForUpdateEvent) => void) => {
+  useEffect(() => {
+    document.addEventListener(editUiResourceForUpdate, listener as any);
+    return () => {
+      document.removeEventListener(editUiResourceForUpdate, listener as any);
+    };
+  }, []);
+};
+
+export const publishEditUiResourceForUpdateEvent = (data: EditUiResourceForUpdateEvent) => {
+  const event = new CustomEvent(editUiResourceForUpdate, { detail: data });
   document.dispatchEvent(event);
 };

@@ -1,4 +1,4 @@
-import { useAppDispatch } from 'app/config/store';
+import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { IResource } from 'app/shared/model/resource.model';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
@@ -6,9 +6,12 @@ import { usePageContext, useResourceStateFromPageResources } from './sm-layout';
 import { getValueForPathInObject, getRootPath } from './shared';
 import { getResourceForPageResources, setInLocalState, setRenderingCurrentPageId, setRenderingPageContext } from './rendering.reducer';
 import { SmRefToResource } from './sm-resource-content';
-import { ValueInState, ComponentResource, ComponentResourceProperties, RENDERING_CONTEXT } from './type';
+import { ValueInState, ComponentResource, ComponentResourceProperties, RENDERING_CONTEXT, RenderingSliceState } from './type';
 import { UpdateResourceDialog } from '../resource/resource-update-dialog';
 import { DeleteResourceDialog } from '../resource/resource-delete-dialog';
+import UiResourceUpdateDialog from '../resource/ui-resource-update-dialog';
+import { Form, FormGroup, Input, Label } from 'reactstrap';
+import { updateShowUiOpener } from 'app/shared/reducers/application-profile';
 
 export const existsAndHasAValue = (resourceState: ValueInState) => {
   return !!(resourceState && resourceState.value);
@@ -178,13 +181,34 @@ export const RenderResourcePage = () => {
     return <span>Missing resourceId in RenderResourcePage</span>;
   }
   const pageContext: RENDERING_CONTEXT = usePageContext();
+  // const [showUiOpener, setShowUiOpener] = useState(true);
+  // const showUiOpener = useAppSelector((state: RenderingSliceState) => state.rendering.showUiOpener);
+  const showUiOpener = useAppSelector(state => state.applicationProfile.showUiOpener);
+  const setShowUiOpener = showUiOpener => {
+    dispatch(updateShowUiOpener(showUiOpener));
+  };
 
   return (
     <div>
       <h1>OrgaId: {orgaId}</h1>
       <h1>ResourceId: {resourceId}</h1>
+      <Form>
+        <FormGroup switch>
+          <Input
+            type="switch"
+            checked={showUiOpener}
+            onClick={() => {
+              setShowUiOpener(!showUiOpener);
+            }}
+            role="switch"
+          />
+          <Label check>Show UI opener</Label>
+        </FormGroup>
+      </Form>
+
       <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>
       {/* <MyElem input={toRender} params={{}} currentPath={getRootPath()} localContextPath={''} depth="0"></MyElem> */}
+      <UiResourceUpdateDialog></UiResourceUpdateDialog>
       <UpdateResourceDialog></UpdateResourceDialog>
       <DeleteResourceDialog></DeleteResourceDialog>
       <SmRefToResource currentPath="" path="" params={{ resourceId }} localContextPath="" depth="0"></SmRefToResource>

@@ -1006,7 +1006,7 @@ const rDsWithForm: ComponentResource = {
           {
             componentType: 'SmAttRef',
             path: 'attRefToConso',
-            col: 6,
+            col: 12,
             params: {
               resourceId: {
                 ruleType: 'refToLocalContext',

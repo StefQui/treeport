@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import React, { useEffect, useState } from 'react';
-import { calculateTargetLocalContextPath } from './sm-resource-content';
+import { calculateTargetLocalContextPath, editUiResource, UiOpener } from './sm-resource-content';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
@@ -54,13 +54,17 @@ export const SmPage = (props: SmPageProps) => {
   }
 
   return (
-    <MyElem
-      input={layoutContent}
-      depth={increment(props.depth)}
-      // params={props.params ? props.params.params : null}
-      currentPath={builtPath}
-      localContextPath={props.localContextPath}
-    ></MyElem>
+    <div>
+      <UiOpener resourceId={layoutId} source={'layout'}></UiOpener>
+
+      <MyElem
+        input={layoutContent}
+        depth={increment(props.depth)}
+        // params={props.params ? props.params.params : null}
+        currentPath={builtPath}
+        localContextPath={props.localContextPath}
+      ></MyElem>
+    </div>
   );
 };
 
@@ -173,13 +177,16 @@ export const SmLayoutElement = (props: SmLayoutElementProps) => {
     return <span>Cannot display layout element content</span>;
   }
   return (
-    <MyElem
-      input={layoutElementResourceContent}
-      depth={props.depth}
-      // params={props.params ? props.params.params : null}
-      currentPath={props.currentPath + PATH_SEPARATOR + props.path}
-      localContextPath={calculateTargetLocalContextPath(true, props)}
-    ></MyElem>
+    <div>
+      <UiOpener resourceId={layoutElementId} source={'layoutElement'}></UiOpener>
+      <MyElem
+        input={layoutElementResourceContent}
+        depth={props.depth}
+        // params={props.params ? props.params.params : null}
+        currentPath={props.currentPath + PATH_SEPARATOR + props.path}
+        localContextPath={calculateTargetLocalContextPath(true, props)}
+      ></MyElem>
+    </div>
   );
   // return <MyRend content={layoutElementContent} params={props.params} currentPath={builtPath} localContextPath={builtPath}></MyRend>;
 };

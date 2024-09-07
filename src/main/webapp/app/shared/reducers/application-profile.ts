@@ -7,6 +7,7 @@ const initialState = {
   ribbonEnv: '',
   inProduction: true,
   isOpenAPIEnabled: false,
+  showUiOpener: true,
 };
 
 export type ApplicationProfileState = Readonly<typeof initialState>;
@@ -18,7 +19,12 @@ export const getProfile = createAsyncThunk('applicationProfile/get_profile', asy
 export const ApplicationProfileSlice = createSlice({
   name: 'applicationProfile',
   initialState: initialState as ApplicationProfileState,
-  reducers: {},
+  reducers: {
+    updateShowUiOpener(state, action) {
+      const showUiOpener = action.payload;
+      state.showUiOpener = showUiOpener;
+    },
+  },
   extraReducers(builder) {
     builder.addCase(getProfile.fulfilled, (state, action) => {
       const { data } = action.payload;
@@ -28,6 +34,8 @@ export const ApplicationProfileSlice = createSlice({
     });
   },
 });
+
+export const { updateShowUiOpener } = ApplicationProfileSlice.actions;
 
 // Reducer
 export default ApplicationProfileSlice.reducer;

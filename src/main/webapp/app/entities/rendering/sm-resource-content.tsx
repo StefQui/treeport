@@ -1,10 +1,31 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useAppSelector } from 'app/config/store';
 import React, { useEffect, useState } from 'react';
 import { Row } from 'reactstrap';
+import { publishEditUiResourceForUpdateEvent } from './action.utils';
 import { handleParameterDefinitions } from './parameter-definition';
 import { usePageResourceContentFromResourceId, useResourceWithKey } from './render-resource-page';
 import { MyElem, increment } from './rendering';
 import { getRootPath, PATH_SEPARATOR, buildPath } from './shared';
 import { SmRefToResourceProps, RefToResourceParams } from './type';
+
+export const editUiResource = (resourceId: string, source: string) => () => {
+  publishEditUiResourceForUpdateEvent({
+    source,
+    resourceIdToEdit: resourceId,
+  });
+};
+
+export const UiOpener = ({ resourceId, source }) => {
+  const showUiOpener = useAppSelector(state => state.applicationProfile.showUiOpener);
+  return (
+    showUiOpener && (
+      <a onClick={editUiResource(resourceId, source)}>
+        <FontAwesomeIcon icon="eye" /> ({source}) {resourceId}
+      </a>
+    )
+  );
+};
 
 export const calculateTargetLocalContextPath = (childResource = true, props) => {
   if (!props.localContextPath && !props.path) {
@@ -44,14 +65,17 @@ export const SmRefToResource = (props: SmRefToResourceProps) => {
   if (resourceContent) {
     console.log('resourceContent', props.itemParam);
     return (
-      <MyElem
-        input={resourceContent}
-        depth={increment(props.depth)}
-        params={props.params ? params : null}
-        itemParam={props.itemParam}
-        currentPath={builtPath}
-        localContextPath={calculateTargetLocalContextPath(true, props)}
-      ></MyElem>
+      <div>
+        <UiOpener resourceId={resourceId} source={'ref'}></UiOpener>
+        <MyElem
+          input={resourceContent}
+          depth={increment(props.depth)}
+          params={props.params ? params : null}
+          itemParam={props.itemParam}
+          currentPath={builtPath}
+          localContextPath={calculateTargetLocalContextPath(true, props)}
+        ></MyElem>
+      </div>
     );
   }
   return (

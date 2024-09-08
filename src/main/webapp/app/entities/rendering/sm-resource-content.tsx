@@ -7,20 +7,21 @@ import { handleParameterDefinitions } from './parameter-definition';
 import { usePageResourceContentFromResourceId, useResourceWithKey } from './render-resource-page';
 import { MyElem, increment } from './rendering';
 import { getRootPath, PATH_SEPARATOR, buildPath } from './shared';
-import { SmRefToResourceProps, RefToResourceParams } from './type';
+import { SmRefToResourceProps, RefToResourceParams, PageResourceContent } from './type';
 
-export const editUiResource = (resourceId: string, source: string) => () => {
+export const editUiResource = (source: string, resourceId?: string, resourceContent?: PageResourceContent) => () => {
   publishEditUiResourceForUpdateEvent({
     source,
+    resourceContent,
     resourceIdToEdit: resourceId,
   });
 };
 
-export const UiOpener = ({ resourceId, source }) => {
+export const UiOpener = ({ resourceId, resourceContent, source }: { resourceId?: string; resourceContent?: any; source: string }) => {
   const showUiOpener = useAppSelector(state => state.applicationProfile.showUiOpener);
   return (
     showUiOpener && (
-      <a onClick={editUiResource(resourceId, source)}>
+      <a onClick={editUiResource(source, resourceId, resourceContent)}>
         <FontAwesomeIcon icon="eye" /> ({source}) {resourceId}
       </a>
     )

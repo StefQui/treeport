@@ -2,7 +2,15 @@ import { useAppSelector } from 'app/config/store';
 import { IResourceAndImpacters } from 'app/shared/model/resource-and-impacters.model';
 import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
 import { useEffect, useState } from 'react';
-import { ActionState, ColumnDefinition, RenderingSliceState, UpdatedResourceAction } from './type';
+import { toast } from 'react-toastify';
+import {
+  ActionState,
+  ColumnDefinition,
+  ComponentResourceContent,
+  PageResourceContent,
+  RenderingSliceState,
+  UpdatedResourceAction,
+} from './type';
 
 export type CreatedResourceEvent = {
   source: string;
@@ -38,7 +46,12 @@ export type DeleteResourceEvent = {
 
 export type EditUiResourceForUpdateEvent = {
   source: string;
-  resourceIdToEdit: string;
+  resourceIdToEdit?: string;
+  resourceContent?: ComponentResourceContent;
+} | null;
+
+export type ShowStatevent = {
+  stateId: string;
 } | null;
 
 const updatedResource = 'updatedResource';
@@ -48,6 +61,7 @@ const editResourceForUpdate = 'editResourceForUpdate';
 const editResourceForadd = 'editResourceForadd';
 const deleteResource = 'deleteResource';
 const editUiResourceForUpdate = 'editUiResourceForUpdate';
+const showState = 'showState';
 
 export const subscribeToDeletedResource = (listener: (DeletedResourceAction) => void) => {
   useEffect(() => {
@@ -103,6 +117,7 @@ export const subscribeToEditResourceForUpdate = (listener: (EditResourceForUpdat
 export const publishEditResourceForUpdateEvent = (data: EditResourceForUpdateEvent) => {
   const event = new CustomEvent(editResourceForUpdate, { detail: data });
   document.dispatchEvent(event);
+  toast.success(editResourceForUpdate);
 };
 
 export const subscribeToEditResourceForAdd = (listener: (EditResourceForAddEvent) => void) => {
@@ -117,6 +132,7 @@ export const subscribeToEditResourceForAdd = (listener: (EditResourceForAddEvent
 export const publishEditResourceForAddEvent = (data: EditResourceForAddEvent) => {
   const event = new CustomEvent(editResourceForadd, { detail: data });
   document.dispatchEvent(event);
+  toast.success(editResourceForadd);
 };
 
 export const subscribeToDeleteResource = (listener: (DeleteResourceEvent) => void) => {
@@ -145,4 +161,20 @@ export const subscribeToEditUiResourceForUpdate = (listener: (EditUiResourceForU
 export const publishEditUiResourceForUpdateEvent = (data: EditUiResourceForUpdateEvent) => {
   const event = new CustomEvent(editUiResourceForUpdate, { detail: data });
   document.dispatchEvent(event);
+  toast.success(editUiResourceForUpdate);
+};
+
+export const subscribeToShowState = (listener: (ShowStatevent) => void) => {
+  useEffect(() => {
+    document.addEventListener(showState, listener as any);
+    return () => {
+      document.removeEventListener(showState, listener as any);
+    };
+  }, []);
+};
+
+export const publishShowStateEvent = (data: ShowStatevent) => {
+  const event = new CustomEvent(showState, { detail: data });
+  document.dispatchEvent(event);
+  toast.success(showState);
 };

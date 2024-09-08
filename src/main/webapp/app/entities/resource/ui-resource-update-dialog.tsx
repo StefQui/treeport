@@ -21,6 +21,7 @@ import {
   subscribeToEditUiResourceForUpdate,
 } from '../rendering/action.utils';
 import { usePageResourceContentFromResourceId, useResourceWithKey } from '../rendering/render-resource-page';
+import { UiElem } from '../rendering/ui/ui-elem';
 
 type updateAction = 'update';
 type addAction = 'add';
@@ -31,58 +32,74 @@ export const UiResourceUpdateDialog = props => {
 
   const { orgaId } = useParams<'orgaId'>();
   const apiUrl = `api/orga/${orgaId}/resources`;
-  const [showDialog, setShowDialog] = useState(true);
+  const [showDialog, setShowDialog] = useState(false);
 
   const [resourceId, setResourceId] = useState(null);
 
+  const [resourceContent, setResourceContent] = useState(null);
   const resource = usePageResourceContentFromResourceId(resourceId);
-  const resourceContent = useResourceWithKey(resource, 'content');
+  const fetchedResourceContent = useResourceWithKey(resource, 'content');
+  const [displayedResourceContent, setDisplayedResourceContent] = useState(null);
 
   subscribeToEditUiResourceForUpdate((data: { detail: EditUiResourceForUpdateEvent }) => {
-    setResourceId(data.detail.resourceIdToEdit);
-
+    if (data.detail.resourceIdToEdit) {
+      setResourceId(data.detail.resourceIdToEdit);
+    } else if (data.detail.resourceContent) {
+      setResourceContent(data.detail.resourceContent);
+    }
     setShowDialog(true);
   });
 
   useEffect(() => {
-    setShowDialog(true);
-  }, [resourceId]);
+    if (fetchedResourceContent) {
+      setDisplayedResourceContent(fetchedResourceContent);
+    }
+  }, [fetchedResourceContent]);
+
+  useEffect(() => {
+    if (resourceContent) {
+      setDisplayedResourceContent(resourceContent);
+    }
+  }, [resourceContent]);
 
   const handleClose = () => {
     setShowDialog(false);
   };
 
   return (
-    resourceId && (
-      <Modal isOpen={showDialog} toggle={handleClose} size="xl">
-        <ModalHeader toggle={handleClose} data-cy="resourceDeleteDialogHeading">
-          Operation
-        </ModalHeader>
-        <ModalBody id="treeportApp.resource.delete.question">
-          <div>
+    <Modal isOpen={showDialog} toggle={handleClose} size="xl">
+      <ModalHeader toggle={handleClose} data-cy="resourceDeleteDialogHeading">
+        Operation
+      </ModalHeader>
+      <ModalBody id="treeportApp.resource.delete.question">
+        <div>
+          <Row className="justify-content-center"></Row>
+          <Row className="justify-content-center">
+            {resourceId && <Col md="12">Resource: {resourceId}</Col>}
+            <Col md="12">
+              {displayedResourceContent ? <UiElem componentResource={displayedResourceContent}></UiElem> : <span>mmm</span>}
+            </Col>
             <Row className="justify-content-center"></Row>
-            <Row className="justify-content-center">
-              <Col md="12">Resource: {resourceId}</Col>
-              <Col md="12">
-                <pre>{JSON.stringify(resourceContent ? resourceContent : {}, null, 2)}</pre>
-              </Col>
-            </Row>
-          </div>{' '}
-        </ModalBody>
-        <ModalFooter>
-          <Button color="secondary" onClick={handleClose}>
-            <FontAwesomeIcon icon="ban" />
-            &nbsp;
-            <Translate contentKey="entity.action.cancel">Cancel</Translate>
-          </Button>
-          {/* <Button id="jhi-confirm-delete-resource" data-cy="entityConfirmDeleteButton" color="danger" onClick={confirmDelete}>
+            <Row className="justify-content-center"></Row>
+            <Col md="12">
+              <pre>{JSON.stringify(displayedResourceContent ? displayedResourceContent : {}, null, 2)}</pre>
+            </Col>
+          </Row>
+        </div>{' '}
+      </ModalBody>
+      <ModalFooter>
+        <Button color="secondary" onClick={handleClose}>
+          <FontAwesomeIcon icon="ban" />
+          &nbsp;
+          <Translate contentKey="entity.action.cancel">Cancel</Translate>
+        </Button>
+        {/* <Button id="jhi-confirm-delete-resource" data-cy="entityConfirmDeleteButton" color="danger" onClick={confirmDelete}>
           <FontAwesomeIcon icon="trash" />
           &nbsp;
           <Translate contentKey="entity.action.delete">Delete</Translate>
         </Button> */}
-        </ModalFooter>
-      </Modal>
-    )
+      </ModalFooter>
+    </Modal>
   );
 };
 

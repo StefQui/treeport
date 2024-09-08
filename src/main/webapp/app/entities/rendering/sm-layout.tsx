@@ -55,8 +55,7 @@ export const SmPage = (props: SmPageProps) => {
 
   return (
     <div>
-      <UiOpener resourceId={layoutId} source={'layout'}></UiOpener>
-
+      <UiOpener resourceId={layoutId} source={'layout/page'}></UiOpener>
       <MyElem
         input={layoutContent}
         depth={increment(props.depth)}
@@ -178,7 +177,8 @@ export const SmLayoutElement = (props: SmLayoutElementProps) => {
   }
   return (
     <div>
-      <UiOpener resourceId={layoutElementId} source={'layoutElement'}></UiOpener>
+      <UiOpener resourceContent={layoutElementResourceContent} source={'layoutElement'}></UiOpener>
+      {/* {JSON.stringify(layoutElementResourceContent)} */}
       <MyElem
         input={layoutElementResourceContent}
         depth={props.depth}

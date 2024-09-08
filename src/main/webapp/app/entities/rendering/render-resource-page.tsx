@@ -12,6 +12,8 @@ import { DeleteResourceDialog } from '../resource/resource-delete-dialog';
 import UiResourceUpdateDialog from '../resource/ui-resource-update-dialog';
 import { Form, FormGroup, Input, Label } from 'reactstrap';
 import { updateShowUiOpener } from 'app/shared/reducers/application-profile';
+import { publishShowStateEvent } from './action.utils';
+import UiShowStateDialog from '../resource/show-state-dialog';
 
 export const existsAndHasAValue = (resourceState: ValueInState) => {
   return !!(resourceState && resourceState.value);
@@ -188,6 +190,12 @@ export const RenderResourcePage = () => {
     dispatch(updateShowUiOpener(showUiOpener));
   };
 
+  const showState = stateId => () => {
+    publishShowStateEvent({
+      stateId,
+    });
+  };
+
   return (
     <div>
       <h1>OrgaId: {orgaId}</h1>
@@ -205,9 +213,15 @@ export const RenderResourcePage = () => {
           <Label check>Show UI opener</Label>
         </FormGroup>
       </Form>
-
-      <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre>
-      {/* <MyElem input={toRender} params={{}} currentPath={getRootPath()} localContextPath={''} depth="0"></MyElem> */}
+      <a onClick={showState('localContextsState')}>
+        <u>localContextsState</u>
+      </a>
+      &nbsp; &nbsp;
+      <a onClick={showState('pageContext')}>
+        <u>pageContext</u>
+      </a>
+      {/* <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre> */}
+      <UiShowStateDialog></UiShowStateDialog>
       <UiResourceUpdateDialog></UiResourceUpdateDialog>
       <UpdateResourceDialog></UpdateResourceDialog>
       <DeleteResourceDialog></DeleteResourceDialog>

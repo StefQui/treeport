@@ -332,6 +332,9 @@ export type IdColumnDefinition = {
 export type NameColumnDefinition = {
   columnType: 'NAME';
 };
+export type TagsColumnDefinition = {
+  columnType: 'TAGS';
+};
 export type AttributeColumnDefinition = {
   columnType: 'ATTRIBUTE';
   attributeConfigId: string;
@@ -339,9 +342,14 @@ export type AttributeColumnDefinition = {
 };
 export type ButtonColumnDefinition = {
   columnType: 'BUTTON';
-  action: 'select' | 'edit';
+  action: 'select' | 'edit' | 'addChildren' | 'remove';
 };
-export type ColumnDefinition = IdColumnDefinition | NameColumnDefinition | AttributeColumnDefinition | ButtonColumnDefinition;
+export type ColumnDefinition =
+  | IdColumnDefinition
+  | NameColumnDefinition
+  | TagsColumnDefinition
+  | AttributeColumnDefinition
+  | ButtonColumnDefinition;
 
 export type DataSetParams = {
   columnDefinitions: ColumnDefinition[];
@@ -363,6 +371,7 @@ export type DataSetTreeParams2 = {
   resourceIdForDetail?: string;
   columnDefinitions: ColumnDefinition[];
   valueFilter: ResourceFilter;
+  selectedResourceKeyInLocalContext?: string;
 };
 
 export type ResourcePropertyFilterTargetType = 'name' | 'id' | 'parentId';
@@ -510,7 +519,6 @@ export type CurrentPageIdState = string | null;
 export type ActionState = (
   | SelectResourceAction
   | SetCurrentPageAction
-  | UpdatedResourceAction
   | UpdateAttributeAction
   | RefreshDataSetAction
   | OpenNodeAction
@@ -527,11 +535,6 @@ export type SetCurrentPageAction = {
   actionType: 'setCurrentPage';
   currentPage: number;
   targetDataset: string;
-} | null;
-export type UpdatedResourceAction = {
-  source: string;
-  actionType: 'updatedResource';
-  resourceAndImpacters: IResourceAndImpacters;
 } | null;
 export type SelectResourceAction = {
   source: string;

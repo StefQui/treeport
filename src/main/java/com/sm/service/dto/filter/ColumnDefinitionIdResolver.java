@@ -45,6 +45,7 @@ public class ColumnDefinitionIdResolver extends TypeIdResolverBase {
             switch (ColumnType.fromString(type)) {
                 case ID -> IdColumnDTO.class;
                 case NAME -> NameColumnDTO.class;
+                case TAGS -> TagsColumnDTO.class;
                 case ATTRIBUTE -> AttributeColumnDTO.class;
                 case BUTTON -> ButtonColumnDTO.class;
             };

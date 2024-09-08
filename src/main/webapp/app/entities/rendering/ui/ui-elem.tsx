@@ -5,7 +5,7 @@ import { ComponentResource, ComponentResourceContent } from '../type';
 export const UiElem = ({ componentResource }) => {
   // const [componentResource, setComponentResource] = useState(null);
 
-  console.log('UiElemUiElemStart', componentResource);
+  // console.log('UiElemUiElemStart', componentResource);
 
   // useEffect(() => {
   //   console.log('UiElemUiElem', props.componentResource);
@@ -24,7 +24,7 @@ export const UiElem = ({ componentResource }) => {
 };
 
 export const UiElemComponent = ({ componentResource, key }: { componentResource: ComponentResourceContent; key?: number }) => {
-  console.log('UiElemComponent', componentResource);
+  // console.log('UiElemComponent', componentResource);
   const componentType = componentResource.componentType;
 
   const renderCompItems = (items, key) =>

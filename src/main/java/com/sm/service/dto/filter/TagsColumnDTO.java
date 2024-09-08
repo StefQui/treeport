@@ -1,6 +1,6 @@
 package com.sm.service.dto.filter;
 
-import static com.sm.service.dto.filter.ColumnType.NAME;
+import static com.sm.service.dto.filter.ColumnType.TAGS;
 
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +13,8 @@ import lombok.extern.jackson.Jacksonized;
 @SuperBuilder(toBuilder = true)
 @Jacksonized
 @SuppressWarnings("common-java:DuplicatedBlocks")
-public class NameColumnDTO extends ColumnDefinitionDTO {
+public class TagsColumnDTO extends ColumnDefinitionDTO {
 
     @Builder.Default
-    private ColumnType columnType = NAME;
+    private ColumnType columnType = TAGS;
 }

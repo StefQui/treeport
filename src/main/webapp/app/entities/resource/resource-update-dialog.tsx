@@ -9,7 +9,7 @@ import { getEntities as getOrganisations } from 'app/entities/organisation/organ
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { is } from 'immer/dist/internal';
 import { createResource, getResource, reset, updateResource } from './resource.reducer';
-import { ColumnDefinition, UpdateAttributeAction, UpdatedResourceAction, ValueInState } from '../rendering/type';
+import { ColumnDefinition, UpdateAttributeAction, ValueInState } from '../rendering/type';
 import { buildPath, useCalculatedValueState } from '../rendering/shared';
 import { evaluateValueExistsShouldDisplay, hasChanged } from '../rendering/rendering';
 import { setAction, setInLocalState } from '../rendering/rendering.reducer';
@@ -209,7 +209,6 @@ export const ResourceUpdateDialog = (props: {
       });
       publishUpdatedResourceEvent({
         source: 'noSource',
-        actionType: 'updatedResource',
         resourceAndImpacters: data.data,
       });
       // dispatch(setAction({ ...action, timestamp: new Date() }));

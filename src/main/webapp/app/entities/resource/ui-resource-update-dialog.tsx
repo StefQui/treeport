@@ -43,8 +43,10 @@ export const UiResourceUpdateDialog = props => {
 
   subscribeToEditUiResourceForUpdate((data: { detail: EditUiResourceForUpdateEvent }) => {
     if (data.detail.resourceIdToEdit) {
+      setResourceContent(null);
       setResourceId(data.detail.resourceIdToEdit);
     } else if (data.detail.resourceContent) {
+      setResourceId(null);
       setResourceContent(data.detail.resourceContent);
     }
     setShowDialog(true);

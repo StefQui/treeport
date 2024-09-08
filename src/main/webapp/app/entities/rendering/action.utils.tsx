@@ -3,20 +3,17 @@ import { IResourceAndImpacters } from 'app/shared/model/resource-and-impacters.m
 import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import {
-  ActionState,
-  ColumnDefinition,
-  ComponentResourceContent,
-  PageResourceContent,
-  RenderingSliceState,
-  UpdatedResourceAction,
-} from './type';
+import { ActionState, ColumnDefinition, ComponentResourceContent, PageResourceContent, RenderingSliceState } from './type';
 
 export type CreatedResourceEvent = {
   source: string;
   resourceAndImpacters: IResourceAndImpacters;
   resourceParentId: string;
   route: string[];
+} | null;
+export type UpdatedResourceEvent = {
+  source: string;
+  resourceAndImpacters: IResourceAndImpacters;
 } | null;
 
 export type DeletedResourceEvent = {
@@ -77,7 +74,7 @@ export const publishDeletedResourceEvent = (data: DeletedResourceEvent) => {
   document.dispatchEvent(event);
 };
 
-export const subscribeToUpdatedResource = (listener: (UpdatedResourceAction) => void) => {
+export const subscribeToUpdatedResource = (listener: (UpdatedResourceEvent) => void) => {
   useEffect(() => {
     document.addEventListener(updatedResource, listener as any);
     return () => {
@@ -86,7 +83,7 @@ export const subscribeToUpdatedResource = (listener: (UpdatedResourceAction) => 
   }, []);
 };
 
-export const publishUpdatedResourceEvent = (data: UpdatedResourceAction) => {
+export const publishUpdatedResourceEvent = (data: UpdatedResourceEvent) => {
   const event = new CustomEvent(updatedResource, { detail: data });
   document.dispatchEvent(event);
 };

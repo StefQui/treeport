@@ -19,12 +19,15 @@ export const editUiResource = (source: string, resourceId?: string, resourceCont
 
 export const UiOpener = ({ resourceId, resourceContent, source }: { resourceId?: string; resourceContent?: any; source: string }) => {
   const showUiOpener = useAppSelector(state => state.applicationProfile.showUiOpener);
+
   return (
-    showUiOpener && (
-      <a onClick={editUiResource(source, resourceId, resourceContent)}>
-        <FontAwesomeIcon icon="eye" /> ({source}) {resourceId}
-      </a>
-    )
+    <div>
+      {showUiOpener && (
+        <a onClick={editUiResource(source, resourceId, resourceContent)}>
+          <FontAwesomeIcon icon="eye" /> ({source}) {resourceId} {showUiOpener ? 'aa' : 'bb'}
+        </a>
+      )}
+    </div>
   );
 };
 

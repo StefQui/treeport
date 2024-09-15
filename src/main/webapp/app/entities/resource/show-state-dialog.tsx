@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Row, Col } from 'reactstrap';
 import { translate, Translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -14,12 +14,14 @@ import {
   EditResourceForAddEvent,
   EditResourceForUpdateEvent,
   EditUiResourceForUpdateEvent,
+  NavigateToEvent,
   publishCreatedResourceEvent,
   publishUpdatedResourceEvent,
   ShowStatevent,
   subscribeToEditResourceForAdd,
   subscribeToEditResourceForUpdate,
   subscribeToEditUiResourceForUpdate,
+  subscribeToNavigateTo,
   subscribeToShowState,
 } from '../rendering/action.utils';
 import { usePageResourceContentFromResourceId, useResourceWithKey } from '../rendering/render-resource-page';
@@ -27,6 +29,14 @@ import { usePageResourceContentFromResourceId, useResourceWithKey } from '../ren
 type updateAction = 'update';
 type addAction = 'add';
 type ActionType = updateAction | addAction;
+
+export const NavigateToHandler = () => {
+  const navigate = useNavigate();
+  subscribeToNavigateTo((data: { detail: NavigateToEvent }) => {
+    navigate(data.detail.to);
+  });
+  return <div></div>;
+};
 
 export const UiShowStateDialog = props => {
   const dispatch = useAppDispatch();

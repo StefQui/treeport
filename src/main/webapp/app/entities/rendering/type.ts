@@ -63,6 +63,11 @@ export type SmTextResourceContent = CommonContent & {
   params: TextParams;
 };
 
+export type SmMarkupResourceContent = CommonContent & {
+  componentType: 'SmMarkup';
+  params: MarkupParams;
+};
+
 export type SmAgGridResourceContent = CommonContent & {
   componentType: 'SmAgGrid';
   params: TextParams;
@@ -139,6 +144,7 @@ export type VerticalPanelResourceElement = CommonContent & {
 
 export type ComponentResourceContent =
   | SmTextResourceContent
+  | SmMarkupResourceContent
   | SmAgGridResourceContent
   | DataSetResourceContent
   | DataSetListResourceContent
@@ -323,6 +329,7 @@ export type ResourceListParams = { selectedResourceKeyInLocalContext: string };
 export type InputParams = { outputParameterKey: string; defaultValue?: RuleDefinition };
 // export type HasParameterDefinitions = { parameterDefinitions?: ParameterDefinition[] };
 export type TextParams = { textValue: RuleDefinition };
+export type MarkupParams = { markup: string; itemMap: { [itemKey: string]: ComponentResourceContent } };
 export type ColumnDefinitions = {
   columnType: 'ID' | 'NAME' | 'ATTRIBUTE' | 'BUTTON';
 };
@@ -499,6 +506,7 @@ export type CommonProps = {
   itemParam?: IResourceWithValue;
   parameterDefinitions?: ParameterDefinition[];
 };
+export type SmMarkupProps = CommonProps & { params: MarkupParams };
 export type SmTextProps = CommonProps & { params: TextParams };
 export type AttRefProps = CommonProps & { params: AttRefParams };
 export type SmRefToResourceProps = CommonProps & { params: RefToResourceParams };

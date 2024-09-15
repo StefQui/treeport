@@ -13,7 +13,7 @@ import UiResourceUpdateDialog from '../resource/ui-resource-update-dialog';
 import { Form, FormGroup, Input, Label } from 'reactstrap';
 import { updateShowUiOpener } from 'app/shared/reducers/application-profile';
 import { publishShowStateEvent } from './action.utils';
-import UiShowStateDialog from '../resource/show-state-dialog';
+import UiShowStateDialog, { NavigateToHandler } from '../resource/show-state-dialog';
 
 export const existsAndHasAValue = (resourceState: ValueInState) => {
   return !!(resourceState && resourceState.value);
@@ -221,6 +221,7 @@ export const RenderResourcePage = () => {
         <u>pageContext</u>
       </a>
       {/* <pre>{JSON.stringify(pageContext ? pageContext : {}, null, 2)}</pre> */}
+      <NavigateToHandler></NavigateToHandler>
       <UiShowStateDialog></UiShowStateDialog>
       <UiResourceUpdateDialog></UiResourceUpdateDialog>
       <UpdateResourceDialog></UpdateResourceDialog>

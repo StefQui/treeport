@@ -27,6 +27,56 @@ const r3: ComponentResource = {
         },
       },
       {
+        componentType: 'SmMarkup',
+        path: 'ref-to-selected-entity-name',
+        params: {
+          markup:
+            '<div class="col-md-12 row"><div class="col-md-4"><sm-item key="a"></div><div class="col-md-4"><sm-item key="b"></div></div><div class="col-md-12 row"><sm-item key="input"></div><div class="col-md-6"><sm-item key="c"></div>',
+          itemMap: {
+            a: {
+              componentType: 'SmText',
+              path: 'ref-to-selected-entity-name',
+              params: {
+                textValue: {
+                  ruleType: 'constant',
+                  constValue: 'This is a AA',
+                },
+              },
+            },
+            b: {
+              componentType: 'SmText',
+              path: 'ref-to-selected-entity-name',
+              params: {
+                textValue: {
+                  ruleType: 'refToLocalContext',
+                  path: '/layout-content',
+                  sourceParameterKey: 'theInput',
+                },
+              },
+            },
+            input: {
+              componentType: 'SmInput',
+              path: 'vsm3',
+              params: {
+                outputParameterKey: 'theInput',
+                defaultValue: {
+                  ruleType: 'constant',
+                  constValue: 'aaa122',
+                },
+              },
+            },
+            c: {
+              componentType: 'SmRefToResource',
+              path: 'reftosubdetail',
+              col: 12,
+              params: {
+                resourceId: 'subdetail',
+              },
+            },
+          },
+        },
+      },
+      {
         componentType: 'SmText',
         path: 'ref-to-selected-entity-name',
         params: {
@@ -353,120 +403,44 @@ const r5: ComponentResource = {
     path: 'vp-r5',
     border: true,
     items: [
-      // {
-      //   componentType: 'SmText',
-      //   path: 'vsm55',
-      //   params: {
-      //     textValue: {
-      //       or: [
-      //         {
-      //           refToPath: {
-      //             path: '../..',
-      //             property: 'toto',
-      //           },
-      //         },
-      //         {
-      //           refToContext: {
-      //             property: 'tata',
-      //           },
-      //         },
-      //       ],
-      //     },
-      //   },
-      // },
-      // {
-      //   componentType: 'SmText',
-      //   path: 'vsm99',
-      //   params: {
-      //     textValue: {
-      //       refToPath: {
-      //         path: '../..',
-      //         property: 'tata',
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   componentType: 'SmText',
-      //   path: 'vsm1000',
-      //   params: {
-      //     textValue: {
-      //       refToContext: {
-      //         property: 'tata',
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   componentType: 'SmText',
-      //   path: 'ref-to-local-resourceName',
-      //   params: {
-      //     textValue: {
-      //       refToLocalContext: {
-      //         parameterKey: 'resource1',
-      //         property: 'name',
-      //       },
-      //     },
-      //   },
-      // },
       {
         componentType: 'SmText',
-        path: 't1-valueExists',
-        display: {
-          valueExists: {
-            ruleType: 'constant',
-            constValue: 'a',
-          },
-        },
+        path: 'title-name',
+        col: 6,
         params: {
           textValue: {
             ruleType: 'constant',
-            constValue: 'Displayed if valueExists',
+            constValue: 'Name(/layout-content/sid98):',
           },
         },
       },
       {
         componentType: 'SmText',
-        path: 't2-valueDoesNotExist',
-        display: {
-          valueDoesNotExist: {
-            ruleType: 'constant',
-            constValue: 'a',
-          },
-        },
-        params: {
-          textValue: {
-            ruleType: 'constant',
-            constValue: 'Displayed if valueDoesNotExist',
-          },
-        },
-      },
-      {
-        componentType: 'SmText',
-        path: 'ref-to-theoutputFromInput',
+        path: 'ref-to-name',
+        col: 6,
         params: {
           textValue: {
             ruleType: 'refToLocalContext',
-            path: '/layout-content/ref-to-r5',
-            sourceParameterKey: 'theoutputFromInput',
+            path: '/layout-content',
+            sourceParameterKey: 'sid98',
           },
         },
       },
       {
         componentType: 'SmText',
-        path: 'ref-to-theresource44',
+        path: 'title-parent',
+        col: 6,
         params: {
           textValue: {
-            ruleType: 'refToLocalContext',
-            path: '..',
-            sourceParameterKey: 'theresource44',
-            sourceParameterProperty: 'parent.id',
+            ruleType: 'constant',
+            constValue: 'Parent(..):',
           },
         },
       },
       {
         componentType: 'SmText',
         path: 'ref-to-theresource',
+        col: 6,
         params: {
           textValue: {
             ruleType: 'refToLocalContext',
@@ -476,122 +450,6 @@ const r5: ComponentResource = {
           },
         },
       },
-
-      // {
-      //   componentType: 'SmText',
-      //   path: 'ref-to-tata',
-      //   params: {
-      //     textValue: {
-      //       refToLocalContext: {
-      //         parameterKey: 'theoutputFromInput',
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   componentType: 'SmResourceRef',
-      //   path: 'vsm8800',
-      //   params: {
-      //     resourceValue: {
-      //       refToPath: {
-      //         path: '../..',
-      //         property: 'selectedResource',
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   componentType: 'SmText',
-      //   path: 'aaaa',
-      //   col: 6,
-      //   params: {
-      //     textValue: {
-      //       const: {
-      //         constValue: 'To resource',
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   componentType: 'SmAttRef',
-      //   path: 'attRefToResource',
-      //   col: 6,
-      //   params: {
-      //     resourceId: {
-      //       refToPath: {
-      //         path: '../..',
-      //         property: 'selectedResource.entity.id',
-      //       },
-      //     },
-      //     campaignId: {
-      //       refToPath: {
-      //         path: '/pag/vp8/vp/vpc/campaignId',
-      //       },
-      //     },
-      //     attConfig: {
-      //       const: {
-      //         constValue: 'toResource',
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   componentType: 'SmText',
-      //   path: 'aaaa',
-      //   col: 6,
-      //   params: {
-      //     textValue: {
-      //       const: {
-      //         constValue: 'To Consolidé',
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   componentType: 'SmAttRef',
-      //   path: 'attRefToConso',
-      //   col: 6,
-      //   params: {
-      //     resourceId: {
-      //       refToPath: {
-      //         path: '../..',
-      //         property: 'selectedResource.entity.id',
-      //       },
-      //     },
-      //     campaignId: {
-      //       const: {
-      //         constValue: '2023',
-      //       },
-      //     },
-      //     attConfig: {
-      //       const: {
-      //         constValue: 'toConso',
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   componentType: 'SmAttRef',
-      //   path: 'attRefToFixed',
-      //   col: 6,
-      //   params: {
-      //     resourceId: {
-      //       const: {
-      //         constValue: 'root',
-      //       },
-      //     },
-      //     campaignId: {
-      //       const: {
-      //         constValue: '2023',
-      //       },
-      //     },
-      //     attConfig: {
-      //       const: {
-      //         constValue: 'toConso',
-      //       },
-      //     },
-      //   },
-      // },
     ],
   },
   parameters: [
@@ -603,6 +461,28 @@ const r5: ComponentResource = {
       },
     },
   ],
+};
+
+const subdetail: ComponentResource = {
+  content: {
+    componentType: 'SmMarkup',
+    path: 'ref-to-selected-entity-name',
+    params: {
+      markup: '<div class="col-md-12 row"><sm-item key="a"></div>',
+      itemMap: {
+        a: {
+          componentType: 'SmText',
+          path: 'rsubdetail',
+          params: {
+            textValue: {
+              ruleType: 'constant',
+              constValue: 'This is a subdetail',
+            },
+          },
+        },
+      },
+    },
+  },
 };
 
 const resourceDetail: ComponentResource = {
@@ -1243,42 +1123,6 @@ const rAgGridServer: ComponentResource = {
                 constValue: 'Exemple de Aggrid tree',
               },
             },
-            parameterDefinitions: [
-              {
-                target: {
-                  parameterKey: 'mydt1',
-                  targetType: 'currentLocalContextPath',
-                },
-                definition: {
-                  ruleType: 'datatree',
-                  columnDefinitions: [
-                    { columnType: 'ID' },
-                    { columnType: 'NAME' },
-                    { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
-                    { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
-                    { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
-                    { columnType: 'BUTTON', action: 'edit' },
-                    { columnType: 'BUTTON', action: 'addChildren' },
-                    { columnType: 'BUTTON', action: 'remove' },
-                  ],
-                  // filter: {
-                  //   ruleType: 'refToLocalContext',
-                  //   path: '',
-                  //   sourceParameterKey: 'theFilter',
-                  // },
-                  initialPaginationState: {
-                    activePage: 1,
-                    itemsPerPage: 5,
-                    sort: 'id',
-                    order: 'asc',
-                  },
-                  valueFilter: {
-                    filterType: 'AND',
-                    items: [],
-                  },
-                },
-              },
-            ],
           },
           {
             componentType: 'aggridTree',
@@ -1338,14 +1182,6 @@ const rAgGridServer: ComponentResource = {
                   constValue: 'aaa111',
                 },
               },
-              // {
-              //   parameterKey: 'resource2',
-              //   definition: {
-              //     ruleType: 'refToPageContext',
-              //     path: '/layout-content',
-              //     sourceParameterKey: 'sid',
-              //   },
-              // },
               {
                 target: {
                   parameterKey: 'resourceIdFromResourceList',
@@ -1355,31 +1191,6 @@ const rAgGridServer: ComponentResource = {
                   ruleType: 'refToLocalContext',
                   path: '/layout-content',
                   sourceParameterKey: 'sid98',
-                },
-              },
-              {
-                target: {
-                  parameterKey: 'theoutputFromInput',
-                  targetType: 'currentLocalContextPath',
-                },
-                definition: {
-                  ruleType: 'refToLocalContext',
-                  path: '/layout-content',
-                  sourceParameterKey: 'myInputContent',
-                },
-              },
-              {
-                target: {
-                  parameterKey: 'theresource44',
-                  targetType: 'currentLocalContextPath',
-                },
-                definition: {
-                  ruleType: 'refToResource',
-                  sourceResourceId: {
-                    ruleType: 'refToLocalContext',
-                    path: '/layout-content',
-                    sourceParameterKey: 'myInputContent',
-                  },
                 },
               },
               {
@@ -1863,4 +1674,5 @@ export const stubbedResources = {
   rpageAgGridServer,
   rpageDsList,
   rpageDtTree,
+  subdetail,
 };

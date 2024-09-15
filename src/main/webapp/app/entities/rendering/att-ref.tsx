@@ -72,7 +72,7 @@ export const SmAttRef = (props: AttRefProps) => {
 
       if (resourceIdVal && campaignIdVal && attConfigVal && resourceIdVal.value && campaignIdVal.value && attConfigVal.value) {
         const attId = buildAttributeIdFormExploded(resourceIdVal.value, attConfigVal.value, campaignIdVal.value);
-        console.log('action...', action, attId);
+        console.log('actionaaa1...', action, attId, resourceIdVal.value);
         if (action.entity.entityIds.indexOf(attId) !== -1) {
           dispatch(loadAttribute(props, resourceIdVal.value, attConfigVal.value, campaignIdVal.value));
         }
@@ -81,7 +81,7 @@ export const SmAttRef = (props: AttRefProps) => {
   }, [action]);
 
   useEffect(() => {
-    console.log('useEffect111', resourceIdVal, campaignIdVal, attConfigVal);
+    console.log('actionaaa2', resourceIdVal, campaignIdVal, attConfigVal);
     if (explodedAttVal && explodedAttVal !== previousExploded) {
       setPreviousExploded(explodedAttVal);
       dispatch(loadAttribute(props, resourceIdVal.value, attConfigVal.value, campaignIdVal.value));

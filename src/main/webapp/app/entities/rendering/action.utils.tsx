@@ -51,6 +51,10 @@ export type ShowStatevent = {
   stateId: string;
 } | null;
 
+export type NavigateToEvent = {
+  to: string;
+} | null;
+
 const updatedResource = 'updatedResource';
 const createdResource = 'createdResource';
 const deletedResource = 'deletedResource';
@@ -59,6 +63,7 @@ const editResourceForadd = 'editResourceForadd';
 const deleteResource = 'deleteResource';
 const editUiResourceForUpdate = 'editUiResourceForUpdate';
 const showState = 'showState';
+const navigateTo = 'navigateTo';
 
 export const subscribeToDeletedResource = (listener: (DeletedResourceAction) => void) => {
   useEffect(() => {
@@ -174,4 +179,19 @@ export const publishShowStateEvent = (data: ShowStatevent) => {
   const event = new CustomEvent(showState, { detail: data });
   document.dispatchEvent(event);
   toast.success(showState);
+};
+
+export const subscribeToNavigateTo = (listener: (NavigateToEvent) => void) => {
+  useEffect(() => {
+    document.addEventListener(navigateTo, listener as any);
+    return () => {
+      document.removeEventListener(navigateTo, listener as any);
+    };
+  }, []);
+};
+
+export const publishNavigateToEvent = (data: NavigateToEvent) => {
+  const event = new CustomEvent(navigateTo, { detail: data });
+  document.dispatchEvent(event);
+  toast.success(navigateTo);
 };

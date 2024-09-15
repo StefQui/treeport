@@ -4,7 +4,7 @@ import { calculateTargetLocalContextPath, editUiResource, UiOpener } from './sm-
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { fillPageContext, usePageResourceContentFromResourceId, useResourceWithKey } from './render-resource-page';
 import {
   SmPageProps,
@@ -17,6 +17,8 @@ import {
 } from './type';
 import { increment, MyElem } from './rendering';
 import { buildPath, PATH_SEPARATOR } from './shared';
+import { Button } from 'reactstrap';
+import { navTo } from './sm-markup';
 // import { setRenderingLayoutElements } from './rendering.reducer';
 
 export const SmPage = (props: SmPageProps) => {
@@ -199,54 +201,62 @@ export const SmMenu = props => {
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const baseHref = document.querySelector('base').getAttribute('href').replace(/\/$/, '');
 
+  const navigate = useNavigate();
   return (
-    <Navbar bg="light" expand="lg">
-      <Container>
-        <Navbar.Brand as={NavLink} to="/">
-          YourBrand
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Link as={NavLink} to="/coca/render/rpage1">
-              Page 1
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/coca/render/rpage2">
-              Page 2
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/coca/render/rpage2?sid=s1">
-              Page 2-1
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/coca/render/rpage2?sid=s2">
-              Page 2-2
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/coca/render/rpage1?sid=s2">
-              Page 1-2
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/coca/render/rpageDs">
-              Dataset
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/coca/render/rpageDsWithForm">
-              DatasetWithForm
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/coca/render/rpageDsList">
-              DataList
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/coca/render/rpageDtTree">
-              DataTree
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/contact">
-              Contact
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/coca/render/rpageAgGrid">
-              Aggrid
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/coca/render/rpageAgGridServer">
-              AggSeerver
-            </Nav.Link>
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+    <div>
+      {' '}
+      <button onClick={() => navigate('/home')}>Login</button>
+      <Navbar bg="light" expand="lg">
+        <Container>
+          <Navbar.Brand as={NavLink} to="/">
+            YourBrand
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="me-auto">
+              <Nav.Link as={NavLink} to="/coca/render/rpage1">
+                Page 1
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/coca/render/rpage2">
+                Page 2
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/coca/render/rpage2?sid=s1">
+                Page 2-1
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/coca/render/rpage2?sid=s2">
+                Page 2-2
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/coca/render/rpage1?sid=s2">
+                Page 1-2
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/coca/render/rpageDs">
+                Dataset
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/coca/render/rpageDsWithForm">
+                DatasetWithForm
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/coca/render/rpageDsList">
+                DataList
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/coca/render/rpageDtTree">
+                DataTree
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/contact">
+                Contact
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/coca/render/rpageAgGrid">
+                Aggrid
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/coca/render/rpageAgGridServer">
+                AggSeerver
+              </Nav.Link>
+              <Button className="me-2" color="info" onClick={() => navTo('/coca/render/rpageAgGridServer')}>
+                AggSeerver
+              </Button>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+    </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Col, Row } from 'reactstrap';
+import { Button, Col, Row } from 'reactstrap';
 
 import SiteList from '../site/site-list';
 import { calculateTargetLocalContextPath, SmRefToResource } from './sm-resource-content';
@@ -18,6 +18,11 @@ import { SmDatasetTree } from './sm-dataset-tree';
 import { SmAgGrid } from './sm-ag-grid';
 import { SmAggridTree } from './sm-aggrid-tree';
 import { UpdateResourceDialog } from '../resource/resource-update-dialog';
+import { SmMarkup } from './sm-markup';
+import { useNavigate } from 'react-router';
+import { BrowserRouter, Link } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import getStore from 'app/config/store';
 
 export const initialFilter: ValueInState = { loading: true, value: null };
 
@@ -41,6 +46,8 @@ export const MyElem = props => {
     switch (params.componentType) {
       case 'SmText':
         return <SmText {...params}></SmText>;
+      case 'SmMarkup':
+        return <SmMarkup {...params}></SmMarkup>;
       case 'SmAgGrid':
         return <SmAgGrid {...params}></SmAgGrid>;
       case 'SmInput':

@@ -1,4 +1,5 @@
-import { ComponentResource } from './type';
+import { ComponentResource } from '../type';
+import r3html from './r3.html';
 
 const r3: ComponentResource = {
   content: {
@@ -30,8 +31,7 @@ const r3: ComponentResource = {
         componentType: 'SmMarkup',
         path: 'ref-to-selected-entity-name',
         params: {
-          markup:
-            '<div class="col-md-12 row"><div class="col-md-4"><sm-item key="a"></div><div class="col-md-4"><sm-item key="b"></div></div><div class="col-md-12 row"><sm-item key="input"></div><div class="col-md-6"><sm-item key="c"></div>',
+          markup: r3html,
           itemMap: {
             a: {
               componentType: 'SmText',
@@ -71,6 +71,30 @@ const r3: ComponentResource = {
               col: 12,
               params: {
                 resourceId: 'subdetail',
+              },
+            },
+            link1: {
+              componentType: 'SmLink',
+              path: 'link1',
+              params: {
+                urlLabel: 'rpage1',
+                url: '/coca/render/rpage1',
+              },
+            },
+            link2: {
+              componentType: 'SmLink',
+              path: 'link2',
+              params: {
+                urlLabel: 'rpage2',
+                url: '/coca/render/rpage2',
+              },
+            },
+            link3: {
+              componentType: 'SmLink',
+              path: 'r3',
+              params: {
+                urlLabel: 'r3',
+                url: '/coca/render/r3',
               },
             },
           },

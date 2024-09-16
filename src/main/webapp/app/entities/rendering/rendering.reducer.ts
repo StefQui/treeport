@@ -5,7 +5,7 @@ import { IQueryParams, serializeAxiosError } from 'app/shared/reducers/reducer.u
 import { IAttribute, IAttributeWithValue } from 'app/shared/model/attribute.model';
 import { IAttributeIdExploded } from 'app/shared/model/attribute-id-exploded';
 import { IResource } from 'app/shared/model/resource.model';
-import { stubbedResources } from './fake-resource';
+import { stubbedResources } from './fake/fake-resource';
 import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
 import { applyPath } from './shared';
 import {

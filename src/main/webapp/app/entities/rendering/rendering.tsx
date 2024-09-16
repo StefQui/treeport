@@ -23,6 +23,7 @@ import { useNavigate } from 'react-router';
 import { BrowserRouter, Link } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import getStore from 'app/config/store';
+import { SmLink } from './sm-link';
 
 export const initialFilter: ValueInState = { loading: true, value: null };
 
@@ -46,6 +47,8 @@ export const MyElem = props => {
     switch (params.componentType) {
       case 'SmText':
         return <SmText {...params}></SmText>;
+      case 'SmLink':
+        return <SmLink {...params}></SmLink>;
       case 'SmMarkup':
         return <SmMarkup {...params}></SmMarkup>;
       case 'SmAgGrid':
@@ -153,11 +156,7 @@ export const MyWrapper = ({ children, ...props }) => {
     );
   }
 
-  return (
-    <Col md={props.col ?? 12} className={cn}>
-      {children}
-    </Col>
-  );
+  return <React.Fragment>{children}</React.Fragment>;
 };
 
 export const hasChanged = (previous?: ValueInState, next?: ValueInState) => {

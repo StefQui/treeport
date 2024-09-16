@@ -77,7 +77,7 @@ export const SmMarkup = (props: SmMarkupProps) => {
                   <button onClick={() => navigate('/coca/render/rpageAgGridServer')}>Loginaaa</button>
                 </div> */}
 
-                  <UiOpener resourceContent={resourceContent} source={'markup: ' + key}></UiOpener>
+                  {/* <UiOpener resourceContent={resourceContent} source={'markup: ' + key}></UiOpener> */}
                   <MyElem
                     input={resourceContent}
                     depth={props.depth}

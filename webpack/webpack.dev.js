@@ -43,6 +43,10 @@ module.exports = async options =>
             },
           ],
         },
+        {
+          test: /\.html$/i,
+          use: 'raw-loader',
+        },
       ],
     },
     devServer: {

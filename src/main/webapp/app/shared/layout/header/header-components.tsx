@@ -4,7 +4,7 @@ import { Translate } from 'react-jhipster';
 import { NavItem, NavLink, NavbarBrand, Navbar } from 'reactstrap';
 import { NavLink as Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { stubbedResources } from 'app/entities/rendering/fake-resource';
+import { stubbedResources } from 'app/entities/rendering/fake/fake-resource';
 import { ComponentResource } from 'app/entities/rendering/type';
 import { createResource, getResources, updateResource } from 'app/entities/resource/resource.reducer';
 import { useAppDispatch, useAppSelector } from 'app/config/store';

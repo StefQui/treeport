@@ -57,10 +57,12 @@ export const SmMarkup = (props: SmMarkupProps) => {
   // );
   const navigate = useNavigate();
 
+  console.log('SmMarkup-----', props.params.markup);
+
   useEffect(() => {
     const doc: Element = myRef.current;
     Array.from(doc.getElementsByTagName('sm-item')).forEach(element => {
-      console.log('key-----', element.getAttribute('key'));
+      console.log('key-----', element);
       const map = params.itemMap;
       const key = element.getAttribute('key');
       const resourceContent = map[key];
@@ -107,7 +109,7 @@ export const SmMarkup = (props: SmMarkupProps) => {
       // );
       // ReactDOM.render(<SmInserted props={props} />, element);
     });
-  }, []);
+  }, [params]);
 
   const data = params.markup;
   return <div ref={myRef} dangerouslySetInnerHTML={{ __html: data }} />;

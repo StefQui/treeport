@@ -30,6 +30,7 @@ import {
 } from './type';
 import { enrichToMainTarget, handleDataTree } from './datatree';
 import { useParams } from 'react-router';
+import { useOrgaId } from './render-resource-page';
 
 export const useRefToLocalContextValue = (currentLocalContextPath, localContextPath, parameterKey, parameterProperty): ValueInState => {
   return useAppSelector((state: RenderingSliceState) => {
@@ -336,7 +337,7 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
 
 const handleRefToResource = (target: ParameterTarget, refToResourceDefinition: RefToResourceDefinition, props) => {
   const dispatch = useAppDispatch();
-  const { orgaId } = useParams<'orgaId'>();
+  const orgaId = useOrgaId();
   const resourceIdRef = refToResourceDefinition.sourceResourceId;
   if (!resourceIdRef) {
     return {

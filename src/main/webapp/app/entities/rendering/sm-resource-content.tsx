@@ -36,8 +36,10 @@ export const calculateTargetLocalContextPath = (childResource = true, props) => 
     return getRootPath();
   } else if (props.localContextPath === getRootPath()) {
     if (childResource) {
+      console.log('calculateTargetLocalContextPathaa1', props.localContextPath, props.path, props.localContextPath + props.path);
       return props.localContextPath + props.path;
     } else {
+      console.log('calculateTargetLocalContextPathaa2', props.localContextPath, props.path);
       return props.localContextPath;
     }
   }

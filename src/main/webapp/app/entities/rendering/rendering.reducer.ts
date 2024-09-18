@@ -32,6 +32,7 @@ const initialState: RenderingState = {
   pageContext: {},
   action: null,
   currentPageId: null,
+  orgaId: null,
 };
 
 // const resourceApiUrlzzzz = `api/resources${ff}`;
@@ -120,6 +121,12 @@ export const RenderingSlice = createSlice({
       return {
         ...state,
         currentPageId: action.payload,
+      };
+    },
+    setRenderingCurrentOrgaId(state: RenderingState, action): RenderingState {
+      return {
+        ...state,
+        orgaId: action.payload,
       };
     },
     setInRenderingStateOutputs(state: RenderingState, action): RenderingState {
@@ -639,7 +646,7 @@ export const setAnyInLocalContextState2 = (
   secondaryTarget: SecondaryTarget,
   value: any,
 ): RenderingState => {
-  console.log('setInLocalContextState', parameterKey, secondaryTarget, value);
+  console.log('setInLocalContextState', parameterKey, secondaryTarget, value, localContextPath);
 
   return {
     ...state,
@@ -744,6 +751,7 @@ export const {
   setRenderingPageContext,
   setRenderingPageResources,
   setRenderingCurrentPageId,
+  setRenderingCurrentOrgaId,
   setInRenderingStateOutputs,
   setInLocalState,
   setAnyInCorrectState,

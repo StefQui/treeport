@@ -4,7 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { usePageContext, useResourceStateFromPageResources } from './sm-layout';
 import { getValueForPathInObject, getRootPath } from './shared';
-import { getResourceForPageResources, setInLocalState, setRenderingCurrentPageId, setRenderingPageContext } from './rendering.reducer';
+import {
+  getResourceForPageResources,
+  setInLocalState,
+  setRenderingCurrentOrgaId,
+  setRenderingCurrentPageId,
+  setRenderingPageContext,
+} from './rendering.reducer';
 import { SmRefToResource } from './sm-resource-content';
 import { ValueInState, ComponentResource, ComponentResourceProperties, RENDERING_CONTEXT, RenderingSliceState } from './type';
 import { UpdateResourceDialog } from '../resource/resource-update-dialog';
@@ -131,6 +137,8 @@ export const useLocationSearch = () => {
   return locationSearch;
 };
 
+export const useOrgaId = () => useAppSelector((state: RenderingSliceState) => state.rendering.orgaId);
+
 export const fillPageContext = pageParameters => {
   const dispatch = useAppDispatch();
   const location = useLocation();
@@ -174,6 +182,11 @@ export const RenderResourcePage = () => {
     // console.log('RenderResourcePage-useEffect', resourceId);
     dispatch(setRenderingCurrentPageId(resourceId));
   }, [resourceId]);
+
+  useEffect(() => {
+    // console.log('RenderResourcePage-useEffect', resourceId);
+    dispatch(setRenderingCurrentOrgaId(orgaId));
+  }, [orgaId]);
 
   // fillPageContext(pageParameters);
 

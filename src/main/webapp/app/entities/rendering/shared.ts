@@ -58,7 +58,10 @@ export const applyPath = (path, pathToApply) => {
   } else if (pathToApply.startsWith('.' + PATH_SEPARATOR)) {
     return path + PATH_SEPARATOR + pathToApply.substring('.'.length);
   } else if (!pathToApply) {
+    console.log('no path to apply');
     return path;
+  } else if (path === getRootPath()) {
+    return path + pathToApply;
   } else {
     return path + PATH_SEPARATOR + pathToApply;
   }
@@ -123,6 +126,7 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
   const ruleType = ruleDefinition.ruleType;
   if (ruleType === 'refToLocalContext') {
     const refToContextRuleDefinition: RefToLocalContextRuleDefinition = ruleDefinition as RefToLocalContextRuleDefinition;
+    // console.log('refToContextRuleDefinition...', refToContextRuleDefinition.sourceParameterKey, props.localContextPath);
     // const contextState = useLocalContextPath(props.localContextPath, refToContextRuleDefinition.sourceParameterKey);
     // return
     return useRefToLocalContextValue(
@@ -201,6 +205,12 @@ export const useChangingCalculatedValueState = (props, ruleDefinition: Parameter
     //     value: result,
     //   }),
     // );
+    console.log(
+      'applyPath(props.localContextPath, props.path)',
+      props.localContextPath,
+      props.path,
+      applyPath(props.localContextPath, props.path),
+    );
     dispatch(
       setAnyInCorrectState({
         mainTarget: enrichToMainTarget(ruleDefinition.target, applyPath(props.localContextPath, props.path)),

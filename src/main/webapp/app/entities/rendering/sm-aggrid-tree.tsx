@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { buildPath } from './shared';
-import { AttributeColumnDefinition, ColumnDefinition, DataSetTreeParams2, ResourceSearchModel } from './type';
+import { AttributeColumnDefinition, ColumnDefinition, DataSetTreeParams2, RenderingSliceState, ResourceSearchModel } from './type';
 // import { useSiteTree } from './datatree';
 import { setInLocalState } from './rendering.reducer';
 import { Button } from 'reactstrap';
@@ -29,7 +29,7 @@ import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
 import axios from 'axios';
 import { IAttributeValue } from 'app/shared/model/attribute.model';
 import { actionsRenderer } from './aggrid/ActionsCellRenderer';
-import { useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ITag } from 'app/shared/model/tag.model';
 import {
@@ -44,6 +44,7 @@ import {
   UpdatedResourceEvent,
 } from './action.utils';
 import { generateCols } from './columns.utils';
+import { useOrgaId } from './render-resource-page';
 
 export const SITE_TYPE = 'site';
 
@@ -63,8 +64,12 @@ export const SmAggridTree = (props: {
 
   const [updatingNode, setUpdatingNode] = useState(null);
   const [paramsMap, setParamsMap] = useState(null);
-  const { orgaId } = useParams<'orgaId'>();
+  const orgaId = useOrgaId();
   const apiUrl = `api/orga/${orgaId}/resources`;
+
+  // const location = useLocation();
+
+  // console.log('orgaId===', location);
 
   const setResourceToUpdate = (arg0?: { resource: IResourceWithValue[]; route: string[] }) => {
     dispatch(

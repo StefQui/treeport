@@ -532,6 +532,7 @@ export type LocalContextsState = {
 export type PageContextState = { [path: string]: any };
 export type PageResourcesState = { [path: string]: any };
 export type CurrentPageIdState = string | null;
+export type CurrentOrgaIdState = string | null;
 export type ActionState = (
   | SelectResourceAction
   | SetCurrentPageAction
@@ -591,6 +592,7 @@ export type RenderingState = {
   pageContext: PageContextState;
   pageResources: PageResourcesState;
   currentPageId: CurrentPageIdState;
+  orgaId: CurrentOrgaIdState;
   action: ActionState;
 };
 export type RenderingSliceState = {

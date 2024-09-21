@@ -4,7 +4,7 @@ import { Button, Col, Row } from 'reactstrap';
 import SiteList from '../site/site-list';
 import { calculateTargetLocalContextPath, SmRefToResource } from './sm-resource-content';
 import { SmAttributeField, SmForm } from './sm-form';
-import { SmLayoutElement, SmMenu, SmPage, usePageContext } from './sm-layout';
+import { SmOldLayout, SmMenu, SmPage, usePageContext } from './sm-layout-old';
 import { SmDatasetList } from './sm-dataset-list';
 import { SmText } from './sm-text';
 import { SmInput } from './sm-input';
@@ -24,7 +24,7 @@ import { BrowserRouter, Link } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import getStore from 'app/config/store';
 import { SmLink } from './sm-link';
-import { SmMarkupLayout } from './sm-layout-markup';
+import { SmLayout } from './sm-layout';
 
 export const initialFilter: ValueInState = { loading: true, value: null };
 
@@ -52,8 +52,8 @@ export const MyElem = props => {
         return <SmLink {...params}></SmLink>;
       case 'SmMarkup':
         return <SmMarkup {...params}></SmMarkup>;
-      case 'SmMarkupLayout':
-        return <SmMarkupLayout {...params}></SmMarkupLayout>;
+      case 'SmLayout':
+        return <SmLayout {...params}></SmLayout>;
       case 'SmAgGrid':
         return <SmAgGrid {...params}></SmAgGrid>;
       case 'SmInput':
@@ -81,7 +81,7 @@ export const MyElem = props => {
       case 'menu':
         return <SmMenu {...params}></SmMenu>;
       case 'layoutElement':
-        return <SmLayoutElement {...params}></SmLayoutElement>;
+        return <SmOldLayout {...params}></SmOldLayout>;
       case 'verticalPanel':
         return <SmVerticalPanel {...params}></SmVerticalPanel>;
       default:

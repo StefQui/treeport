@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { IResource } from 'app/shared/model/resource.model';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { usePageContext, useResourceStateFromPageResources } from './sm-layout';
+import { usePageContext, useResourceStateFromPageResources } from './sm-layout-old';
 import { getValueForPathInObject, getRootPath } from './shared';
 import {
   getResourceForPageResources,

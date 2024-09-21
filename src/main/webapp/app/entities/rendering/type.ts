@@ -33,7 +33,7 @@ export type MenuResourceParams = {
   menuItems: MenuItem[];
 };
 
-export type SmLayoutElementParams = {
+export type SmOldLayoutParams = {
   layoutElementId: string;
 };
 
@@ -68,8 +68,8 @@ export type SmMarkupResourceContent = CommonContent & {
   params: MarkupParams;
 };
 
-export type SmMarkupLayoutResourceContent = CommonContent & {
-  componentType: 'SmMarkupLayout';
+export type SmLayoutResourceContent = CommonContent & {
+  componentType: 'SmLayout';
   params: MarkupLayoutParams;
 };
 
@@ -144,7 +144,7 @@ export type MenuResourceContent = CommonContent & {
 
 export type LayoutElementResourceContent = CommonContent & {
   componentType: 'layoutElement';
-  params: SmLayoutElementParams;
+  params: SmOldLayoutParams;
 };
 
 export type VerticalPanelResourceElement = CommonContent & {
@@ -156,7 +156,7 @@ export type ComponentResourceContent =
   | SmTextResourceContent
   | SmLinkResourceContent
   | SmMarkupResourceContent
-  | SmMarkupLayoutResourceContent
+  | SmLayoutResourceContent
   | SmAgGridResourceContent
   | DataSetResourceContent
   | DataSetListResourceContent
@@ -522,12 +522,12 @@ export type CommonProps = {
 };
 export type SmLinkProps = CommonProps & { params: LinkParams };
 export type SmMarkupProps = CommonProps & { params: MarkupParams };
-export type SmMarkupLayoutProps = CommonProps & { params: MarkupLayoutParams };
+export type SmLayoutProps = CommonProps & { params: MarkupLayoutParams };
 export type SmTextProps = CommonProps & { params: TextParams };
 export type AttRefProps = CommonProps & { params: AttRefParams };
 export type SmRefToResourceProps = CommonProps & { params: RefToResourceParams };
 export type SmPageProps = CommonProps & { params: PageResourceParams };
-export type SmLayoutElementProps = CommonProps & { params: SmLayoutElementParams };
+export type SmOldLayoutProps = CommonProps & { params: SmOldLayoutParams };
 export type FormProps = CommonProps & { params: FormParams };
 
 export type Parameters = { [path: string]: ValueInState };

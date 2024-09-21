@@ -456,7 +456,7 @@ const page4: ComponentResource = {
 
 const page5: ComponentResource = {
   content: {
-    componentType: 'SmMarkupLayout',
+    componentType: 'SmLayout',
     path: 'page5',
     params: {
       layoutId: 'mylayout',
@@ -478,7 +478,7 @@ const page5: ComponentResource = {
 
 const page6: ComponentResource = {
   content: {
-    componentType: 'SmMarkupLayout',
+    componentType: 'SmLayout',
     path: 'page6',
     params: {
       layoutId: 'mylayout',
@@ -520,7 +520,7 @@ const mylayout: ComponentResource = {
 
 const pageDstree: ComponentResource = {
   content: {
-    componentType: 'SmMarkupLayout',
+    componentType: 'SmLayout',
     path: 'pageDstree',
     params: {
       layoutId: 'mylayout',

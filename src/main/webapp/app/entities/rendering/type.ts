@@ -68,6 +68,11 @@ export type SmMarkupResourceContent = CommonContent & {
   params: MarkupParams;
 };
 
+export type SmMarkupLayoutResourceContent = CommonContent & {
+  componentType: 'SmMarkupLayout';
+  params: MarkupLayoutParams;
+};
+
 export type SmLinkResourceContent = CommonContent & {
   componentType: 'SmLink';
   params: LinkParams;
@@ -151,6 +156,7 @@ export type ComponentResourceContent =
   | SmTextResourceContent
   | SmLinkResourceContent
   | SmMarkupResourceContent
+  | SmMarkupLayoutResourceContent
   | SmAgGridResourceContent
   | DataSetResourceContent
   | DataSetListResourceContent
@@ -336,6 +342,7 @@ export type InputParams = { outputParameterKey: string; defaultValue?: RuleDefin
 // export type HasParameterDefinitions = { parameterDefinitions?: ParameterDefinition[] };
 export type TextParams = { textValue: RuleDefinition };
 export type MarkupParams = { markup: string; itemMap: { [itemKey: string]: ComponentResourceContent } };
+export type MarkupLayoutParams = { layoutId: string; itemMap: { [itemKey: string]: ComponentResourceContent } };
 export type LinkParams = { urlLabel: string; url: string };
 export type ColumnDefinitions = {
   columnType: 'ID' | 'NAME' | 'ATTRIBUTE' | 'BUTTON';
@@ -515,6 +522,7 @@ export type CommonProps = {
 };
 export type SmLinkProps = CommonProps & { params: LinkParams };
 export type SmMarkupProps = CommonProps & { params: MarkupParams };
+export type SmMarkupLayoutProps = CommonProps & { params: MarkupLayoutParams };
 export type SmTextProps = CommonProps & { params: TextParams };
 export type AttRefProps = CommonProps & { params: AttRefParams };
 export type SmRefToResourceProps = CommonProps & { params: RefToResourceParams };

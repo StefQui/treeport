@@ -24,6 +24,7 @@ import { BrowserRouter, Link } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import getStore from 'app/config/store';
 import { SmLink } from './sm-link';
+import { SmMarkupLayout } from './sm-layout-markup';
 
 export const initialFilter: ValueInState = { loading: true, value: null };
 
@@ -51,6 +52,8 @@ export const MyElem = props => {
         return <SmLink {...params}></SmLink>;
       case 'SmMarkup':
         return <SmMarkup {...params}></SmMarkup>;
+      case 'SmMarkupLayout':
+        return <SmMarkupLayout {...params}></SmMarkupLayout>;
       case 'SmAgGrid':
         return <SmAgGrid {...params}></SmAgGrid>;
       case 'SmInput':

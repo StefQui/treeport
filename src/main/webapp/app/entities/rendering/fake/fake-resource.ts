@@ -4,6 +4,7 @@ import page3html from './page3.html';
 import page4html from './page4.html';
 import pageDstreeHtml from './pageDstree.html';
 import topMenuHtml from './topMenu.html';
+import mylayoutHtml from './mylayoutHtml.html';
 
 const r3: ComponentResource = {
   content: {
@@ -453,147 +454,212 @@ const page4: ComponentResource = {
   },
 };
 
-const pageDstree: ComponentResource = {
+const page5: ComponentResource = {
   content: {
-    componentType: 'SmMarkup',
-    path: 'pageDstree',
+    componentType: 'SmMarkupLayout',
+    path: 'page5',
     params: {
-      markup: pageDstreeHtml,
+      layoutId: 'mylayout',
       itemMap: {
-        a: {
+        content: {
           componentType: 'SmText',
-          path: 'ref-to-selected-entity-name',
+          path: 'toto',
           params: {
             textValue: {
               ruleType: 'constant',
-              constValue: 'This is a AA',
+              constValue: 'This is a eeeeeeeee page 5',
             },
           },
         },
-        b: {
+      },
+    },
+  },
+};
+
+const page6: ComponentResource = {
+  content: {
+    componentType: 'SmMarkupLayout',
+    path: 'page6',
+    params: {
+      layoutId: 'mylayout',
+      itemMap: {
+        content: {
           componentType: 'SmText',
-          path: 'ref-to-selected-entity-name',
+          path: 'totoss',
           params: {
             textValue: {
-              ruleType: 'refToLocalContext',
-              path: '',
-              sourceParameterKey: 'sid98',
+              ruleType: 'constant',
+              constValue: 'This is a eeeeeeeee Page 6',
             },
           },
         },
-        detail: {
-          componentType: 'verticalPanel',
-          path: 'vp-rds-with-form-right',
-          border: true,
-          col: 3,
-          items: [
-            {
-              componentType: 'SmRefToResource',
-              path: 'ref-to-r5',
-              col: 12,
-              params: {
-                resourceId: 'r5',
-              },
-              parameterDefinitions: [
-                {
-                  target: {
-                    parameterKey: 'const1',
-                    targetType: 'currentLocalContextPath',
-                  },
-                  definition: {
-                    ruleType: 'constant',
-                    constValue: 'aaa111',
-                  },
-                },
-                {
-                  target: {
-                    parameterKey: 'resourceIdFromResourceList',
-                    targetType: 'currentLocalContextPath',
-                  },
-                  definition: {
-                    ruleType: 'refToLocalContext',
-                    path: '/',
-                    sourceParameterKey: 'sid98',
-                  },
-                },
-                {
-                  target: {
-                    parameterKey: 'theresourceFromTheList',
-                    targetType: 'currentLocalContextPath',
-                  },
-                  definition: {
-                    ruleType: 'refToResource',
-                    sourceResourceId: {
-                      ruleType: 'refToLocalContext',
-                      path: '/',
-                      sourceParameterKey: 'sid98',
-                    },
-                  },
-                },
-              ],
-            },
-            {
-              componentType: 'SmAttRef',
-              path: 'attRefToConso',
-              col: 6,
-              params: {
-                resourceId: {
-                  ruleType: 'refToLocalContext',
-                  path: '',
-                  sourceParameterKey: 'sid98',
-                },
-                campaignId: {
-                  ruleType: 'constant',
-                  constValue: '2023',
-                },
-                attConfig: {
-                  ruleType: 'constant',
-                  constValue: 'toConso',
-                },
-              },
-            },
+      },
+    },
+  },
+};
 
-            {
-              componentType: 'SmRefToResource',
-              path: 'ref-to-fform',
-              col: 12,
-
-              params: {
-                resourceId: 'rform',
-              },
-              parameterDefinitions: [],
-            },
-          ],
-        },
-        aggrid: {
-          componentType: 'aggridTree',
-          path: 'aggridtree',
-          params: {
-            columnDefinitions: [
-              { columnType: 'ID' },
-              { columnType: 'NAME' },
-              { columnType: 'TAGS' },
-              { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
-              { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
-              { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
-              { columnType: 'BUTTON', action: 'edit' },
-              { columnType: 'BUTTON', action: 'addChildren' },
-              { columnType: 'BUTTON', action: 'select' },
-              { columnType: 'BUTTON', action: 'remove' },
-            ],
-            valueFilter: {
-              filterType: 'AND',
-              items: [],
-            },
-            selectedResourceKeyInLocalContext: 'sid98',
-          },
-        },
-        topMenu: {
+const mylayout: ComponentResource = {
+  content: {
+    componentType: 'SmMarkup',
+    path: 'toto',
+    params: {
+      markup: mylayoutHtml,
+      itemMap: {
+        top: {
           componentType: 'SmRefToResource',
           path: 'tpmenu',
           col: 12,
           params: {
             resourceId: 'topMenu',
+          },
+        },
+      },
+    },
+  },
+};
+
+const pageDstree: ComponentResource = {
+  content: {
+    componentType: 'SmMarkupLayout',
+    path: 'pageDstree',
+    params: {
+      layoutId: 'mylayout',
+      itemMap: {
+        content: {
+          componentType: 'SmMarkup',
+          path: 'pageDstree',
+          params: {
+            markup: pageDstreeHtml,
+            itemMap: {
+              a: {
+                componentType: 'SmText',
+                path: 'ref-to-selected-entity-name',
+                params: {
+                  textValue: {
+                    ruleType: 'constant',
+                    constValue: 'This is a AA',
+                  },
+                },
+              },
+              b: {
+                componentType: 'SmText',
+                path: 'ref-to-selected-entity-name',
+                params: {
+                  textValue: {
+                    ruleType: 'refToLocalContext',
+                    path: '',
+                    sourceParameterKey: 'sid98',
+                  },
+                },
+              },
+              detail: {
+                componentType: 'verticalPanel',
+                path: 'vp-rds-with-form-right',
+                border: true,
+                col: 3,
+                items: [
+                  {
+                    componentType: 'SmRefToResource',
+                    path: 'ref-to-r5',
+                    col: 12,
+                    params: {
+                      resourceId: 'r5',
+                    },
+                    parameterDefinitions: [
+                      {
+                        target: {
+                          parameterKey: 'const1',
+                          targetType: 'currentLocalContextPath',
+                        },
+                        definition: {
+                          ruleType: 'constant',
+                          constValue: 'aaa111',
+                        },
+                      },
+                      {
+                        target: {
+                          parameterKey: 'resourceIdFromResourceList',
+                          targetType: 'currentLocalContextPath',
+                        },
+                        definition: {
+                          ruleType: 'refToLocalContext',
+                          path: '/',
+                          sourceParameterKey: 'sid98',
+                        },
+                      },
+                      {
+                        target: {
+                          parameterKey: 'theresourceFromTheList',
+                          targetType: 'currentLocalContextPath',
+                        },
+                        definition: {
+                          ruleType: 'refToResource',
+                          sourceResourceId: {
+                            ruleType: 'refToLocalContext',
+                            path: '/',
+                            sourceParameterKey: 'sid98',
+                          },
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    componentType: 'SmAttRef',
+                    path: 'attRefToConso',
+                    col: 6,
+                    params: {
+                      resourceId: {
+                        ruleType: 'refToLocalContext',
+                        path: '',
+                        sourceParameterKey: 'sid98',
+                      },
+                      campaignId: {
+                        ruleType: 'constant',
+                        constValue: '2023',
+                      },
+                      attConfig: {
+                        ruleType: 'constant',
+                        constValue: 'toConso',
+                      },
+                    },
+                  },
+
+                  {
+                    componentType: 'SmRefToResource',
+                    path: 'ref-to-fform',
+                    col: 12,
+
+                    params: {
+                      resourceId: 'rform',
+                    },
+                    parameterDefinitions: [],
+                  },
+                ],
+              },
+              aggrid: {
+                componentType: 'aggridTree',
+                path: 'aggridtree',
+                params: {
+                  columnDefinitions: [
+                    { columnType: 'ID' },
+                    { columnType: 'NAME' },
+                    { columnType: 'TAGS' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
+                    { columnType: 'BUTTON', action: 'edit' },
+                    { columnType: 'BUTTON', action: 'addChildren' },
+                    { columnType: 'BUTTON', action: 'select' },
+                    { columnType: 'BUTTON', action: 'remove' },
+                  ],
+                  valueFilter: {
+                    filterType: 'AND',
+                    items: [],
+                  },
+                  selectedResourceKeyInLocalContext: 'sid98',
+                },
+              },
+            },
           },
         },
       },
@@ -654,6 +720,22 @@ const topMenu: ComponentResource = {
           params: {
             urlLabel: 'Dstree',
             url: '/coca/render/pageDstree',
+          },
+        },
+        page5: {
+          componentType: 'SmLink',
+          path: 'page5',
+          params: {
+            urlLabel: 'Page 5',
+            url: '/coca/render/page5',
+          },
+        },
+        page6: {
+          componentType: 'SmLink',
+          path: 'page6',
+          params: {
+            urlLabel: 'Page 6',
+            url: '/coca/render/page6',
           },
         },
       },
@@ -1976,6 +2058,9 @@ export const stubbedResources = {
   r3,
   page3,
   page4,
+  page5,
+  page6,
+  mylayout,
   pageDstree,
   topMenu,
   r4,

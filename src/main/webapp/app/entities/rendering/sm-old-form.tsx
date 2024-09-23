@@ -3,21 +3,14 @@ import { IAttribute, IAttributeValue, IAttributeWithValue, IBooleanValue, IDoubl
 import React, { useEffect, useState } from 'react';
 import { FieldValues, useForm, UseFormReset } from 'react-hook-form';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Button, Col, FormGroup, FormProps, Input, Label } from 'reactstrap';
+import { FormProps, Input } from 'reactstrap';
 import { DoubleValue } from '../attribute-value/attribute-value';
 import { existsAndHasAValue } from './render-resource-page';
 import { MyElem, increment } from './rendering';
 import { getFieldAttributesAndConfig, saveAttributes, setAction } from './rendering.reducer';
 import { SmRefToResource } from './sm-resource-content';
 import { buildPath, useCalculatedValueStateIfNotNull, PATH_SEPARATOR, useCalculatedValueState } from './shared';
-import {
-  UpdateAttributeAction,
-  FormAttributeContextParam,
-  FormFieldParam,
-  RenderingSliceState,
-  SmFormProps,
-  SmFormButtonProps,
-} from './type';
+import { UpdateAttributeAction, FormAttributeContextParam, FormFieldParam, RenderingSliceState } from './type';
 
 const getValueFromField = (fieldId: string, att: IAttributeWithValue, value): IAttributeValue => {
   const type = att.config.attributeType;
@@ -48,7 +41,7 @@ const sendUpdateAttributesActionOnSave = (builtPath: string, updatedAttributeIds
   }, [updatedAttributeIds]);
 };
 
-export const SmForm = (props: SmFormProps) => {
+export const SmOldForm = (props: FormProps) => {
   const dispatch = useAppDispatch();
   const { register, handleSubmit, reset, unregister } = useForm({ defaultValues: {} });
   const builtPath = buildPath(props);
@@ -142,6 +135,7 @@ export const SmForm = (props: SmFormProps) => {
         currentPath={props.currentPath + PATH_SEPARATOR + props.path}
         localContextPath={props.localContextPath}
       ></MyElem>
+      <input type="submit" value="submit"></input>
     </form>
   );
 };
@@ -224,70 +218,40 @@ export const useStateInSelfWithKey = (formPath: string, key1: string, key2: stri
   return key2State;
 };
 
-export const SmFormButton = (props: SmFormButtonProps) => {
-  const form = props.form;
-  return (
-    <Button color={props.params.color} type="button" value="submit">
-      {props.params.label}
-    </Button>
-  );
-};
-
-export const SmAttributeField = props => {
+export const SmOldAttributeField = props => {
   const form = props.form;
   // const action = useAppSelector(state => state.rendering.action);
   // const dispatch = useAppDispatch();
 
-  const fieldId = props.params.fieldId;
-  console.log('SmAttributeField...', props.form.formPath, fieldId);
-  const attribute: IAttributeWithValue = useStateInSelfWithKey(props.form.formPath, 'fieldAttributes', fieldId);
-
   if (!form) {
     return <span>form is mandatory in AttributeField</span>;
   }
+  console.log('SmAttributeFieldOld...', props.form.formPath, props.fieldId);
+
+  const attribute: IAttributeWithValue = useStateInSelfWithKey(props.form.formPath, 'fieldAttributes', props.fieldId);
 
   if (!attribute) {
-    return <span></span>;
+    return <span>Missing attribute</span>;
   }
   return renderFormAttributeField(props, attribute);
 };
 
-const FormInput = ({ register, name, ...rest }) => {
-  const { ref, ...registerField } = register(name);
-
-  return <Input innerRef={ref} {...registerField} {...rest} />;
-};
-
 const renderFormAttributeField = (props, attribute: IAttributeWithValue) => {
-  console.log('AAAAAAAA', attribute.config.attributeType, props);
-  const fieldId = props.params.fieldId;
-
   if (attribute.config.attributeType === 'DOUBLE') {
     return (
-      <FormGroup row>
-        <Label for="exampleEmail" sm={6}>
-          {attribute.config.label}
-        </Label>
-        <Col sm={6}>
-          <FormInput readOnly={!attribute.config.isWritable} name={fieldId} register={props.form.register} />
-        </Col>
-      </FormGroup>
+      <label>
+        {attribute.config.isWritable ? <span>{attribute.config.label}</span> : <i>{attribute.config.label}</i>}
+        &nbsp;&nbsp;
+        <input readOnly={!attribute.config.isWritable} {...props.form.register(props.fieldId)}></input>
+      </label>
     );
   } else if (attribute.config.attributeType === 'BOOLEAN') {
     return (
-      <FormGroup row>
-        <Label for="exampleEmail" sm={6}>
-          {attribute.config.label}
-        </Label>
-        <Col sm={6}>
-          <FormInput type="checkbox" readOnly={!attribute.config.isWritable} name={fieldId} register={props.form.register} />
-        </Col>
-      </FormGroup>
-      // <label>
-      //   {attribute.config.isWritable ? <span>{attribute.config.label}</span> : <i>{attribute.config.label}</i>}
-      //   &nbsp;&nbsp;
-      //   <input readOnly={!attribute.config.isWritable} type="checkbox" {...props.form.register(fieldId)}></input>
-      // </label>
+      <label>
+        {attribute.config.isWritable ? <span>{attribute.config.label}</span> : <i>{attribute.config.label}</i>}
+        &nbsp;&nbsp;
+        <input readOnly={!attribute.config.isWritable} type="checkbox" {...props.form.register(props.fieldId)}></input>
+      </label>
     );
   }
   return <span>Not implemented yet : {attribute.config.attributeType}</span>;

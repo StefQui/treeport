@@ -3,7 +3,7 @@ import { Button, Col, Row } from 'reactstrap';
 
 import SiteList from '../site/site-list';
 import { calculateTargetLocalContextPath, SmRefToResource } from './sm-resource-content';
-import { SmAttributeField, SmForm } from './sm-form';
+import { SmAttributeField, SmForm, SmFormButton } from './sm-form';
 import { SmOldLayout, SmMenu, SmPage, usePageContext } from './sm-layout-old';
 import { SmDatasetList } from './sm-dataset-list';
 import { SmText } from './sm-text';
@@ -25,6 +25,7 @@ import { Provider } from 'react-redux';
 import getStore from 'app/config/store';
 import { SmLink } from './sm-link';
 import { SmLayout } from './sm-layout';
+import { SmOldAttributeField, SmOldForm } from './sm-old-form';
 
 export const initialFilter: ValueInState = { loading: true, value: null };
 
@@ -72,10 +73,16 @@ export const MyElem = props => {
         return <SmDatasetTree {...params}></SmDatasetTree>;
       case 'aggridTree':
         return <SmAggridTree {...params}></SmAggridTree>;
-      case 'Form':
+      case 'OldForm':
+        return <SmOldForm {...params}></SmOldForm>;
+      case 'form':
         return <SmForm {...params}></SmForm>;
-      case 'AttributeField':
+      case 'formButton':
+        return <SmFormButton {...params}></SmFormButton>;
+      case 'attributeField':
         return <SmAttributeField {...params}></SmAttributeField>;
+      case 'OldAttributeField':
+        return <SmOldAttributeField {...params}></SmOldAttributeField>;
       case 'page':
         return <SmPage {...params}></SmPage>;
       case 'menu':

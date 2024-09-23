@@ -30,22 +30,21 @@ export const SmMarkup = (props: SmMarkupProps) => {
   const renderNewElem = (key: string, element: Element, resourceContent: ComponentResourceContent) => {
     const root = createRoot(element);
     root.render(
-      <React.StrictMode key={key}>
-        <BrowserRouter basename={baseHref}>
-          <Provider store={store}>
-            <ErrorBoundary>
-              <MyElem
-                input={resourceContent}
-                depth={props.depth}
-                params={props.params ? params : null}
-                itemParam={props.itemParam}
-                currentPath={props.currentPath}
-                localContextPath={props.localContextPath}
-              ></MyElem>
-            </ErrorBoundary>
-          </Provider>
-        </BrowserRouter>
-      </React.StrictMode>,
+      <BrowserRouter basename={baseHref}>
+        <Provider store={store}>
+          <ErrorBoundary>
+            <MyElem
+              input={resourceContent}
+              depth={props.depth}
+              params={props.params ? params : null}
+              itemParam={props.itemParam}
+              form={props.form}
+              currentPath={props.currentPath}
+              localContextPath={props.localContextPath}
+            ></MyElem>
+          </ErrorBoundary>
+        </Provider>
+      </BrowserRouter>,
     );
   };
 

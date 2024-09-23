@@ -1,6 +1,7 @@
 import { IAttributeWithValue } from 'app/shared/model/attribute.model';
 import { IResourceAndImpacters } from 'app/shared/model/resource-and-impacters.model';
 import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
+import { Form } from 'reactstrap';
 import { MainTarget, SecondaryTarget } from './rendering.reducer';
 
 export const RENDERING_SLICE_KEY = 'rendering';
@@ -118,8 +119,23 @@ export type SmRefToResourceResourceContent = CommonContent & {
 };
 
 export type FormResourceContent = CommonContent & {
-  componentType: 'Form';
+  componentType: 'form';
   params: FormParams;
+};
+
+export type AttributeFieldResourceContent = CommonContent & {
+  componentType: 'attributeField';
+  params: AttributeFieldParams;
+};
+
+export type FormButtonResourceContent = CommonContent & {
+  componentType: 'formButton';
+  params: FormButtonParams;
+};
+
+export type OldFormResourceContent = CommonContent & {
+  componentType: 'OldForm';
+  params: OldFormParams;
 };
 
 export type SmAttRefResourceContent = CommonContent & {
@@ -165,6 +181,9 @@ export type ComponentResourceContent =
   | SmInputResourceContent
   | SmRefToResourceResourceContent
   | FormResourceContent
+  | AttributeFieldResourceContent
+  | FormButtonResourceContent
+  | OldFormResourceContent
   | SmAttRefResourceContent
   | ResourceListResourceContent
   | PageResourceContent
@@ -505,6 +524,21 @@ export type FormAttributeContextParam = {
 export type FormParams = {
   attributeContext: FormAttributeContextParam;
   fields: FormFieldParam[];
+  formContent: ComponentResourceContent;
+};
+
+export type AttributeFieldParams = {
+  fieldId: string;
+};
+
+export type FormButtonParams = {
+  label: string;
+  color: string;
+};
+
+export type OldFormParams = {
+  attributeContext: FormAttributeContextParam;
+  fields: FormFieldParam[];
   formContent: any;
 };
 export type HasTargetChildrenResource = { resourceId: string };
@@ -518,6 +552,7 @@ export type CommonProps = {
   display?: Display;
   localContextPath: string;
   itemParam?: IResourceWithValue;
+  form?: Form;
   parameterDefinitions?: ParameterDefinition[];
 };
 export type SmLinkProps = CommonProps & { params: LinkParams };
@@ -528,7 +563,8 @@ export type AttRefProps = CommonProps & { params: AttRefParams };
 export type SmRefToResourceProps = CommonProps & { params: RefToResourceParams };
 export type SmPageProps = CommonProps & { params: PageResourceParams };
 export type SmOldLayoutProps = CommonProps & { params: SmOldLayoutParams };
-export type FormProps = CommonProps & { params: FormParams };
+export type SmFormProps = CommonProps & { params: FormParams };
+export type SmFormButtonProps = CommonProps & { params: FormButtonParams };
 
 export type Parameters = { [path: string]: ValueInState };
 export type ComponentsState = {

@@ -5,6 +5,7 @@ import page4html from './page4.html';
 import pageDstreeHtml from './pageDstree.html';
 import topMenuHtml from './topMenu.html';
 import mylayoutHtml from './mylayoutHtml.html';
+import myformHtml from './myform.html';
 
 const r3: ComponentResource = {
   content: {
@@ -462,12 +463,139 @@ const page5: ComponentResource = {
       layoutId: 'mylayout',
       itemMap: {
         content: {
-          componentType: 'SmText',
-          path: 'toto',
+          componentType: 'SmMarkup',
+          path: 'pageDstree',
           params: {
-            textValue: {
-              ruleType: 'constant',
-              constValue: 'This is a eeeeeeeee page 5',
+            markup: pageDstreeHtml,
+            itemMap: {
+              a: {
+                componentType: 'SmText',
+                path: 'ref-to-selected-entity-name',
+                params: {
+                  textValue: {
+                    ruleType: 'constant',
+                    constValue: 'This is a AA',
+                  },
+                },
+              },
+              b: {
+                componentType: 'SmText',
+                path: 'ref-to-selected-entity-name',
+                params: {
+                  textValue: {
+                    ruleType: 'refToLocalContext',
+                    path: '',
+                    sourceParameterKey: 'sid98',
+                  },
+                },
+              },
+              detail: {
+                componentType: 'verticalPanel',
+                path: 'vp-rds-with-form-right',
+                border: true,
+                col: 3,
+                items: [
+                  {
+                    componentType: 'SmRefToResource',
+                    path: 'ref-to-r5',
+                    col: 12,
+                    params: {
+                      resourceId: 'r5',
+                    },
+                    parameterDefinitions: [
+                      {
+                        target: {
+                          parameterKey: 'const1',
+                          targetType: 'currentLocalContextPath',
+                        },
+                        definition: {
+                          ruleType: 'constant',
+                          constValue: 'aaa111',
+                        },
+                      },
+                      {
+                        target: {
+                          parameterKey: 'resourceIdFromResourceList',
+                          targetType: 'currentLocalContextPath',
+                        },
+                        definition: {
+                          ruleType: 'refToLocalContext',
+                          path: '/',
+                          sourceParameterKey: 'sid98',
+                        },
+                      },
+                      {
+                        target: {
+                          parameterKey: 'theresourceFromTheList',
+                          targetType: 'currentLocalContextPath',
+                        },
+                        definition: {
+                          ruleType: 'refToResource',
+                          sourceResourceId: {
+                            ruleType: 'refToLocalContext',
+                            path: '/',
+                            sourceParameterKey: 'sid98',
+                          },
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    componentType: 'SmAttRef',
+                    path: 'attRefToConso',
+                    col: 6,
+                    params: {
+                      resourceId: {
+                        ruleType: 'refToLocalContext',
+                        path: '',
+                        sourceParameterKey: 'sid98',
+                      },
+                      campaignId: {
+                        ruleType: 'constant',
+                        constValue: '2023',
+                      },
+                      attConfig: {
+                        ruleType: 'constant',
+                        constValue: 'toConso',
+                      },
+                    },
+                  },
+
+                  {
+                    componentType: 'SmRefToResource',
+                    path: 'ref-to-fform',
+                    col: 12,
+
+                    params: {
+                      resourceId: 'myform',
+                    },
+                    parameterDefinitions: [],
+                  },
+                ],
+              },
+              aggrid: {
+                componentType: 'aggridTree',
+                path: 'aggridtree',
+                params: {
+                  columnDefinitions: [
+                    { columnType: 'ID' },
+                    { columnType: 'NAME' },
+                    { columnType: 'TAGS' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
+                    { columnType: 'BUTTON', action: 'edit' },
+                    { columnType: 'BUTTON', action: 'addChildren' },
+                    { columnType: 'BUTTON', action: 'select' },
+                    { columnType: 'BUTTON', action: 'remove' },
+                  ],
+                  valueFilter: {
+                    filterType: 'AND',
+                    items: [],
+                  },
+                  selectedResourceKeyInLocalContext: 'sid98',
+                },
+              },
             },
           },
         },
@@ -863,6 +991,110 @@ const r5: ComponentResource = {
       },
     },
   ],
+};
+
+const myform: ComponentResource = {
+  content: {
+    componentType: 'verticalPanel',
+    path: 'vp12',
+    border: true,
+    items: [
+      {
+        componentType: 'form',
+        path: 'vsmform',
+        params: {
+          attributeContext: {
+            resourceId: {
+              ruleType: 'refToLocalContext',
+              path: '..',
+              sourceParameterKey: 'theresourceFromTheList',
+              sourceParameterProperty: 'id',
+            },
+            campaignId: {
+              ruleType: 'constant',
+              constValue: '2023',
+            },
+          },
+          fields: [
+            {
+              fieldType: 'Field',
+              fieldId: 'theToResource',
+              attributeConfigId: 'toSite',
+              campaignId: {
+                useCurrent: true,
+              },
+            },
+            {
+              fieldType: 'Field',
+              fieldId: 'theToConso',
+              attributeConfigId: 'toConso',
+              campaignId: {
+                useCurrent: true,
+              },
+            },
+            {
+              fieldType: 'Field',
+              fieldId: 'theToCert',
+              attributeConfigId: 'isCert',
+              campaignId: {
+                useCurrent: true,
+              },
+            },
+          ],
+          formContent: {
+            componentType: 'SmMarkup',
+            path: 'vp88',
+            params: {
+              markup: myformHtml,
+              itemMap: {
+                resName: {
+                  componentType: 'SmText',
+                  path: 'resName',
+                  params: {
+                    textValue: {
+                      ruleType: 'refToLocalContext',
+                      path: '..',
+                      sourceParameterKey: 'theresourceFromTheList',
+                      sourceParameterProperty: 'name',
+                    },
+                  },
+                },
+                theToResourceKey: {
+                  componentType: 'attributeField',
+                  path: 'vsmatt',
+                  params: {
+                    fieldId: 'theToResource',
+                  },
+                },
+                theToCertKey: {
+                  componentType: 'attributeField',
+                  path: 'vsmattbool',
+                  params: {
+                    fieldId: 'theToCert',
+                  },
+                },
+                theToConsoKey: {
+                  componentType: 'attributeField',
+                  path: 'vsmattconso',
+                  params: {
+                    fieldId: 'theToConso',
+                  },
+                },
+                submitButton: {
+                  componentType: 'formButton',
+                  path: 'formButton',
+                  params: {
+                    label: 'Enregister la resource',
+                    color: 'primary',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    ],
+  },
 };
 
 const subdetail: ComponentResource = {
@@ -1711,7 +1943,7 @@ const rform: ComponentResource = {
       //   },
       // },
       {
-        componentType: 'Form',
+        componentType: 'OldForm',
         path: 'vsmform',
         params: {
           attributeContext: {
@@ -1769,17 +2001,17 @@ const rform: ComponentResource = {
                 },
               },
               {
-                componentType: 'AttributeField',
+                componentType: 'OldAttributeField',
                 path: 'vsmatt',
                 fieldId: 'theToResource',
               },
               {
-                componentType: 'AttributeField',
+                componentType: 'OldAttributeField',
                 path: 'vsmattbool',
                 fieldId: 'theToCert',
               },
               {
-                componentType: 'AttributeField',
+                componentType: 'OldAttributeField',
                 path: 'vsmattconso',
                 fieldId: 'theToConso',
               },
@@ -2059,6 +2291,7 @@ export const stubbedResources = {
   page3,
   page4,
   page5,
+  myform,
   page6,
   mylayout,
   pageDstree,

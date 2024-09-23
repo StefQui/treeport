@@ -86,7 +86,7 @@ export const SmRefToResource = (props: SmRefToResourceProps) => {
   }
   return (
     <div>
-      <span>no val for SmRefToResource {JSON.stringify(props)}</span>
+      <span>Fetching SmRefToResource...</span>
     </div>
   );
 };

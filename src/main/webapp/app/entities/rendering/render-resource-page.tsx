@@ -218,7 +218,7 @@ export const RenderResourcePage = () => {
           <Input
             type="switch"
             checked={showUiOpener}
-            onClick={() => {
+            onChange={() => {
               setShowUiOpener(!showUiOpener);
             }}
             role="switch"

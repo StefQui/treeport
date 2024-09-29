@@ -6,7 +6,7 @@ import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'reac
 import { Button, Col, FormGroup, FormProps, Input, Label } from 'reactstrap';
 import { DoubleValue } from '../attribute-value/attribute-value';
 import { existsAndHasAValue } from './render-resource-page';
-import { MyElem, increment } from './rendering';
+import { MyElem, increment, hasChanged } from './rendering';
 import { getFieldAttributesAndConfig, saveAttributes, setAction } from './rendering.reducer';
 import { SmRefToResource } from './sm-resource-content';
 import { buildPath, useCalculatedValueStateIfNotNull, PATH_SEPARATOR, useCalculatedValueState } from './shared';
@@ -54,6 +54,7 @@ export const SmForm = (props: SmFormProps) => {
   const builtPath = buildPath(props);
 
   const onSubmit = values => {
+    console.log('onsubmittt', values);
     const fieldsIdsToSave = Object.keys(fieldAttributes).filter(fieldId => fieldAttributes[fieldId].config.isWritable);
     const toSave: IAttributeWithValue[] = fieldsIdsToSave.map(
       fieldId =>
@@ -102,20 +103,29 @@ export const SmForm = (props: SmFormProps) => {
     return <span>missing resourceId or campaignId</span>;
   }
 
-  const resourceIdValue = useCalculatedValueStateIfNotNull(props, resourceId);
-  const campaignIdValue = useCalculatedValueStateIfNotNull(props, campaignId);
+  // const resourceIdValue = useCalculatedValueStateIfNotNull(props, resourceId);
+  // const campaignIdValue = useCalculatedValueStateIfNotNull(props, campaignId);
 
-  const [previousResourceIdValue, setPreviousResourceIdValue] = useState();
-  const [previousCampaignIdValue, setPreviousCampaignIdValue] = useState();
+  const resourceIdValue = useCalculatedValueState(props, resourceId);
+  const campaignIdValue = useCalculatedValueState(props, campaignId);
+
+  const [previousResourceIdValue, setPreviousResourceIdValue] = useState(null);
+  const [previousCampaignIdValue, setPreviousCampaignIdValue] = useState(null);
+  console.log('inform', props);
 
   useEffect(() => {
-    if (resourceIdValue !== previousResourceIdValue || campaignIdValue !== previousCampaignIdValue) {
+    if (hasChanged(previousResourceIdValue, resourceIdValue) || hasChanged(previousCampaignIdValue, campaignIdValue)) {
+      if (!resourceIdValue || !resourceIdValue.value || !campaignIdValue || !campaignIdValue.value) {
+        return;
+      }
+      console.log('useEffectformaaa', resourceIdValue, campaignIdValue);
       const newMap = fields
         .filter(field => field.fieldType === 'Field')
         .reduce((acc, field) => {
-          acc[field.fieldId] = buildAttributeIdFormExploded(resourceIdValue, field.attributeConfigId, campaignIdValue);
+          acc[field.fieldId] = buildAttributeIdFormExploded(resourceIdValue.value, field.attributeConfigId, campaignIdValue.value);
           return acc;
         }, {});
+      console.log('useEffectformbbb', newMap);
       if (newMap) {
         setMapOfFields(newMap);
         // eslint-disable-next-line guard-for-in
@@ -227,7 +237,7 @@ export const useStateInSelfWithKey = (formPath: string, key1: string, key2: stri
 export const SmFormButton = (props: SmFormButtonProps) => {
   const form = props.form;
   return (
-    <Button color={props.params.color} type="button" value="submit">
+    <Button color={props.params.color} type="submit" value="submit">
       {props.params.label}
     </Button>
   );
@@ -239,12 +249,12 @@ export const SmAttributeField = props => {
   // const dispatch = useAppDispatch();
 
   const fieldId = props.params.fieldId;
-  console.log('SmAttributeField...', props.form.formPath, fieldId);
-  const attribute: IAttributeWithValue = useStateInSelfWithKey(props.form.formPath, 'fieldAttributes', fieldId);
+  console.log('SmAttributeField...', props.form, fieldId);
 
   if (!form) {
     return <span>form is mandatory in AttributeField</span>;
   }
+  const attribute: IAttributeWithValue = useStateInSelfWithKey(props.form.formPath, 'fieldAttributes', fieldId);
 
   if (!attribute) {
     return <span></span>;
@@ -259,7 +269,6 @@ const FormInput = ({ register, name, ...rest }) => {
 };
 
 const renderFormAttributeField = (props, attribute: IAttributeWithValue) => {
-  console.log('AAAAAAAA', attribute.config.attributeType, props);
   const fieldId = props.params.fieldId;
 
   if (attribute.config.attributeType === 'DOUBLE') {

@@ -22,6 +22,22 @@ export const SmLayout = (props: SmLayoutProps) => {
   console.log('layoutresourceContent', layoutResourceContent);
 
   const [previousLayout, setPreviousLayout] = useState(null);
+  const [roots, setRoots] = useState({});
+
+  const exitMarkup = () => {
+    console.log('layoutexiting---', Object.keys(roots));
+    Object.keys(roots).forEach(key => {
+      try {
+        if (roots[key]) {
+          setTimeout(() => {
+            console.log('component unmount');
+            roots[key].unmount();
+            roots[key] = undefined;
+          });
+        }
+      } catch (e) {}
+    });
+  };
 
   useEffect(() => {
     if (!layoutResourceContent) {
@@ -40,43 +56,52 @@ export const SmLayout = (props: SmLayoutProps) => {
     setPreviousLayout(layoutParams.itemMap);
 
     const renderNewElem = (key: string, element: Element, resourceContent: ComponentResourceContent) => {
-      const root = createRoot(element);
-      root.render(
-        <React.StrictMode key={key}>
-          <BrowserRouter basename={baseHref}>
-            <Provider store={store}>
-              <ErrorBoundary>
-                <MyElem
-                  input={resourceContent}
-                  depth={props.depth}
-                  params={layoutParams ? layoutParams : null}
-                  itemParam={props.itemParam}
-                  currentPath={props.currentPath}
-                  localContextPath={props.localContextPath}
-                ></MyElem>
-              </ErrorBoundary>
-            </Provider>
-          </BrowserRouter>
-        </React.StrictMode>,
+      if (!roots[key]) {
+        roots[key] = createRoot(element);
+        setRoots(roots);
+      }
+      roots[key].render(
+        <BrowserRouter basename={baseHref}>
+          <Provider store={store}>
+            <ErrorBoundary>
+              <MyElem
+                input={resourceContent}
+                depth={props.depth}
+                params={layoutParams ? layoutParams : null}
+                itemParam={props.itemParam}
+                currentPath={props.currentPath}
+                localContextPath={props.localContextPath}
+              ></MyElem>
+            </ErrorBoundary>
+          </Provider>
+        </BrowserRouter>,
       );
     };
 
+    let i = 0;
     Array.from(doc.getElementsByTagName('sm-item')).forEach(element => {
-      console.log('key-----', element);
       const layoutMap = layoutParams.itemMap;
       const key = element.getAttribute('key');
+      console.log('la-key-----', key, i++);
       const resourceContent = props.params.itemMap[key];
       const layoutResourceContent = layoutMap[key];
       if (layoutResourceContent && layoutHasChanged && !resourceContent) {
+        console.log('la-key---layout--', key, i++);
         const builtPath = buildPath(props);
         renderNewElem(key, element, layoutResourceContent);
       }
       if (resourceContent) {
+        console.log('la-key---resource--', key, i++);
         const builtPath = buildPath(props);
         renderNewElem(key, element, resourceContent);
       }
     });
+    // return () => exitMarkup();
   }, [layoutResourceContent, props.params.itemMap]);
+
+  useEffect(() => {
+    return () => exitMarkup();
+  }, []);
 
   if (!layoutResourceContent) {
     return <div>Layout........</div>;

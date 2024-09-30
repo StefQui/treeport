@@ -95,6 +95,9 @@ export const SmMarkup = (props: SmMarkupProps) => {
         renderNewElem(key, element, resourceContent);
       }
     });
+  }, [params]);
+
+  useEffect(() => {
     return () => exitMarkup();
   }, [params]);
 

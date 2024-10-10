@@ -56,7 +56,9 @@ export const SmLayout = (props: SmLayoutProps) => {
     setPreviousLayout(layoutParams.itemMap);
 
     const renderNewElem = (key: string, element: Element, resourceContent: ComponentResourceContent) => {
+      console.log('la-key---resourcerenderNewElem', key);
       if (!roots[key]) {
+        console.log('la-key---resourcecreate', key);
         roots[key] = createRoot(element);
         setRoots(roots);
       }
@@ -82,11 +84,11 @@ export const SmLayout = (props: SmLayoutProps) => {
     Array.from(doc.getElementsByTagName('sm-item')).forEach(element => {
       const layoutMap = layoutParams.itemMap;
       const key = element.getAttribute('key');
-      console.log('la-key-----', key, i++);
+      // console.log('la-key-----', key, i++);
       const resourceContent = props.params.itemMap[key];
       const layoutResourceContent = layoutMap[key];
       if (layoutResourceContent && layoutHasChanged && !resourceContent) {
-        console.log('la-key---layout--', key, i++);
+        // console.log('la-key---layout--', key, i++);
         const builtPath = buildPath(props);
         renderNewElem(key, element, layoutResourceContent);
       }

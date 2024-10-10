@@ -13,6 +13,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
   readonly state: IErrorBoundaryState = { error: undefined, errorInfo: undefined };
 
   componentDidCatch(error, errorInfo) {
+    console.error('smmm-errorcomponentDidCatch', errorInfo, error);
     this.setState({
       error,
       errorInfo,
@@ -21,17 +22,23 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
 
   render() {
     const { error, errorInfo } = this.state;
+    console.error('smmm-render', errorInfo, error);
+    if (error || errorInfo) {
+      console.error('smmm-errorbou', errorInfo, error);
+    }
     if (errorInfo) {
       const errorDetails = DEVELOPMENT ? (
         <details className="preserve-space">
-          {error && error.toString()}
+          {error && error.toString()}dddddd
           <br />
+          <span>sqdqdqdqsdqsdsqdsdqd</span>
           {errorInfo.componentStack}
         </details>
       ) : undefined;
       return (
         <div>
-          <h2 className="error">An unexpected error has occurred.</h2>
+          <h2 className="error">An unexpected error has occurredssssss.</h2>
+          <span>sqdqdqdqsdqsdsqdsdqdddddddddddddd</span>
           {errorDetails}
         </div>
       );

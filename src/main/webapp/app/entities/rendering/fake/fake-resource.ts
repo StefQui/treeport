@@ -497,41 +497,41 @@ const page5: ComponentResource = {
                   resourceId: 'r5',
                 },
                 parameterDefinitions: [
-                  {
-                    target: {
-                      parameterKey: 'const1',
-                      targetType: 'currentLocalContextPath',
-                    },
-                    definition: {
-                      ruleType: 'constant',
-                      constValue: 'aaa111',
-                    },
-                  },
-                  {
-                    target: {
-                      parameterKey: 'resourceIdFromResourceList',
-                      targetType: 'currentLocalContextPath',
-                    },
-                    definition: {
-                      ruleType: 'refToLocalContext',
-                      path: '/',
-                      sourceParameterKey: 'sid98',
-                    },
-                  },
-                  {
-                    target: {
-                      parameterKey: 'theresourceFromTheList',
-                      targetType: 'currentLocalContextPath',
-                    },
-                    definition: {
-                      ruleType: 'refToResource',
-                      sourceResourceId: {
-                        ruleType: 'refToLocalContext',
-                        path: '/',
-                        sourceParameterKey: 'sid98',
-                      },
-                    },
-                  },
+                  // {
+                  //   target: {
+                  //     parameterKey: 'const1',
+                  //     targetType: 'currentLocalContextPath',
+                  //   },
+                  //   definition: {
+                  //     ruleType: 'constant',
+                  //     constValue: 'aaa111',
+                  //   },
+                  // },
+                  // {
+                  //   target: {
+                  //     parameterKey: 'resourceIdFromResourceList',
+                  //     targetType: 'currentLocalContextPath',
+                  //   },
+                  //   definition: {
+                  //     ruleType: 'refToLocalContext',
+                  //     path: '/',
+                  //     sourceParameterKey: 'sid91',
+                  //   },
+                  // },
+                  // {
+                  //   target: {
+                  //     parameterKey: 'theresourceFromTheList',
+                  //     targetType: 'currentLocalContextPath',
+                  //   },
+                  //   definition: {
+                  //     ruleType: 'refToResource',
+                  //     sourceResourceId: {
+                  //       ruleType: 'refToLocalContext',
+                  //       path: '/',
+                  //       sourceParameterKey: 'sid91',
+                  //     },
+                  //   },
+                  // },
                 ],
               },
               att1: {
@@ -563,31 +563,31 @@ const page5: ComponentResource = {
                   resourceId: 'myform',
                 },
                 parameterDefinitions: [
-                  {
-                    target: {
-                      parameterKey: 'resourceIdFromResourceList',
-                      targetType: 'currentLocalContextPath',
-                    },
-                    definition: {
-                      ruleType: 'refToLocalContext',
-                      path: '/',
-                      sourceParameterKey: 'sid98',
-                    },
-                  },
-                  {
-                    target: {
-                      parameterKey: 'theresourceFromTheList',
-                      targetType: 'currentLocalContextPath',
-                    },
-                    definition: {
-                      ruleType: 'refToResource',
-                      sourceResourceId: {
-                        ruleType: 'refToLocalContext',
-                        path: '/',
-                        sourceParameterKey: 'sid98',
-                      },
-                    },
-                  },
+                  // {
+                  //   target: {
+                  //     parameterKey: 'resourceIdFromResourceList',
+                  //     targetType: 'currentLocalContextPath',
+                  //   },
+                  //   definition: {
+                  //     ruleType: 'refToLocalContext',
+                  //     path: '/',
+                  //     sourceParameterKey: 'sid98',
+                  //   },
+                  // },
+                  // {
+                  //   target: {
+                  //     parameterKey: 'theresourceFromTheList',
+                  //     targetType: 'currentLocalContextPath',
+                  //   },
+                  //   definition: {
+                  //     ruleType: 'refToResource',
+                  //     sourceResourceId: {
+                  //       ruleType: 'refToLocalContext',
+                  //       path: '/',
+                  //       sourceParameterKey: 'sid10000',
+                  //     },
+                  //   },
+                  // },
                 ],
               },
               aggrid: {
@@ -610,8 +610,105 @@ const page5: ComponentResource = {
                     filterType: 'AND',
                     items: [],
                   },
-                  selectedResourceKeyInLocalContext: 'sid98',
+                  selectedResourceKeyInLocalContext: 'sid91',
                 },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+const myform: ComponentResource = {
+  content: {
+    componentType: 'form',
+    path: 'vsmform',
+    params: {
+      attributeContext: {
+        resourceId: {
+          ruleType: 'refToLocalContext',
+          path: '..',
+          sourceParameterKey: 'theresourceFromTheList',
+          sourceParameterProperty: 'id',
+        },
+        campaignId: {
+          ruleType: 'constant',
+          constValue: '2023',
+        },
+      },
+      fields: [
+        {
+          fieldType: 'Field',
+          fieldId: 'theToResource',
+          attributeConfigId: 'toSite',
+          campaignId: {
+            useCurrent: true,
+          },
+        },
+        {
+          fieldType: 'Field',
+          fieldId: 'theToConso',
+          attributeConfigId: 'toConso',
+          campaignId: {
+            useCurrent: true,
+          },
+        },
+        {
+          fieldType: 'Field',
+          fieldId: 'theToCert',
+          attributeConfigId: 'isCert',
+          campaignId: {
+            useCurrent: true,
+          },
+        },
+      ],
+      formContent: {
+        componentType: 'SmMarkup',
+        path: 'vp88',
+        params: {
+          markup: myformHtml,
+          itemMap: {
+            resName: {
+              componentType: 'SmText',
+              path: 'resName',
+              params: {
+                textValue: {
+                  ruleType: 'refToLocalContext',
+                  path: '..',
+                  sourceParameterKey: 'theresourceFromTheList',
+                  sourceParameterProperty: 'name',
+                },
+              },
+            },
+            theToResourceKey: {
+              componentType: 'attributeField',
+              path: 'vsmatt',
+              params: {
+                fieldId: 'theToResource',
+              },
+            },
+            theToCertKey: {
+              componentType: 'attributeField',
+              path: 'vsmattbool',
+              params: {
+                fieldId: 'theToCert',
+              },
+            },
+            theToConsoKey: {
+              componentType: 'attributeField',
+              path: 'vsmattconso',
+              params: {
+                fieldId: 'theToConso',
+              },
+            },
+            submitButton: {
+              componentType: 'formButton',
+              path: 'formButton',
+              params: {
+                label: 'Enregister la resource',
+                color: 'primary',
               },
             },
           },
@@ -644,6 +741,48 @@ const page6: ComponentResource = {
                   },
                 },
               },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+const page7: ComponentResource = {
+  content: {
+    componentType: 'SmLayout',
+    path: 'page7',
+    params: {
+      layoutId: 'mylayout',
+      itemMap: {
+        content: {
+          componentType: 'SmMarkup',
+          path: 'toto',
+          params: {
+            markup: '<div class="col-md-12"><sm-item key="aaa"></sm-item><sm-item key="bbb"></sm-item></div>',
+            itemMap: {
+              aaa: {
+                componentType: 'SmText',
+                path: 'totoss',
+                params: {
+                  textValue: {
+                    ruleType: 'constant',
+                    constValue: 'This is a eeeeeeeee Page 7',
+                  },
+                },
+              },
+              // bbb: {
+              //   componentType: 'SmInput',
+              //   path: 'totoss',
+              //   params: {
+              //     outputParameterKey: 'theTerm',
+              //     defaultValue: {
+              //       ruleType: 'constant',
+              //       constValue: 'S1',
+              //     },
+              //   },
+              // },
             },
           },
         },
@@ -705,6 +844,51 @@ const pageDstree: ComponentResource = {
                     sourceParameterKey: 'sid98',
                   },
                 },
+              },
+              r5detail: {
+                componentType: 'SmRefToResource',
+                path: 'ref-to-r5',
+                col: 12,
+                params: {
+                  resourceId: 'r5',
+                },
+                parameterDefinitions: [
+                  // {
+                  //   target: {
+                  //     parameterKey: 'const1',
+                  //     targetType: 'currentLocalContextPath',
+                  //   },
+                  //   definition: {
+                  //     ruleType: 'constant',
+                  //     constValue: 'aaa111',
+                  //   },
+                  // },
+                  // {
+                  //   target: {
+                  //     parameterKey: 'resourceIdFromResourceList',
+                  //     targetType: 'currentLocalContextPath',
+                  //   },
+                  //   definition: {
+                  //     ruleType: 'refToLocalContext',
+                  //     path: '/',
+                  //     sourceParameterKey: 'sid98',
+                  //   },
+                  // },
+                  // {
+                  //   target: {
+                  //     parameterKey: 'theresourceFromTheList',
+                  //     targetType: 'currentLocalContextPath',
+                  //   },
+                  //   definition: {
+                  //     ruleType: 'refToResource',
+                  //     sourceResourceId: {
+                  //       ruleType: 'refToLocalContext',
+                  //       path: '/',
+                  //       sourceParameterKey: 'sid98',
+                  //     },
+                  //   },
+                  // },
+                ],
               },
               detail: {
                 componentType: 'verticalPanel',
@@ -892,6 +1076,14 @@ const topMenu: ComponentResource = {
             url: '/coca/render/page6',
           },
         },
+        page7: {
+          componentType: 'SmLink',
+          path: 'page7',
+          params: {
+            urlLabel: 'Page 7',
+            url: '/coca/render/page7',
+          },
+        },
       },
     },
   },
@@ -1017,103 +1209,6 @@ const r5: ComponentResource = {
       },
     },
   ],
-};
-
-const myform: ComponentResource = {
-  content: {
-    componentType: 'form',
-    path: 'vsmform',
-    params: {
-      attributeContext: {
-        resourceId: {
-          ruleType: 'refToLocalContext',
-          path: '..',
-          sourceParameterKey: 'theresourceFromTheList',
-          sourceParameterProperty: 'id',
-        },
-        campaignId: {
-          ruleType: 'constant',
-          constValue: '2023',
-        },
-      },
-      fields: [
-        {
-          fieldType: 'Field',
-          fieldId: 'theToResource',
-          attributeConfigId: 'toSite',
-          campaignId: {
-            useCurrent: true,
-          },
-        },
-        {
-          fieldType: 'Field',
-          fieldId: 'theToConso',
-          attributeConfigId: 'toConso',
-          campaignId: {
-            useCurrent: true,
-          },
-        },
-        {
-          fieldType: 'Field',
-          fieldId: 'theToCert',
-          attributeConfigId: 'isCert',
-          campaignId: {
-            useCurrent: true,
-          },
-        },
-      ],
-      formContent: {
-        componentType: 'SmMarkup',
-        path: 'vp88',
-        params: {
-          markup: myformHtml,
-          itemMap: {
-            resName: {
-              componentType: 'SmText',
-              path: 'resName',
-              params: {
-                textValue: {
-                  ruleType: 'refToLocalContext',
-                  path: '..',
-                  sourceParameterKey: 'theresourceFromTheList',
-                  sourceParameterProperty: 'name',
-                },
-              },
-            },
-            theToResourceKey: {
-              componentType: 'attributeField',
-              path: 'vsmatt',
-              params: {
-                fieldId: 'theToResource',
-              },
-            },
-            theToCertKey: {
-              componentType: 'attributeField',
-              path: 'vsmattbool',
-              params: {
-                fieldId: 'theToCert',
-              },
-            },
-            theToConsoKey: {
-              componentType: 'attributeField',
-              path: 'vsmattconso',
-              params: {
-                fieldId: 'theToConso',
-              },
-            },
-            submitButton: {
-              componentType: 'formButton',
-              path: 'formButton',
-              params: {
-                label: 'Enregister la resource',
-                color: 'primary',
-              },
-            },
-          },
-        },
-      },
-    },
-  },
 };
 
 const subdetail: ComponentResource = {
@@ -2312,6 +2407,7 @@ export const stubbedResources = {
   page5,
   myform,
   page6,
+  page7,
   mylayout,
   pageDstree,
   topMenu,

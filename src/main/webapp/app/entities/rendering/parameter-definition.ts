@@ -175,6 +175,7 @@ export const handleParameterDefinition = (pdef: ParameterDefinition, props) => {
   } else {
     // const [previousResult, setPreviousResult] = useState(null);
     // const result = useCalculatedValueState(props, pdef.definition);
+    console.log('useChangingCalculatedValueState---', pdef);
     const changing = useChangingCalculatedValueState(props, pdef, target);
     // console.log('filter.......other', pdef.definition, result, previousResult);
     useEffect(() => {

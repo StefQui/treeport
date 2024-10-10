@@ -28,31 +28,71 @@ export const SmMarkup = (props: SmMarkupProps) => {
   const myRef = useRef(null);
   const [previousParams, setPreviousParams] = useState(null);
   const [roots, setRoots] = useState({});
+  const [creation, setCreation] = useState(new Date());
 
   const exitMarkup = () => {
-    console.log('exiting---', Object.keys(roots));
-    Object.keys(roots).forEach(key => {
-      try {
-        if (roots[key]) {
-          setTimeout(() => {
-            console.log('component unmount');
-            roots[key].unmount();
-            roots[key] = undefined;
-          });
-        }
-      } catch (e) {}
+    console.log('smmm-exitMarkup exiting---', Object.keys(roots), params);
+    Object.keys(roots).forEach(elemKey => {
+      if (roots[elemKey]) {
+        // setTimeout(() => {
+        //   if (roots[elemKey]) {
+        //     console.log('smmm-exitMarkup component unmount', elemKey);
+        //     try {
+        //       roots[elemKey].unmount();
+        //     } catch (e) {
+        //       console.error('smmm--------ERROR', e);
+        //     } finally {
+        //       delete roots[elemKey];
+        //     }
+        //   }
+        // });
+      }
     });
   };
 
-  const renderNewElem = (key: string, element: Element, resourceContent: ComponentResourceContent) => {
-    if (!roots[key]) {
-      roots[key] = createRoot(element);
+  const buildElemKey = (key: string, creation: Date): string => {
+    return key + '-' + creation.getTime();
+  };
+
+  const renderNewElem = (elemKey: string, newDate: number, element: Element, resourceContent: ComponentResourceContent) => {
+    console.log('smmm-mukey-renderNewElem', Object.keys(roots), roots[elemKey]);
+
+    Object.keys(roots).forEach(elemKey => {
+      if (!elemKey.endsWith(newDate + '')) {
+        setTimeout(() => {
+          if (roots[elemKey]) {
+            console.log('smmm-mukey-unmount', elemKey);
+            roots[elemKey].unmount();
+          }
+          delete roots[elemKey];
+        });
+      }
+      // if (roots[elemKey]) {
+      //   setTimeout(() => {
+      //     if (roots[elemKey]) {
+      //       console.log('smmm-exitMarkup component unmount', elemKey);
+      //       try {
+      //         roots[elemKey].unmount();
+      //       } catch (e) {
+      //         console.error('smmm--------ERROR', e);
+      //       } finally {
+      //         delete roots[elemKey];
+      //       }
+      //     }
+      //   });
+      // }
+    });
+
+    if (!roots[elemKey]) {
+      console.log('smmm-mukey-renderNewElemcreate', elemKey);
+      roots[elemKey] = createRoot(element);
       setRoots(roots);
     }
-    roots[key].render(
-      <BrowserRouter basename={baseHref}>
-        <Provider store={store}>
-          <ErrorBoundary>
+    roots[elemKey].render(
+      <ErrorBoundary>
+        <BrowserRouter basename={baseHref}>
+          <Provider store={store}>
+            {/* <p>{creation.getTime()}s</p> */}
             <MyElem
               input={resourceContent}
               depth={props.depth}
@@ -62,13 +102,18 @@ export const SmMarkup = (props: SmMarkupProps) => {
               currentPath={props.currentPath}
               localContextPath={props.localContextPath}
             ></MyElem>
-          </ErrorBoundary>
-        </Provider>
-      </BrowserRouter>,
+          </Provider>
+        </BrowserRouter>
+        ,
+      </ErrorBoundary>,
     );
   };
 
   // console.log('mukey-----outside=', previousParams, params);
+
+  useEffect(() => {
+    return () => exitMarkup();
+  }, [params]);
 
   useEffect(() => {
     const doc: Element = myRef.current;
@@ -84,21 +129,19 @@ export const SmMarkup = (props: SmMarkupProps) => {
     if (!paramsHasChanged) {
       return;
     }
+    const newDate = new Date();
     Array.from(doc.getElementsByTagName('sm-item')).forEach(element => {
       const map = params.itemMap;
       const key = element.getAttribute('key');
       console.log('mukey-----', key);
       const resourceContent = map[key];
       if (resourceContent) {
+        setCreation(newDate);
         const builtPath = buildPath(props);
-        console.log('mukey----render-', key);
-        renderNewElem(key, element, resourceContent);
+        console.log('smmm-mukey----render-', key, resourceContent);
+        renderNewElem(buildElemKey(key, newDate), newDate.getTime(), element, resourceContent);
       }
     });
-  }, [params]);
-
-  useEffect(() => {
-    return () => exitMarkup();
   }, [params]);
 
   const data = params.markup;

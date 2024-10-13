@@ -21,7 +21,7 @@ export const SmInput = (props: { params: InputParams; depth: string; currentPath
 
   const defaultValueKey: RuleDefinition = props.params.defaultValue;
   const defaultValue: ValueInState = defaultValueKey ? useCalculatedValueState(props, defaultValueKey) : { loading: false };
-  const [value, setValue] = useState(defaultValue);
+  const [value, setValue] = useState(defaultValue ? defaultValue.value : '');
   const dispatch = useAppDispatch();
   const builtPath = buildPath(props);
 
@@ -70,7 +70,7 @@ export const SmInput = (props: { params: InputParams; depth: string; currentPath
 
   return (
     <div>
-      <input value={value ? value.value : null} onChange={handleChange}></input>
+      <input value={value} onChange={handleChange}></input>
     </div>
   );
 };

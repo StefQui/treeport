@@ -37,6 +37,7 @@ export const UiResourceUpdateDialog = props => {
   const [resourceId, setResourceId] = useState(null);
 
   const [resourceContent, setResourceContent] = useState(null);
+  // console.log('UiResourceUpdateDialog', resourceId);
   const resource = usePageResourceContentFromResourceId(resourceId);
   const fetchedResourceContent = useResourceWithKey(resource, 'content');
   const [displayedResourceContent, setDisplayedResourceContent] = useState(null);

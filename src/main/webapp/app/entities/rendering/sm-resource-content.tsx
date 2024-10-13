@@ -51,7 +51,7 @@ export const calculateTargetLocalContextPath = (childResource = true, props) => 
 };
 
 export const SmRefToResource = (props: SmRefToResourceProps) => {
-  console.log('TheSmRefToResource', props);
+  console.log('TheSmRefToResource----', props);
 
   const params: RefToResourceParams = props.params;
 
@@ -70,19 +70,27 @@ export const SmRefToResource = (props: SmRefToResourceProps) => {
 
   if (resourceContent) {
     console.log('resourceContent', props.itemParam);
+    // const root = createRoot(document.getElementById("root"));
+
     return (
       <div>
         <UiOpener resourceId={resourceId} source={'ref'}></UiOpener>
-        <MyElem
-          input={resourceContent}
-          depth={increment(props.depth)}
-          params={props.params ? params : null}
-          itemParam={props.itemParam}
-          currentPath={builtPath}
-          localContextPath={calculateTargetLocalContextPath(true, props)}
-        ></MyElem>
+        <h1>hhhh</h1>
       </div>
     );
+    // return (
+    //   <div>
+    //     <UiOpener resourceId={resourceId} source={'ref'}></UiOpener>
+    //     <MyElem
+    //       input={resourceContent}
+    //       depth={increment(props.depth)}
+    //       params={props.params ? params : null}
+    //       itemParam={props.itemParam}
+    //       currentPath={builtPath}
+    //       localContextPath={calculateTargetLocalContextPath(true, props)}
+    //     ></MyElem>
+    //   </div>
+    // );
   }
   return (
     <div>

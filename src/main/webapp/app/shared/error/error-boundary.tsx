@@ -22,9 +22,9 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
 
   render() {
     const { error, errorInfo } = this.state;
-    console.error('smmm-render', errorInfo, error);
+    // console.error('smmm-render', errorInfo, error);
     if (error || errorInfo) {
-      console.error('smmm-errorbou', errorInfo, error);
+      // console.error('smmm-errorbou', errorInfo, error);
     }
     if (errorInfo) {
       const errorDetails = DEVELOPMENT ? (

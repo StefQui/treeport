@@ -22,8 +22,13 @@ import {
   PageContextPathTarget,
   SpecificLocalContextPathTarget,
   FetchResourceRequestModel,
+  ComponentResourceContent,
+  SmMarkupResourceContent,
+  SmRefToResourceResourceContent,
+  SmLayoutResourceContent,
 } from './type';
 import { handleDataTree } from './datatree';
+import { flatten } from 'lodash';
 
 const initialState: RenderingState = {
   componentsState: {},
@@ -57,11 +62,115 @@ export const searchResources = createAsyncThunk(
   },
 );
 
+export const flattenContent = async (orgaId: string, content: ComponentResourceContent): Promise<ComponentResourceContent> => {
+  // console.log('flattenContent', content);
+  if (content.componentType === 'SmMarkup') {
+    // console.log('getFlatMarkup1', 'SmMarkup');
+    const mu: SmMarkupResourceContent = content as SmMarkupResourceContent;
+    const keys: string[] = Object.keys(mu.params.itemMap);
+    keys.forEach(async key => {
+      mu.params.itemMap[key] = await flattenContent(orgaId, mu.params.itemMap[key]);
+    });
+    return content;
+  } else if (content.componentType === 'SmRefToResource') {
+    // console.log('getFlatMarkup1', 'SmRefToResource');
+    const ref: SmRefToResourceResourceContent = content as SmRefToResourceResourceContent;
+    const requestUrl = `api/orga/${orgaId}/resources/${ref.params.resourceId}`;
+    const data = await axios.get<IResourceWithValue>(requestUrl);
+    const resource: IResourceWithValue = data.data;
+    // console.log('getFlatMarkupSmRefToResource', resource);
+    const refContent: ComponentResourceContent = JSON.parse(resource.content);
+    // console.log('getFlatMarkupSmRefToResource', refContent);
+    // const res = flattenContent(orgaId, refContent);
+    // console.log('getFlatMarkupSmRefToResource2', await res);
+    return await flattenContent(orgaId, refContent);
+  } else if (content.componentType === 'SmLayout') {
+    // console.log('getFlatMarkup1', 'SmLayout');
+    const la: SmLayoutResourceContent = content as SmLayoutResourceContent;
+    const requestUrl = `api/orga/${orgaId}/resources/${la.params.layoutId}`;
+    const data = await axios.get<IResourceWithValue>(requestUrl);
+
+    const resource: IResourceWithValue = data.data;
+    const layContent: SmMarkupResourceContent = JSON.parse(resource.content) as SmMarkupResourceContent;
+
+    const result = {};
+    const keys: string[] = Object.keys(layContent.params.itemMap);
+    let i = 0;
+    // console.log('getFlatMarkup1', 'lay2', map1);
+    while (i < keys.length) {
+      result[keys[i]] = await flattenContent(orgaId, layContent.params.itemMap[keys[i]]);
+      i++;
+    }
+    // keys.forEach(async key => {
+    //   console.log('getFlatMarkup1', 'laykey1', key, map1[key]);
+    //   // map1[key] = await flattenContent(orgaId, map1[key]);
+    //   result[key] = await flattenContent(orgaId, map1[key]);
+    //   console.log('getFlatMarkup1', 'laykey2', key, result);
+    // });
+    // console.log('getFlatMarkup1', 'lay3', map1);
+
+    // const map2 = la.params.itemMap;
+    const keys2: string[] = Object.keys(la.params.itemMap);
+    // console.log('getFlatMarkup1', 'lay4', map1);
+
+    i = 0;
+    while (i < keys2.length) {
+      result[keys2[i]] = await flattenContent(orgaId, la.params.itemMap[keys2[i]]);
+      i++;
+    }
+
+    // keys2.forEach(async key => {
+    //   console.log('getFlatMarkup1', 'laykey4', key);
+    //   result[key] = await flattenContent(orgaId, map2[key]);
+    //   console.log('getFlatMarkup1', 'laykey5', key);
+    // });
+    // console.log('getFlatMarkup1', 'lay6', map1);
+    // console.log('getFlatMarkup1', 'lay7', result);
+    // console.log('getFlatMarkup1', 'lay7', { ...map1 });
+
+    return {
+      componentType: 'SmMarkup',
+      path: 'tototo',
+      params: {
+        markup: layContent.params.markup,
+        itemMap: result,
+      },
+    };
+  } else {
+    return content;
+  }
+};
+
+export const getFlatMarkup = async (resourceId: string, orgaId: string) => {
+  const requestUrl = `api/orga/${orgaId}/resources/${resourceId}`;
+  const data = await axios.get<IResourceWithValue>(requestUrl);
+
+  const resource: IResourceWithValue = data.data;
+  const content: ComponentResourceContent = JSON.parse(resource.content);
+
+  console.log('getFlatMarkupAA1', resourceId, await content);
+  const flattenedContent = flattenContent(orgaId, content);
+  console.log('getFlatMarkupAA2', resourceId, await flattenedContent);
+
+  const value: ValueInState = {
+    loading: false,
+    value: {
+      id: resourceId,
+      content: JSON.stringify({ content: await flattenedContent }),
+    },
+  };
+  return value;
+};
+
 export const getResourceForPageResources = createAsyncThunk(
   `renderingForPage/fetch_resource`,
   async ({ resourceId, orgaId }: { resourceId: string; orgaId: string }) => {
-    const requestUrl = `api/orga/${orgaId}/resources/${resourceId}`;
-    return axios.get<IResourceWithValue[]>(requestUrl);
+    // console.log('getFlatMarkup111A', resourceId);
+    const res = getFlatMarkup(resourceId, orgaId);
+    // console.log('getFlatMarkup111B', await res);
+    return res;
+    // const requestUrl = `api/orga/${orgaId}/resources/${resourceId}`;
+    // return axios.get<IResourceWithValue[]>(requestUrl);
   },
 );
 
@@ -307,11 +416,14 @@ export const RenderingSlice = createSlice({
         });
       })
       .addMatcher(isFulfilled(getResourceForPageResources), (state: RenderingState, action): RenderingState => {
+        // return putRenderingPageResources(state, {
+        //   [action.meta.arg.resourceId]: {
+        //     loading: false,
+        //     value: getStubbedOrNot(action.meta.arg.resourceId, action.payload.data),
+        //   },
+        // });
         return putRenderingPageResources(state, {
-          [action.meta.arg.resourceId]: {
-            loading: false,
-            value: getStubbedOrNot(action.meta.arg.resourceId, action.payload.data),
-          },
+          [action.meta.arg.resourceId]: action.payload,
         });
       })
       .addMatcher(isRejected(getResourceForPageResources), (state: RenderingState, action): RenderingState => {

@@ -4,8 +4,11 @@ import page3html from './page3.html';
 import page4html from './page4.html';
 import pageDstreeHtml from './pageDstree.html';
 import topMenuHtml from './topMenu.html';
+import smallMenuHtml from './smallMenu.html';
 import mylayoutHtml from './mylayoutHtml.html';
 import myformHtml from './myform.html';
+import page7Html from './page7.html';
+import page6Html from './page6.html';
 
 const r3: ComponentResource = {
   content: {
@@ -726,22 +729,26 @@ const page6: ComponentResource = {
       layoutId: 'mylayout',
       itemMap: {
         content: {
-          componentType: 'SmMarkup',
-          path: 'toto',
+          componentType: 'aggridTree',
+          path: 'aggridtree',
           params: {
-            markup: '<div class="col-md-12"><sm-item key="aaa"></sm-item></div>',
-            itemMap: {
-              aaa: {
-                componentType: 'SmText',
-                path: 'totoss',
-                params: {
-                  textValue: {
-                    ruleType: 'constant',
-                    constValue: 'This is a eeeeeeeee Page 6',
-                  },
-                },
-              },
+            columnDefinitions: [
+              { columnType: 'ID' },
+              { columnType: 'NAME' },
+              { columnType: 'TAGS' },
+              { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+              { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+              { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
+              { columnType: 'BUTTON', action: 'edit' },
+              { columnType: 'BUTTON', action: 'addChildren' },
+              { columnType: 'BUTTON', action: 'select' },
+              { columnType: 'BUTTON', action: 'remove' },
+            ],
+            valueFilter: {
+              filterType: 'AND',
+              items: [],
             },
+            selectedResourceKeyInLocalContext: 'sid91',
           },
         },
       },
@@ -758,31 +765,42 @@ const page7: ComponentResource = {
       itemMap: {
         content: {
           componentType: 'SmMarkup',
-          path: 'toto',
+          path: 'page7',
           params: {
-            markup: '<div class="col-md-12"><sm-item key="aaa"></sm-item><sm-item key="bbb"></sm-item></div>',
+            markup: page7Html,
             itemMap: {
-              aaa: {
-                componentType: 'SmText',
-                path: 'totoss',
+              a: {
+                componentType: 'SmInput',
+                path: 'totoss1',
                 params: {
-                  textValue: {
+                  outputParameterKey: 'theTerm',
+                  defaultValue: {
                     ruleType: 'constant',
-                    constValue: 'This is a eeeeeeeee Page 7',
+                    constValue: 'S1',
                   },
                 },
               },
-              // bbb: {
-              //   componentType: 'SmInput',
-              //   path: 'totoss',
-              //   params: {
-              //     outputParameterKey: 'theTerm',
-              //     defaultValue: {
-              //       ruleType: 'constant',
-              //       constValue: 'S1',
-              //     },
-              //   },
-              // },
+              b: {
+                componentType: 'SmText',
+                path: 'totoss2',
+                params: {
+                  textValue: {
+                    ruleType: 'constant',
+                    constValue: 'This is a eeeeeeeee B',
+                  },
+                },
+              },
+              c: {
+                componentType: 'SmText',
+                path: 'totoss3',
+                params: {
+                  textValue: {
+                    ruleType: 'refToLocalContext',
+                    path: '/content/a',
+                    sourceParameterKey: 'theTerm',
+                  },
+                },
+              },
             },
           },
         },

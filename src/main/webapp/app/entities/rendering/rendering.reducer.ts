@@ -68,9 +68,15 @@ export const flattenContent = async (orgaId: string, content: ComponentResourceC
     // console.log('getFlatMarkup1', 'SmMarkup');
     const mu: SmMarkupResourceContent = content as SmMarkupResourceContent;
     const keys: string[] = Object.keys(mu.params.itemMap);
-    keys.forEach(async key => {
-      mu.params.itemMap[key] = await flattenContent(orgaId, mu.params.itemMap[key]);
-    });
+    let i = 0;
+    // keys.forEach(async key => {
+    //   mu.params.itemMap[key] = await flattenContent(orgaId, mu.params.itemMap[key]);
+    // });
+    while (i < keys.length) {
+      mu.params.itemMap[keys[i]] = await flattenContent(orgaId, mu.params.itemMap[keys[i]]);
+      i++;
+    }
+
     return content;
   } else if (content.componentType === 'SmRefToResource') {
     // console.log('getFlatMarkup1', 'SmRefToResource');
@@ -165,10 +171,9 @@ export const getFlatMarkup = async (resourceId: string, orgaId: string) => {
 export const getResourceForPageResources = createAsyncThunk(
   `renderingForPage/fetch_resource`,
   async ({ resourceId, orgaId }: { resourceId: string; orgaId: string }) => {
-    // console.log('getFlatMarkup111A', resourceId);
     const res = getFlatMarkup(resourceId, orgaId);
-    // console.log('getFlatMarkup111B', await res);
-    return res;
+    console.log('getFlatMarkup111C', await res);
+    return await res;
     // const requestUrl = `api/orga/${orgaId}/resources/${resourceId}`;
     // return axios.get<IResourceWithValue[]>(requestUrl);
   },

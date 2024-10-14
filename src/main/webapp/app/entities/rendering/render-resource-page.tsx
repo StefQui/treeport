@@ -292,7 +292,7 @@ export const RenderResourcePage = () => {
     key: string,
     path: string,
   ): { html: string; options: any } => {
-    // console.log('rootprocessMarkupSTART000=====', content, key, html);
+    console.log(' upSTART000=====', content, key, html);
     if (content.componentType === 'SmMarkup') {
       const markup: SmMarkupResourceContent = content as SmMarkupResourceContent;
 
@@ -307,6 +307,7 @@ export const RenderResourcePage = () => {
       const keys: string[] = Object.keys(markup.params.itemMap);
       keys.forEach(key => {
         const child = markup.params.itemMap[key];
+        console.log('rootprocessMarkup=====', key, child);
         if (child.componentType === 'SmMarkup') {
           const childMarkup: SmMarkupResourceContent = child as SmMarkupResourceContent;
           // console.log('rootprocessMarkupchild=====', childMarkup);

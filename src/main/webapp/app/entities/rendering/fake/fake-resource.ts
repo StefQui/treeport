@@ -729,28 +729,68 @@ const page6: ComponentResource = {
       layoutId: 'mylayout',
       itemMap: {
         content: {
-          componentType: 'aggridTree',
-          path: 'aggridtree',
+          componentType: 'SmMarkup',
+          path: 'jjj',
           params: {
-            columnDefinitions: [
-              { columnType: 'ID' },
-              { columnType: 'NAME' },
-              { columnType: 'TAGS' },
-              { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
-              { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
-              { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
-              { columnType: 'BUTTON', action: 'edit' },
-              { columnType: 'BUTTON', action: 'addChildren' },
-              { columnType: 'BUTTON', action: 'select' },
-              { columnType: 'BUTTON', action: 'remove' },
-            ],
-            valueFilter: {
-              filterType: 'AND',
-              items: [],
+            markup: page6Html,
+            itemMap: {
+              grid: {
+                componentType: 'aggridTree',
+                path: 'aggridtree',
+                params: {
+                  columnDefinitions: [
+                    { columnType: 'ID' },
+                    { columnType: 'NAME' },
+                    { columnType: 'TAGS' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
+                    { columnType: 'BUTTON', action: 'edit' },
+                    { columnType: 'BUTTON', action: 'addChildren' },
+                    { columnType: 'BUTTON', action: 'select' },
+                    { columnType: 'BUTTON', action: 'remove' },
+                  ],
+                  valueFilter: {
+                    filterType: 'AND',
+                    items: [],
+                  },
+                  selectedResourceKeyInLocalContext: 'sid91',
+                },
+              },
+              detail1: {
+                componentType: 'SmText',
+                path: 'ref-to-selected-entity-name',
+                params: {
+                  textValue: {
+                    ruleType: 'constant',
+                    constValue: 'This is a Detail1',
+                  },
+                },
+              },
+              detail2: {
+                componentType: 'SmRefToResource',
+                path: 'tapmenu',
+                col: 12,
+                params: {
+                  resourceId: 'theDetail',
+                },
+              },
             },
-            selectedResourceKeyInLocalContext: 'sid91',
           },
         },
+      },
+    },
+  },
+};
+
+const theDetail: ComponentResource = {
+  content: {
+    componentType: 'SmText',
+    path: 'ref-to-selected-entity-name',
+    params: {
+      textValue: {
+        ruleType: 'constant',
+        constValue: 'This is a Detail2',
       },
     },
   },
@@ -2426,6 +2466,7 @@ export const stubbedResources = {
   myform,
   page6,
   page7,
+  theDetail,
   mylayout,
   pageDstree,
   topMenu,

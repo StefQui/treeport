@@ -9,7 +9,7 @@ import { SmDatasetList } from './sm-dataset-list';
 import { SmText } from './sm-text';
 import { SmInput } from './sm-input';
 import { SmAttRef } from './att-ref';
-import { ValueInState, RENDERING_CONTEXT } from './type';
+import { ValueInState, RENDERING_CONTEXT, CommonProps, ComponentResourceContent } from './type';
 import { buildPath, useCalculatedValueState } from './shared';
 import { SmDatasetTable } from './sm-dataset-table';
 import { SmVerticalPanel } from './sm-vertical-panel';
@@ -37,6 +37,7 @@ export const hidden = () => {
   return <span>Hidden...</span>;
 };
 
+// export const MyElem = (props: CommonProps & { input: ComponentResourceContent; depth?: any; currentPath?: string; form?: any }) => {
 export const MyElem = props => {
   if (props.input && props.input.display) {
     console.log('MyElem ----Display', props.input);

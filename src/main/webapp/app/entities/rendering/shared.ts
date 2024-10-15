@@ -13,6 +13,7 @@ import {
   ParameterTarget,
   RefToLocalContextRuleDefinition,
   RefToPageContextRuleDefinition,
+  RefToInputParameter,
 } from './type';
 import { generateLabel } from './sm-dataset-table';
 import { useRefToLocalContextValue, useRefToPageContextValue, useConstantValue } from './parameter-definition';
@@ -137,6 +138,15 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
     );
   } else if (ruleType === 'refToPageContext') {
     return useRefToPageContextValue(props, ruleDefinition as RefToPageContextRuleDefinition);
+  } else if (ruleType === 'refToInputParameter') {
+    console.log('refToInputParameter...', ruleDefinition.inputParameterKey, props);
+    if (ruleDefinition.inputParameterKey && props.inputParameters && props.inputParameters[ruleDefinition.inputParameterKey]) {
+      return useCalculatedValueState(props, props.inputParameters[ruleDefinition.inputParameterKey]);
+    }
+    return {
+      loading: false,
+      error: 'Failed to find : ' + ruleType,
+    };
   } else if (ruleType === 'itemParamProperty') {
     const def: ItemParamPropertyRuleDefinition = ruleDefinition as ItemParamPropertyRuleDefinition;
     const propDef = def.propertyDefinition;
@@ -236,3 +246,6 @@ const valHasChanged = (previous, result): boolean => {
   }
   return JSON.stringify(previous) !== JSON.stringify(result);
 };
+function useRefToInputParameter(props: any, arg1: RefToInputParameter): ValueInState {
+  throw new Error('Function not implemented.');
+}

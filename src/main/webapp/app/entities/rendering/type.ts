@@ -51,12 +51,15 @@ export type Display = {
   valueExists?: RuleDefinition;
   valueDoesNotExist?: RuleDefinition;
 };
+export type InputParameters = { [paramKey: string]: RuleDefinition };
+
 export type CommonContent = {
   path: string;
   col?: number;
   display?: Display;
   border?: boolean;
   parameterDefinitions?: ParameterDefinition[];
+  inputParameters?: InputParameters;
 };
 
 export type SmTextResourceContent = CommonContent & {
@@ -242,11 +245,13 @@ export type RuleType =
   | 'refToPageContext'
   | 'refToResource'
   | 'dataset'
+  | 'refToInputParameter'
   | 'itemParamProperty'
   | 'datatree';
 export type TransformTo = 'resource';
 export type ConstantRuleDefinition = { ruleType: 'constant'; constValue: any };
 export type RefToResourceDefinition = { ruleType: 'refToResource'; sourceResourceId: RuleDefinition };
+export type RefToInputParameter = { ruleType: 'refToInputParameter'; inputParameterKey: string };
 export type DatasetDefinition = {
   ruleType: 'dataset';
   columnDefinitions: ColumnDefinition[];
@@ -316,6 +321,7 @@ export type RuleDefinition =
   | RefToPageContextRuleDefinition
   | ConstantRuleDefinition
   | RefToResourceDefinition
+  | RefToInputParameter
   | DatasetDefinition
   | DatatreeDefinition
   | ItemParamPropertyRuleDefinition
@@ -554,7 +560,20 @@ export type CommonProps = {
   itemParam?: IResourceWithValue;
   form?: Form;
   parameterDefinitions?: ParameterDefinition[];
+  inputParameters?: InputParameters;
 };
+// export type SmProps =
+//   | SmLinkProps
+//   | SmMarkupProps
+//   | SmLayoutProps
+//   | SmTextProps
+//   | AttRefProps
+//   | SmRefToResourceProps
+//   | SmPageProps
+//   | SmOldLayoutProps
+//   | SmFormProps
+//   | SmFormButtonProps;
+
 export type SmLinkProps = CommonProps & { params: LinkParams };
 export type SmMarkupProps = CommonProps & { params: MarkupParams };
 export type SmLayoutProps = CommonProps & { params: MarkupLayoutParams };

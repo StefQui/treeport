@@ -307,13 +307,14 @@ export const RenderResourcePage = () => {
       const keys: string[] = Object.keys(markup.params.itemMap);
       keys.forEach(key => {
         const child = markup.params.itemMap[key];
-        console.log('rootprocessMarkup=====', key, child);
+        console.log('rootprocessMarkup=====', key, child, content.inputParameters);
         if (child.componentType === 'SmMarkup') {
           const childMarkup: SmMarkupResourceContent = child as SmMarkupResourceContent;
           // console.log('rootprocessMarkupchild=====', childMarkup);
           const { html: html1, options: options1 } = processMarkup(childMarkup, newHtml, options, key, path + '/' + key);
           newHtml = html1;
         } else {
+          // console.log('renderleaf', child.componentType, key, html);
           options[key] = (
             <BrowserRouter basename={baseHref}>
               <Provider store={store}>
@@ -321,6 +322,7 @@ export const RenderResourcePage = () => {
                   input={child}
                   key={new Date().getTime()}
                   depth={0}
+                  inputParameters={content.inputParameters}
                   // params={props.params ? params : null}
                   // itemParam={props.itemParam}
                   // form={props.form}

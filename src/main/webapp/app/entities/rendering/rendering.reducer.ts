@@ -26,9 +26,9 @@ import {
   SmMarkupResourceContent,
   SmRefToResourceResourceContent,
   SmLayoutResourceContent,
+  InputParameters,
 } from './type';
 import { handleDataTree } from './datatree';
-import { flatten } from 'lodash';
 
 const initialState: RenderingState = {
   componentsState: {},
@@ -62,7 +62,23 @@ export const searchResources = createAsyncThunk(
   },
 );
 
-export const flattenContent = async (orgaId: string, content: ComponentResourceContent): Promise<ComponentResourceContent> => {
+export const makeid = length => {
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  let counter = 0;
+  while (counter < length) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    counter += 1;
+  }
+  return result;
+};
+
+export const flattenContent = async (
+  orgaId: string,
+  content: ComponentResourceContent,
+  inputParameters: InputParameters,
+): Promise<ComponentResourceContent> => {
   // console.log('flattenContent', content);
   if (content.componentType === 'SmMarkup') {
     // console.log('getFlatMarkup1', 'SmMarkup');
@@ -73,13 +89,25 @@ export const flattenContent = async (orgaId: string, content: ComponentResourceC
     //   mu.params.itemMap[key] = await flattenContent(orgaId, mu.params.itemMap[key]);
     // });
     while (i < keys.length) {
-      mu.params.itemMap[keys[i]] = await flattenContent(orgaId, mu.params.itemMap[keys[i]]);
+      console.log('getFlatMarkupSearch', keys[i], mu.params.markup);
+      const item = mu.params.itemMap[keys[i]];
+      if (item.componentType !== 'SmMarkup' && item.componentType !== 'SmLayout' && item.componentType !== 'SmRefToResource') {
+        const newKey = makeid(5) + '-' + keys[i];
+        mu.params.markup = mu.params.markup.replace(`<div id="${keys[i]}"></div>`, `<div id="${newKey}"></div>`);
+        mu.params.itemMap[keys[i]].inputParameters = { ...content.inputParameters, ...inputParameters };
+        mu.params.itemMap[newKey] = mu.params.itemMap[keys[i]];
+        delete mu.params.itemMap[keys[i]];
+      } else {
+        mu.params.itemMap[keys[i]] = await flattenContent(orgaId, mu.params.itemMap[keys[i]], {
+          ...inputParameters,
+          ...content.inputParameters,
+        });
+      }
       i++;
     }
 
     return content;
   } else if (content.componentType === 'SmRefToResource') {
-    // console.log('getFlatMarkup1', 'SmRefToResource');
     const ref: SmRefToResourceResourceContent = content as SmRefToResourceResourceContent;
     const requestUrl = `api/orga/${orgaId}/resources/${ref.params.resourceId}`;
     const data = await axios.get<IResourceWithValue>(requestUrl);
@@ -89,7 +117,11 @@ export const flattenContent = async (orgaId: string, content: ComponentResourceC
     // console.log('getFlatMarkupSmRefToResource', refContent);
     // const res = flattenContent(orgaId, refContent);
     // console.log('getFlatMarkupSmRefToResource2', await res);
-    return await flattenContent(orgaId, refContent);
+    console.log('getFlatMarkup1', 'SmRefToResource', content.inputParameters, inputParameters, {
+      ...content.inputParameters,
+      ...inputParameters,
+    });
+    return await flattenContent(orgaId, refContent, { ...content.inputParameters, ...inputParameters });
   } else if (content.componentType === 'SmLayout') {
     // console.log('getFlatMarkup1', 'SmLayout');
     const la: SmLayoutResourceContent = content as SmLayoutResourceContent;
@@ -104,7 +136,10 @@ export const flattenContent = async (orgaId: string, content: ComponentResourceC
     let i = 0;
     // console.log('getFlatMarkup1', 'lay2', map1);
     while (i < keys.length) {
-      result[keys[i]] = await flattenContent(orgaId, layContent.params.itemMap[keys[i]]);
+      result[keys[i]] = await flattenContent(orgaId, layContent.params.itemMap[keys[i]], {
+        ...content.inputParameters,
+        ...inputParameters,
+      });
       i++;
     }
     // keys.forEach(async key => {
@@ -121,7 +156,7 @@ export const flattenContent = async (orgaId: string, content: ComponentResourceC
 
     i = 0;
     while (i < keys2.length) {
-      result[keys2[i]] = await flattenContent(orgaId, la.params.itemMap[keys2[i]]);
+      result[keys2[i]] = await flattenContent(orgaId, la.params.itemMap[keys2[i]], { ...content.inputParameters, ...inputParameters });
       i++;
     }
 
@@ -143,6 +178,9 @@ export const flattenContent = async (orgaId: string, content: ComponentResourceC
       },
     };
   } else {
+    console.log('getFlatMarkup1fin', 'Other', content.componentType, content.inputParameters, inputParameters);
+
+    content.inputParameters = { ...content.inputParameters, ...inputParameters };
     return content;
   }
 };
@@ -155,7 +193,7 @@ export const getFlatMarkup = async (resourceId: string, orgaId: string) => {
   const content: ComponentResourceContent = JSON.parse(resource.content);
 
   console.log('getFlatMarkupAA1', resourceId, await content);
-  const flattenedContent = flattenContent(orgaId, content);
+  const flattenedContent = flattenContent(orgaId, content, {});
   console.log('getFlatMarkupAA2', resourceId, await flattenedContent);
 
   const value: ValueInState = {

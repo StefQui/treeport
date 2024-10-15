@@ -27,6 +27,7 @@ import {
   ParameterTarget,
   RefToPageContextRuleDefinition,
   DatatreeDefinition,
+  RefToInputParameter,
 } from './type';
 import { enrichToMainTarget, handleDataTree } from './datatree';
 import { useParams } from 'react-router';
@@ -96,6 +97,20 @@ export const useRefToPageContextValue = (props, ruleDefinition: RefToPageContext
   return contextValue;
   // return { loading: false, value: 'tatassss' };
 };
+
+// export const useRefToInputParameters = (props, ruleDefinition: RefToInputParameter): ValueInState => {
+//   const [contextValue, setContextValue] = useState({ loading: false });
+
+//   const pageContext: RENDERING_CONTEXT = usePageContext();
+//   useEffect(() => {
+//     if (ruleDefinition && ruleDefinition.inputParameterKey) {
+//     }
+//     setContextValue(pageContext[ruleDefinition.sourceParameterKey]);
+//   }, [ruleDefinition]);
+
+//   return contextValue;
+//   // return { loading: false, value: 'tatassss' };
+// };
 
 export const useConstantValue = (props, initialValue: PaginationState | string | number): ValueInState => {
   const [val, setVal] = useState({ loading: false, value: initialValue });

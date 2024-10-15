@@ -9,6 +9,7 @@ import mylayoutHtml from './mylayoutHtml.html';
 import myformHtml from './myform.html';
 import page7Html from './page7.html';
 import page6Html from './page6.html';
+import theDetailHtml from './theDetail.html';
 
 const r3: ComponentResource = {
   content: {
@@ -774,6 +775,26 @@ const page6: ComponentResource = {
                 params: {
                   resourceId: 'theDetail',
                 },
+                inputParameters: {
+                  toto: {
+                    ruleType: 'constant',
+                    constValue: 'This is The GOOD input for T2!',
+                  },
+                },
+              },
+              detail3: {
+                componentType: 'SmRefToResource',
+                path: 'tapmenu',
+                col: 12,
+                params: {
+                  resourceId: 'theDetail',
+                },
+                inputParameters: {
+                  toto: {
+                    ruleType: 'constant',
+                    constValue: 'This is The GOOD input for T3!',
+                  },
+                },
               },
             },
           },
@@ -785,12 +806,31 @@ const page6: ComponentResource = {
 
 const theDetail: ComponentResource = {
   content: {
-    componentType: 'SmText',
-    path: 'ref-to-selected-entity-name',
+    componentType: 'SmMarkup',
+    path: 'jjj',
     params: {
-      textValue: {
-        ruleType: 'constant',
-        constValue: 'This is a Detail2',
+      markup: theDetailHtml,
+      itemMap: {
+        t1: {
+          componentType: 'SmText',
+          path: 'ref-to-selected-entity-name',
+          params: {
+            textValue: {
+              ruleType: 'constant',
+              constValue: 'This is T1',
+            },
+          },
+        },
+        t2: {
+          componentType: 'SmText',
+          path: 'ref-to-selected-entity-name',
+          params: {
+            textValue: {
+              ruleType: 'refToInputParameter',
+              inputParameterKey: 'toto',
+            },
+          },
+        },
       },
     },
   },

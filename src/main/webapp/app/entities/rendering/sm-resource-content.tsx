@@ -117,18 +117,19 @@ export const MyRend = props => {
 
   // console.log('......', props.currentPath, props.params);
   return (
-    <Row md="8">
-      {props.content ? (
-        <MyElem
-          input={input}
-          depth={increment(props.depth)}
-          params={props.params ? props.params.params : null}
-          currentPath={props.currentPath}
-          localContextPath={props.localContextPath}
-        ></MyElem>
-      ) : (
-        <p>Loading...</p>
-      )}
-    </Row>
+    <></>
+    //   <Row md="8">
+    //   {props.content ? (
+    //     <MyElem
+    //       input={input}
+    //       depth={increment(props.depth)}
+    //       params={props.params ? props.params.params : null}
+    //       currentPath={props.currentPath}
+    //       localContextPath={props.localContextPath}
+    //     ></MyElem>
+    //   ) : (
+    //     <p>Loading...</p>
+    //   )}
+    // </Row>
   );
 };

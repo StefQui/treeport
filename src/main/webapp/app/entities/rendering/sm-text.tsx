@@ -1,4 +1,5 @@
 import React from 'react';
+import { handleInputParameters } from './input-parameters';
 
 import { handleParameterDefinitions } from './parameter-definition';
 import { useCalculatedValueState } from './shared';
@@ -21,9 +22,13 @@ export const SmText = (props: SmTextProps) => {
       </span>
     );
   }
+
+  // console.log('inputParametersss', props.inputParameters);
   const params: TextParams = props.params;
 
   handleParameterDefinitions(params, props);
+  // handleInputParameters(params.textValue, props);
+  console.log('smtext...', props.inputParameters, props.localContextPath);
 
   const calculatedValue: ValueInState = useCalculatedValueState(props, textValue);
 

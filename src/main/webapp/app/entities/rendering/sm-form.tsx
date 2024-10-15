@@ -149,6 +149,7 @@ export const SmForm = (props: SmFormProps) => {
         input={{ ...formContent }}
         depth={increment(props.depth)}
         form={{ register, unregister, formPath: buildPath(props) }}
+        path={props.path}
         currentPath={props.currentPath + PATH_SEPARATOR + props.path}
         localContextPath={props.localContextPath}
       ></MyElem>

@@ -15,7 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class ExplodedIdDTO implements Serializable {
 
-    private String siteId;
+    private String resourceId;
 
     private String campaignId;
 

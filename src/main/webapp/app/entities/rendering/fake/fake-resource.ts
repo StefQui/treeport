@@ -8,6 +8,7 @@ import smallMenuHtml from './smallMenu.html';
 import mylayoutHtml from './mylayoutHtml.html';
 import myformHtml from './myform.html';
 import page7Html from './page7.html';
+import page8Html from './page8.html';
 import page6Html from './page6.html';
 import theDetailHtml from './theDetail.html';
 
@@ -632,10 +633,9 @@ const myform: ComponentResource = {
     params: {
       attributeContext: {
         resourceId: {
-          ruleType: 'refToLocalContext',
-          path: '..',
-          sourceParameterKey: 'theresourceFromTheList',
-          sourceParameterProperty: 'id',
+          ruleType: 'refToInputParameter',
+          inputParameterKey: 'toto',
+          inputParameterProperty: 'id',
         },
         campaignId: {
           ruleType: 'constant',
@@ -760,11 +760,12 @@ const page6: ComponentResource = {
               },
               detail1: {
                 componentType: 'SmText',
-                path: 'ref-to-selected-entity-name',
                 params: {
                   textValue: {
-                    ruleType: 'constant',
-                    constValue: 'This is a Detail1',
+                    ruleType: 'refToLocalContext',
+                    path: '/content/grid',
+                    sourceParameterKey: 'sid91',
+                    sourceParameterProperty: 'id',
                   },
                 },
               },
@@ -777,8 +778,9 @@ const page6: ComponentResource = {
                 },
                 inputParameters: {
                   toto: {
-                    ruleType: 'constant',
-                    constValue: 'This is The GOOD input for T2!',
+                    ruleType: 'refToLocalContext',
+                    path: '/content/grid',
+                    sourceParameterKey: 'sid91',
                   },
                 },
               },
@@ -807,27 +809,53 @@ const page6: ComponentResource = {
 const theDetail: ComponentResource = {
   content: {
     componentType: 'SmMarkup',
-    path: 'jjj',
     params: {
       markup: theDetailHtml,
       itemMap: {
         t1: {
           componentType: 'SmText',
-          path: 'ref-to-selected-entity-name',
           params: {
             textValue: {
               ruleType: 'constant',
-              constValue: 'This is T1',
+              constValue: '(Constant) This is T1',
             },
           },
         },
-        t2: {
+        resId: {
           componentType: 'SmText',
-          path: 'ref-to-selected-entity-name',
           params: {
             textValue: {
               ruleType: 'refToInputParameter',
               inputParameterKey: 'toto',
+              inputParameterProperty: 'id',
+            },
+          },
+        },
+        resName: {
+          componentType: 'SmText',
+          params: {
+            textValue: {
+              ruleType: 'refToInputParameter',
+              inputParameterKey: 'toto',
+              inputParameterProperty: 'name',
+            },
+          },
+        },
+        toSite: {
+          componentType: 'SmAttRef',
+          params: {
+            resourceId: {
+              ruleType: 'refToInputParameter',
+              inputParameterKey: 'toto',
+              inputParameterProperty: 'id',
+            },
+            campaignId: {
+              ruleType: 'constant',
+              constValue: '2023',
+            },
+            attConfig: {
+              ruleType: 'constant',
+              constValue: 'toSite',
             },
           },
         },
@@ -851,33 +879,126 @@ const page7: ComponentResource = {
             itemMap: {
               a: {
                 componentType: 'SmInput',
-                path: 'totoss1',
                 params: {
                   outputParameterKey: 'theTerm',
                   defaultValue: {
                     ruleType: 'constant',
-                    constValue: 'S1',
+                    constValue: 'Sa',
                   },
                 },
               },
               b: {
                 componentType: 'SmText',
-                path: 'totoss2',
                 params: {
                   textValue: {
                     ruleType: 'constant',
-                    constValue: 'This is a eeeeeeeee B',
+                    constValue: 'This is Text b',
                   },
                 },
               },
               c: {
                 componentType: 'SmText',
-                path: 'totoss3',
                 params: {
                   textValue: {
                     ruleType: 'refToLocalContext',
                     path: '/content/a',
                     sourceParameterKey: 'theTerm',
+                  },
+                },
+              },
+              d: {
+                componentType: 'SmInput',
+                params: {
+                  outputParameterKey: 'theTerm',
+                  defaultValue: {
+                    ruleType: 'constant',
+                    constValue: 'Sd',
+                  },
+                },
+              },
+              e: {
+                componentType: 'SmText',
+                params: {
+                  textValue: {
+                    ruleType: 'constant',
+                    constValue: 'This is Text e',
+                  },
+                },
+              },
+              f: {
+                componentType: 'SmText',
+                params: {
+                  textValue: {
+                    ruleType: 'refToLocalContext',
+                    path: '/content/d',
+                    sourceParameterKey: 'theTerm',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+const page8: ComponentResource = {
+  content: {
+    componentType: 'SmLayout',
+    params: {
+      layoutId: 'mylayout',
+      itemMap: {
+        content: {
+          componentType: 'SmMarkup',
+          params: {
+            markup: page8Html,
+            itemMap: {
+              grid: {
+                componentType: 'aggridTree',
+                path: 'aggridtree',
+                params: {
+                  columnDefinitions: [
+                    { columnType: 'ID' },
+                    { columnType: 'NAME' },
+                    { columnType: 'TAGS' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'toSite', campaignId: '2023' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'toConso', campaignId: '2023' },
+                    { columnType: 'ATTRIBUTE', attributeConfigId: 'isCert', campaignId: '2023' },
+                    { columnType: 'BUTTON', action: 'edit' },
+                    { columnType: 'BUTTON', action: 'addChildren' },
+                    { columnType: 'BUTTON', action: 'select' },
+                    { columnType: 'BUTTON', action: 'remove' },
+                  ],
+                  valueFilter: {
+                    filterType: 'AND',
+                    items: [],
+                  },
+                  selectedResourceKeyInLocalContext: 'sid91',
+                },
+              },
+              detail1: {
+                componentType: 'SmText',
+                params: {
+                  textValue: {
+                    ruleType: 'refToLocalContext',
+                    path: '/content/grid',
+                    sourceParameterKey: 'sid91',
+                    sourceParameterProperty: 'id',
+                  },
+                },
+              },
+              theForm: {
+                componentType: 'SmRefToResource',
+                col: 12,
+                params: {
+                  resourceId: 'myform',
+                },
+                inputParameters: {
+                  toto: {
+                    ruleType: 'refToLocalContext',
+                    path: '/content/grid',
+                    sourceParameterKey: 'sid91',
                   },
                 },
               },
@@ -1180,6 +1301,14 @@ const topMenu: ComponentResource = {
           params: {
             urlLabel: 'Page 7',
             url: '/coca/render/page7',
+          },
+        },
+        page8: {
+          componentType: 'SmLink',
+          path: 'page8',
+          params: {
+            urlLabel: 'Page 8',
+            url: '/coca/render/page8',
           },
         },
       },
@@ -2506,6 +2635,7 @@ export const stubbedResources = {
   myform,
   page6,
   page7,
+  page8,
   theDetail,
   mylayout,
   pageDstree,

@@ -54,7 +54,7 @@ export type Display = {
 export type InputParameters = { [paramKey: string]: RuleDefinition };
 
 export type CommonContent = {
-  path: string;
+  path?: string;
   col?: number;
   display?: Display;
   border?: boolean;
@@ -70,6 +70,11 @@ export type SmTextResourceContent = CommonContent & {
 export type SmMarkupResourceContent = CommonContent & {
   componentType: 'SmMarkup';
   params: MarkupParams;
+};
+
+export type SmFormResourceContent = CommonContent & {
+  componentType: 'form';
+  params: FormParams;
 };
 
 export type SmLayoutResourceContent = CommonContent & {
@@ -251,7 +256,7 @@ export type RuleType =
 export type TransformTo = 'resource';
 export type ConstantRuleDefinition = { ruleType: 'constant'; constValue: any };
 export type RefToResourceDefinition = { ruleType: 'refToResource'; sourceResourceId: RuleDefinition };
-export type RefToInputParameter = { ruleType: 'refToInputParameter'; inputParameterKey: string };
+export type RefToInputParameter = { ruleType: 'refToInputParameter'; inputParameterKey: string; inputParameterProperty?: string };
 export type DatasetDefinition = {
   ruleType: 'dataset';
   columnDefinitions: ColumnDefinition[];

@@ -27,6 +27,7 @@ import {
   SmRefToResourceResourceContent,
   SmLayoutResourceContent,
   InputParameters,
+  SmFormResourceContent,
 } from './type';
 import { handleDataTree } from './datatree';
 
@@ -74,10 +75,15 @@ export const makeid = length => {
   return result;
 };
 
+export const appendKey = (key: string, path: string): string => {
+  return path === '/' ? '/' + key : path + '/' + key;
+};
+
 export const flattenContent = async (
   orgaId: string,
   content: ComponentResourceContent,
   inputParameters: InputParameters,
+  path: string,
 ): Promise<ComponentResourceContent> => {
   // console.log('flattenContent', content);
   if (content.componentType === 'SmMarkup') {
@@ -85,24 +91,46 @@ export const flattenContent = async (
     const mu: SmMarkupResourceContent = content as SmMarkupResourceContent;
     const keys: string[] = Object.keys(mu.params.itemMap);
     let i = 0;
-    // keys.forEach(async key => {
-    //   mu.params.itemMap[key] = await flattenContent(orgaId, mu.params.itemMap[key]);
-    // });
     while (i < keys.length) {
       console.log('getFlatMarkupSearch', keys[i], mu.params.markup);
-      const item = mu.params.itemMap[keys[i]];
-      if (item.componentType !== 'SmMarkup' && item.componentType !== 'SmLayout' && item.componentType !== 'SmRefToResource') {
-        const newKey = makeid(5) + '-' + keys[i];
-        mu.params.markup = mu.params.markup.replace(`<div id="${keys[i]}"></div>`, `<div id="${newKey}"></div>`);
-        mu.params.itemMap[keys[i]].inputParameters = { ...content.inputParameters, ...inputParameters };
-        mu.params.itemMap[newKey] = mu.params.itemMap[keys[i]];
-        delete mu.params.itemMap[keys[i]];
-      } else {
-        mu.params.itemMap[keys[i]] = await flattenContent(orgaId, mu.params.itemMap[keys[i]], {
+      const newKey = appendKey(keys[i], path);
+      mu.path = newKey;
+      mu.params.markup = mu.params.markup.replace(`<div id="${keys[i]}"></div>`, `<div id="${newKey}"></div>`);
+      mu.params.itemMap[newKey] = await flattenContent(
+        orgaId,
+        mu.params.itemMap[keys[i]],
+        {
           ...inputParameters,
           ...content.inputParameters,
-        });
-      }
+        },
+        newKey,
+      );
+      delete mu.params.itemMap[keys[i]];
+      i++;
+    }
+
+    return content;
+  } else if (content.componentType === 'form') {
+    // console.log('getFlatMarkup1', 'form');
+    const form: SmFormResourceContent = content as SmFormResourceContent;
+    const mu: SmMarkupResourceContent = form.params.formContent as SmMarkupResourceContent;
+    const keys: string[] = Object.keys(mu.params.itemMap);
+    let i = 0;
+    while (i < keys.length) {
+      console.log('getFlatMarkupSearch', keys[i], mu.params.markup);
+      const newKey = appendKey(keys[i], path);
+      mu.path = newKey;
+      mu.params.markup = mu.params.markup.replace(`<div id="${keys[i]}"></div>`, `<div id="${newKey}"></div>`);
+      mu.params.itemMap[newKey] = await flattenContent(
+        orgaId,
+        mu.params.itemMap[keys[i]],
+        {
+          ...inputParameters,
+          ...content.inputParameters,
+        },
+        newKey,
+      );
+      delete mu.params.itemMap[keys[i]];
       i++;
     }
 
@@ -121,7 +149,7 @@ export const flattenContent = async (
       ...content.inputParameters,
       ...inputParameters,
     });
-    return await flattenContent(orgaId, refContent, { ...content.inputParameters, ...inputParameters });
+    return await flattenContent(orgaId, refContent, { ...content.inputParameters, ...inputParameters }, path);
   } else if (content.componentType === 'SmLayout') {
     // console.log('getFlatMarkup1', 'SmLayout');
     const la: SmLayoutResourceContent = content as SmLayoutResourceContent;
@@ -136,10 +164,21 @@ export const flattenContent = async (
     let i = 0;
     // console.log('getFlatMarkup1', 'lay2', map1);
     while (i < keys.length) {
-      result[keys[i]] = await flattenContent(orgaId, layContent.params.itemMap[keys[i]], {
-        ...content.inputParameters,
-        ...inputParameters,
-      });
+      // const newKey = makeid(5) + '-' + keys[i];
+      const newKey = appendKey(keys[i], path);
+      layContent.path = newKey;
+
+      layContent.params.markup = layContent.params.markup.replace(`<div id="${keys[i]}"></div>`, `<div id="${newKey}"></div>`);
+      result[newKey] = await flattenContent(
+        orgaId,
+        layContent.params.itemMap[keys[i]],
+        {
+          ...content.inputParameters,
+          ...inputParameters,
+        },
+        newKey,
+      );
+      delete result[keys[i]];
       i++;
     }
     // keys.forEach(async key => {
@@ -156,7 +195,17 @@ export const flattenContent = async (
 
     i = 0;
     while (i < keys2.length) {
-      result[keys2[i]] = await flattenContent(orgaId, la.params.itemMap[keys2[i]], { ...content.inputParameters, ...inputParameters });
+      // const newKey = makeid(5) + '-' + keys2[i];
+      const newKey = appendKey(keys2[i], path);
+      la.path = newKey;
+      layContent.params.markup = layContent.params.markup.replace(`<div id="${keys2[i]}"></div>`, `<div id="${newKey}"></div>`);
+      result[newKey] = await flattenContent(
+        orgaId,
+        la.params.itemMap[keys2[i]],
+        { ...content.inputParameters, ...inputParameters },
+        newKey,
+      );
+      delete result[keys2[i]];
       i++;
     }
 
@@ -180,6 +229,7 @@ export const flattenContent = async (
   } else {
     console.log('getFlatMarkup1fin', 'Other', content.componentType, content.inputParameters, inputParameters);
 
+    content.path = path;
     content.inputParameters = { ...content.inputParameters, ...inputParameters };
     return content;
   }
@@ -193,7 +243,7 @@ export const getFlatMarkup = async (resourceId: string, orgaId: string) => {
   const content: ComponentResourceContent = JSON.parse(resource.content);
 
   console.log('getFlatMarkupAA1', resourceId, await content);
-  const flattenedContent = flattenContent(orgaId, content, {});
+  const flattenedContent = flattenContent(orgaId, content, {}, '/');
   console.log('getFlatMarkupAA2', resourceId, await flattenedContent);
 
   const value: ValueInState = {

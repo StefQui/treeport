@@ -127,7 +127,12 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
   const ruleType = ruleDefinition.ruleType;
   if (ruleType === 'refToLocalContext') {
     const refToContextRuleDefinition: RefToLocalContextRuleDefinition = ruleDefinition as RefToLocalContextRuleDefinition;
-    // console.log('refToContextRuleDefinition...', refToContextRuleDefinition.sourceParameterKey, props.localContextPath);
+    console.log(
+      'refToContextRuleDefinition...',
+      refToContextRuleDefinition.sourceParameterKey,
+      props.localContextPath,
+      refToContextRuleDefinition.sourceParameterProperty,
+    );
     // const contextState = useLocalContextPath(props.localContextPath, refToContextRuleDefinition.sourceParameterKey);
     // return
     return useRefToLocalContextValue(
@@ -139,9 +144,12 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
   } else if (ruleType === 'refToPageContext') {
     return useRefToPageContextValue(props, ruleDefinition as RefToPageContextRuleDefinition);
   } else if (ruleType === 'refToInputParameter') {
-    console.log('refToInputParameter...', ruleDefinition.inputParameterKey, props);
+    console.log('refToInputParameter...', ruleDefinition.inputParameterKey, ruleDefinition.inputParameterProperty, props);
     if (ruleDefinition.inputParameterKey && props.inputParameters && props.inputParameters[ruleDefinition.inputParameterKey]) {
-      return useCalculatedValueState(props, props.inputParameters[ruleDefinition.inputParameterKey]);
+      return useCalculatedValueState(props, {
+        ...props.inputParameters[ruleDefinition.inputParameterKey],
+        sourceParameterProperty: ruleDefinition.inputParameterProperty,
+      });
     }
     return {
       loading: false,

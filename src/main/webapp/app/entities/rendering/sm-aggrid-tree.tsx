@@ -240,7 +240,7 @@ export const SmAggridTree = (props: {
       setInLocalState({
         localContextPath: props.localContextPath,
         parameterKey: props.params.selectedResourceKeyInLocalContext,
-        value: { value: node.data.id, loading: false },
+        value: { value: node.data, loading: false },
       }),
     );
 

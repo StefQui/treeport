@@ -279,19 +279,13 @@ export const RenderResourcePage = () => {
   }, [resource]);
 
   const startProcessMarkup = (resource: ComponentResourceContent): { html: string; options: any } => {
-    return processMarkup(resource, null, {}, null, '');
+    return processMarkup(resource, null, {}, null);
   };
 
   const store = getStore();
   const baseHref = document.querySelector('base').getAttribute('href').replace(/\/$/, '');
 
-  const processMarkup = (
-    content: ComponentResourceContent,
-    html: string,
-    options: any,
-    key: string,
-    path: string,
-  ): { html: string; options: any } => {
+  const processMarkup = (content: ComponentResourceContent, html: string, options: any, key: string): { html: string; options: any } => {
     console.log(' upSTART000=====', content, key, html);
     if (content.componentType === 'SmMarkup') {
       const markup: SmMarkupResourceContent = content as SmMarkupResourceContent;
@@ -299,8 +293,9 @@ export const RenderResourcePage = () => {
       let newHtml: string;
       if (!html) {
         newHtml = markup.params.markup;
-        // console.log('rootprocessMarkupSTART2=====', newHtml);
+        console.log('rootprocessMarkupSTART2=====', key);
       } else {
+        console.log('rootprocessMarkupSTART3=====', key);
         newHtml = html.replace(`<div id="${key}"></div>`, markup.params.markup);
       }
       // console.log('rootprocessMarkup=====', newHtml);
@@ -311,7 +306,7 @@ export const RenderResourcePage = () => {
         if (child.componentType === 'SmMarkup') {
           const childMarkup: SmMarkupResourceContent = child as SmMarkupResourceContent;
           // console.log('rootprocessMarkupchild=====', childMarkup);
-          const { html: html1, options: options1 } = processMarkup(childMarkup, newHtml, options, key, path + '/' + key);
+          const { html: html1, options: options1 } = processMarkup(childMarkup, newHtml, options, key);
           newHtml = html1;
         } else {
           // console.log('renderleaf', child.componentType, key, html);
@@ -323,11 +318,12 @@ export const RenderResourcePage = () => {
                   key={new Date().getTime()}
                   depth={0}
                   inputParameters={content.inputParameters}
+                  // domId={content.domId}
                   // params={props.params ? params : null}
                   // itemParam={props.itemParam}
                   // form={props.form}
                   // currentPath={props.currentPath}
-                  localContextPath={path + '/' + key}
+                  localContextPath={key}
                 ></MyElem>
               </Provider>
             </BrowserRouter>
@@ -368,7 +364,7 @@ export const RenderResourcePage = () => {
     console.log('root=====1', resource);
     const { html, options: options1 } = startProcessMarkup(resource.content);
     console.log('root html=====', html, options1);
-    const options = buildOptions(options1);
+    // const options = buildOptions(options1);
 
     r.render(
       <StrictMode>

@@ -242,7 +242,7 @@ export const smForm3 = (smForm: SmFormResourceContent) => {
   return null;
 };
 
-export const RenderResourcePage = () => {
+export const RenderResourcePageWithForms = () => {
   const dispatch = useAppDispatch();
   const locationPathName = useLocationPathName();
   const locationSearch = useLocationSearch();

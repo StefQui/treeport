@@ -536,6 +536,7 @@ export type FormParams = {
   attributeContext: FormAttributeContextParam;
   fields: FormFieldParam[];
   formContent: ComponentResourceContent;
+  form?: any;
 };
 
 export type AttributeFieldParams = {

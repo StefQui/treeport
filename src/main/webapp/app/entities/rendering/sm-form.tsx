@@ -17,6 +17,7 @@ import {
   RenderingSliceState,
   SmFormProps,
   SmFormButtonProps,
+  FormParams,
 } from './type';
 
 const getValueFromField = (fieldId: string, att: IAttributeWithValue, value): IAttributeValue => {

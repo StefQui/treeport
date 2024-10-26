@@ -30,6 +30,8 @@ import {
   SmFormResourceContent,
 } from './type';
 import { handleDataTree } from './datatree';
+import { useForm } from 'react-hook-form';
+// import { useForm } from 'react-hook-form';
 
 const initialState: RenderingState = {
   componentsState: {},
@@ -92,7 +94,7 @@ export const flattenContent = async (
     const keys: string[] = Object.keys(mu.params.itemMap);
     let i = 0;
     while (i < keys.length) {
-      console.log('getFlatMarkupSearch', keys[i], mu.params.markup);
+      // console.log('getFlatMarkupSearch', keys[i], mu.params.markup);
       const newKey = appendKey(keys[i], path);
       mu.path = newKey;
       mu.params.markup = mu.params.markup.replace(`<div id="${keys[i]}"></div>`, `<div id="${newKey}"></div>`);
@@ -112,12 +114,14 @@ export const flattenContent = async (
     return content;
   } else if (content.componentType === 'form') {
     // console.log('getFlatMarkup1', 'form');
+    // const { register, handleSubmit, reset, unregister } = useForm({ defaultValues: {} });
     const form: SmFormResourceContent = content as SmFormResourceContent;
+    // form.params.form = { register, handleSubmit, reset, unregister };
     const mu: SmMarkupResourceContent = form.params.formContent as SmMarkupResourceContent;
     const keys: string[] = Object.keys(mu.params.itemMap);
     let i = 0;
     while (i < keys.length) {
-      console.log('getFlatMarkupSearch', keys[i], mu.params.markup);
+      // console.log('getFlatMarkupSearch', keys[i], mu.params.markup);
       const newKey = appendKey(keys[i], path);
       mu.path = newKey;
       mu.params.markup = mu.params.markup.replace(`<div id="${keys[i]}"></div>`, `<div id="${newKey}"></div>`);
@@ -261,6 +265,7 @@ export const getResourceForPageResources = createAsyncThunk(
   async ({ resourceId, orgaId }: { resourceId: string; orgaId: string }) => {
     const res = getFlatMarkup(resourceId, orgaId);
     console.log('getFlatMarkup111C', await res);
+
     return await res;
     // const requestUrl = `api/orga/${orgaId}/resources/${resourceId}`;
     // return axios.get<IResourceWithValue[]>(requestUrl);

@@ -238,9 +238,9 @@ export const SmAggridTree = (props: {
     const data = await axios.get<IResourceWithValue>(`${apiUrl}/${node.data.id}`);
     dispatch(
       setInLocalState({
-        localContextPath: props.localContextPath,
+        localContextPath: props.currentPath,
         parameterKey: props.params.selectedResourceKeyInLocalContext,
-        value: { value: node.data.id, loading: false },
+        value: { value: node.data, loading: false },
       }),
     );
 

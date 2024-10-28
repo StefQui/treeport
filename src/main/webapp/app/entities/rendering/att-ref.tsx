@@ -9,11 +9,15 @@ import { AttRefProps, ActionState, RenderingSliceState, ValueInState } from './t
 
 const useExplodedAttVal = (resourceIdVal, campaignIdVal, attConfigVal): string | null => {
   const [useExploded, setUseExploded] = useState(null);
+  const [previous, setPrevious] = useState(null);
   useEffect(() => {
     if (resourceIdVal && campaignIdVal && attConfigVal && resourceIdVal.value && campaignIdVal.value && attConfigVal.value) {
       const attId = buildAttributeIdFormExploded(resourceIdVal.value, attConfigVal.value, campaignIdVal.value);
-      console.log('useExplodedAttVal...', attId);
-      setUseExploded(attId);
+      if (!previous || previous !== attId) {
+        console.log('useExplodedAttVal...', attId);
+        setUseExploded(attId);
+        setPrevious(attId);
+      }
     }
   }, [resourceIdVal, campaignIdVal, attConfigVal]);
   return useExploded;
@@ -69,6 +73,7 @@ export const SmAttRef = (props: AttRefProps) => {
       //   // IMPLEMENT HERE COMPARAISON WITH PREVIOUS EXPLODED VALUE   ??????????
       //   return;
       // }
+      console.log('actionaaa-attref', action);
 
       if (resourceIdVal && campaignIdVal && attConfigVal && resourceIdVal.value && campaignIdVal.value && attConfigVal.value) {
         const attId = buildAttributeIdFormExploded(resourceIdVal.value, attConfigVal.value, campaignIdVal.value);
@@ -81,7 +86,7 @@ export const SmAttRef = (props: AttRefProps) => {
   }, [action]);
 
   useEffect(() => {
-    console.log('actionaaa2', resourceIdVal, campaignIdVal, attConfigVal);
+    console.log('actionaaa-attref2', resourceIdVal, campaignIdVal, attConfigVal);
     if (explodedAttVal && explodedAttVal !== previousExploded) {
       setPreviousExploded(explodedAttVal);
       dispatch(loadAttribute(props, resourceIdVal.value, attConfigVal.value, campaignIdVal.value));
@@ -89,7 +94,7 @@ export const SmAttRef = (props: AttRefProps) => {
   }, [explodedAttVal]);
 
   useEffect(() => {
-    // console.log('useEffect222', resourceIdVal, campaignIdVal, attConfigVal);
+    console.log('actionaaa-attref3', resourceIdVal, campaignIdVal, attConfigVal);
     if (attribute) {
       setAttValue(attribute);
     } else {

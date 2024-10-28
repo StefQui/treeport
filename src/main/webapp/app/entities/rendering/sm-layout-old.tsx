@@ -57,14 +57,14 @@ export const SmPage = (props: SmPageProps) => {
 
   return (
     <div>
-      <UiOpener resourceId={layoutId} source={'layout/page'}></UiOpener>
-      <MyElem
+      {/* <UiOpener resourceId={layoutId} source={'layout/page'}></UiOpener> */}
+      {/* <MyElem
         input={layoutContent}
         depth={increment(props.depth)}
         // params={props.params ? props.params.params : null}
         currentPath={builtPath}
         localContextPath={props.localContextPath}
-      ></MyElem>
+      ></MyElem> */}
     </div>
   );
 };
@@ -179,15 +179,15 @@ export const SmOldLayout = (props: SmOldLayoutProps) => {
   }
   return (
     <div>
-      <UiOpener resourceContent={layoutElementResourceContent} source={'layoutElement'}></UiOpener>
+      {/* <UiOpener resourceContent={layoutElementResourceContent} source={'layoutElement'}></UiOpener> */}
       {/* {JSON.stringify(layoutElementResourceContent)} */}
-      <MyElem
+      {/* <MyElem
         input={layoutElementResourceContent}
         depth={props.depth}
         // params={props.params ? props.params.params : null}
         currentPath={props.currentPath + PATH_SEPARATOR + props.path}
         localContextPath={calculateTargetLocalContextPath(true, props)}
-      ></MyElem>
+      ></MyElem> */}
     </div>
   );
   // return <MyRend content={layoutElementContent} params={props.params} currentPath={builtPath} localContextPath={builtPath}></MyRend>;

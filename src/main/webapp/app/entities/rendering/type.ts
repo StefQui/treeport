@@ -51,12 +51,15 @@ export type Display = {
   valueExists?: RuleDefinition;
   valueDoesNotExist?: RuleDefinition;
 };
+export type InputParameters = { [paramKey: string]: RuleDefinition };
+
 export type CommonContent = {
-  path: string;
+  path?: string;
   col?: number;
   display?: Display;
   border?: boolean;
   parameterDefinitions?: ParameterDefinition[];
+  inputParameters?: InputParameters;
 };
 
 export type SmTextResourceContent = CommonContent & {
@@ -242,11 +245,13 @@ export type RuleType =
   | 'refToPageContext'
   | 'refToResource'
   | 'dataset'
+  | 'refToInputParameter'
   | 'itemParamProperty'
   | 'datatree';
 export type TransformTo = 'resource';
 export type ConstantRuleDefinition = { ruleType: 'constant'; constValue: any };
 export type RefToResourceDefinition = { ruleType: 'refToResource'; sourceResourceId: RuleDefinition };
+export type RefToInputParameter = { ruleType: 'refToInputParameter'; inputParameterKey: string; inputParameterProperty?: string };
 export type DatasetDefinition = {
   ruleType: 'dataset';
   columnDefinitions: ColumnDefinition[];
@@ -316,6 +321,7 @@ export type RuleDefinition =
   | RefToPageContextRuleDefinition
   | ConstantRuleDefinition
   | RefToResourceDefinition
+  | RefToInputParameter
   | DatasetDefinition
   | DatatreeDefinition
   | ItemParamPropertyRuleDefinition
@@ -360,7 +366,8 @@ export type ResourceListParams = { selectedResourceKeyInLocalContext: string };
 export type InputParams = { outputParameterKey: string; defaultValue?: RuleDefinition };
 // export type HasParameterDefinitions = { parameterDefinitions?: ParameterDefinition[] };
 export type TextParams = { textValue: RuleDefinition };
-export type MarkupParams = { markup: string; itemMap: { [itemKey: string]: ComponentResourceContent } };
+export type ItemMap = { [itemKey: string]: ComponentResourceContent };
+export type MarkupParams = { markup: string; itemMap: ItemMap };
 export type MarkupLayoutParams = { layoutId: string; itemMap: { [itemKey: string]: ComponentResourceContent } };
 export type LinkParams = { urlLabel: string; url: string };
 export type ColumnDefinitions = {
@@ -554,6 +561,8 @@ export type CommonProps = {
   itemParam?: IResourceWithValue;
   form?: Form;
   parameterDefinitions?: ParameterDefinition[];
+  inputParameters?: InputParameters;
+  inputs?: InputParameters;
 };
 export type SmLinkProps = CommonProps & { params: LinkParams };
 export type SmMarkupProps = CommonProps & { params: MarkupParams };

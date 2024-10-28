@@ -9,7 +9,7 @@ import { SmDatasetList } from './sm-dataset-list';
 import { SmText } from './sm-text';
 import { SmInput } from './sm-input';
 import { SmAttRef } from './att-ref';
-import { ValueInState, RENDERING_CONTEXT } from './type';
+import { ValueInState, RENDERING_CONTEXT, ComponentResourceContent, InputParameters } from './type';
 import { buildPath, useCalculatedValueState } from './shared';
 import { SmDatasetTable } from './sm-dataset-table';
 import { SmVerticalPanel } from './sm-vertical-panel';
@@ -37,7 +37,15 @@ export const hidden = () => {
   return <span>Hidden...</span>;
 };
 
-export const MyElem = props => {
+export const MyElem = (props: {
+  input: ComponentResourceContent;
+  currentPath: string;
+  depth: string;
+  localContextPath: string;
+  inputs: InputParameters;
+  form?: any;
+  itemParam?: any;
+}) => {
   if (props.input && props.input.display) {
     console.log('MyElem ----Display', props.input);
   }
@@ -117,6 +125,7 @@ export const MyElem = props => {
         depth: props.depth,
         form: props.form,
         itemParam: props.itemParam,
+        inputs: props.inputs,
         localContextPath: props.localContextPath,
       })}
     </MyWrapper>

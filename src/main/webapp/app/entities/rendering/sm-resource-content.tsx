@@ -17,14 +17,24 @@ export const editUiResource = (source: string, resourceId?: string, resourceCont
   });
 };
 
-export const UiOpener = ({ resourceId, resourceContent, source }: { resourceId?: string; resourceContent?: any; source: string }) => {
+export const UiOpener = ({
+  resourceId,
+  resourceContent,
+  source,
+  path,
+}: {
+  resourceId?: string;
+  resourceContent?: any;
+  source: string;
+  path: string;
+}) => {
   const showUiOpener = useAppSelector(state => state.applicationProfile.showUiOpener);
 
   return (
     <div>
       {showUiOpener && (
         <a onClick={editUiResource(source, resourceId, resourceContent)}>
-          <FontAwesomeIcon icon="eye" /> ({source}) {resourceId} {showUiOpener ? 'aa' : 'bb'}
+          <FontAwesomeIcon icon="eye" /> ({source}) ({path}) {resourceId}
         </a>
       )}
     </div>
@@ -69,16 +79,18 @@ export const SmRefToResource = (props: SmRefToResourceProps) => {
   console.log('resourceContentresourceContentresourceContentresourceContent', resource);
 
   if (resourceContent) {
-    console.log('resourceContent', props.itemParam);
+    console.log('inputsss', { ...props.inputs, ...props.inputParameters });
     return (
       <div>
-        <UiOpener resourceId={resourceId} source={'ref'}></UiOpener>
+        <UiOpener resourceId={resourceId} source={'ref'} path={props.currentPath}></UiOpener>
         <MyElem
           input={resourceContent}
           depth={increment(props.depth)}
-          params={props.params ? params : null}
+          // params={props.params ? params : null}
           itemParam={props.itemParam}
-          currentPath={builtPath}
+          inputs={{ ...props.inputs, ...props.inputParameters }}
+          // currentPath={builtPath}
+          currentPath={props.currentPath}
           localContextPath={calculateTargetLocalContextPath(true, props)}
         ></MyElem>
       </div>
@@ -111,14 +123,15 @@ export const MyRend = props => {
   return (
     <Row md="8">
       {props.content ? (
-        <MyElem
-          input={input}
-          depth={increment(props.depth)}
-          params={props.params ? props.params.params : null}
-          currentPath={props.currentPath}
-          localContextPath={props.localContextPath}
-        ></MyElem>
+        <p>kjhkjh</p>
       ) : (
+        // <MyElem
+        //   input={input}
+        //   depth={increment(props.depth)}
+        //   params={props.params ? props.params.params : null}
+        //   currentPath={props.currentPath}
+        //   localContextPath={props.localContextPath}
+        // ></MyElem>
         <p>Loading...</p>
       )}
     </Row>

@@ -31,7 +31,8 @@ export const SmInput = (props: { params: InputParams; depth: string; currentPath
     if (defaultValue) {
       dispatch(
         setInLocalState({
-          localContextPath: props.localContextPath,
+          localContextPath: props.currentPath,
+          // localContextPath: props.localContextPath,
           parameterKey: props.params.outputParameterKey,
           value: defaultValue,
         }),
@@ -52,7 +53,8 @@ export const SmInput = (props: { params: InputParams; depth: string; currentPath
     setValue(event.target.value);
     dispatch(
       setInLocalState({
-        localContextPath: props.localContextPath,
+        // localContextPath: props.localContextPath,
+        localContextPath: props.currentPath,
         parameterKey: props.params.outputParameterKey,
         value: { value: event.target.value, loading: false },
       }),

@@ -239,7 +239,7 @@ export const RenderResourcePage = () => {
       <UiResourceUpdateDialog></UiResourceUpdateDialog>
       <UpdateResourceDialog></UpdateResourceDialog>
       <DeleteResourceDialog></DeleteResourceDialog>
-      <SmRefToResource currentPath="" path="" params={{ resourceId }} localContextPath="" depth="0"></SmRefToResource>
+      <SmRefToResource currentPath="/" path="/" params={{ resourceId }} localContextPath="/" depth="0"></SmRefToResource>
     </div>
   );
 };

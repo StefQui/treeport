@@ -137,6 +137,18 @@ export const useCalculatedValueState = (props, ruleDefinition: RuleDefinition): 
     );
   } else if (ruleType === 'refToPageContext') {
     return useRefToPageContextValue(props, ruleDefinition as RefToPageContextRuleDefinition);
+  } else if (ruleType === 'refToInputParameter') {
+    console.log('refToInputParameter...', ruleDefinition.inputParameterKey, ruleDefinition.inputParameterProperty, props);
+    if (ruleDefinition.inputParameterKey && props.inputs && props.inputs[ruleDefinition.inputParameterKey]) {
+      return useCalculatedValueState(props, {
+        ...props.inputs[ruleDefinition.inputParameterKey],
+        sourceParameterProperty: ruleDefinition.inputParameterProperty,
+      });
+    }
+    return {
+      loading: false,
+      error: 'Failed to find : ' + ruleType,
+    };
   } else if (ruleType === 'itemParamProperty') {
     const def: ItemParamPropertyRuleDefinition = ruleDefinition as ItemParamPropertyRuleDefinition;
     const propDef = def.propertyDefinition;

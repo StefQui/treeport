@@ -128,13 +128,13 @@ export const SmOldForm = (props: FormProps) => {
   return (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     <form onSubmit={handleSubmit(onSubmit)}>
-      <MyElem
+      {/* <MyElem
         input={{ ...formContent }}
         depth={increment(props.depth)}
         form={{ register, unregister, formPath: buildPath(props) }}
         currentPath={props.currentPath + PATH_SEPARATOR + props.path}
         localContextPath={props.localContextPath}
-      ></MyElem>
+      ></MyElem> */}
       <input type="submit" value="submit"></input>
     </form>
   );

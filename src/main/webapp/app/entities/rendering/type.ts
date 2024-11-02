@@ -1,6 +1,7 @@
 import { IAttributeWithValue } from 'app/shared/model/attribute.model';
 import { IResourceAndImpacters } from 'app/shared/model/resource-and-impacters.model';
 import { IResourceWithValue } from 'app/shared/model/resourcewithvalues.model';
+import { UseFormHandleSubmit, UseFormRegister, UseFormReset, UseFormUnregister } from 'react-hook-form';
 import { Form } from 'reactstrap';
 import { MainTarget, SecondaryTarget } from './rendering.reducer';
 
@@ -52,6 +53,14 @@ export type Display = {
   valueDoesNotExist?: RuleDefinition;
 };
 export type InputParameters = { [paramKey: string]: RuleDefinition };
+
+export type SmFormParam = {
+  register: UseFormRegister<{}>;
+  unregister: UseFormUnregister<{}>;
+  handleSubmit: UseFormHandleSubmit<{}, undefined>;
+  reset: UseFormReset<{}>;
+  formPath?: string;
+};
 
 export type CommonContent = {
   path?: string;
@@ -559,7 +568,7 @@ export type CommonProps = {
   display?: Display;
   localContextPath: string;
   itemParam?: IResourceWithValue;
-  form?: Form;
+  form?: Form & { formPath?: string };
   parameterDefinitions?: ParameterDefinition[];
   inputParameters?: InputParameters;
   inputs?: InputParameters;
@@ -574,6 +583,7 @@ export type SmPageProps = CommonProps & { params: PageResourceParams };
 export type SmOldLayoutProps = CommonProps & { params: SmOldLayoutParams };
 export type SmFormProps = CommonProps & { params: FormParams };
 export type SmFormButtonProps = CommonProps & { params: FormButtonParams };
+export type SmAttributeFieldProps = CommonProps & { params: AttributeFieldParams };
 
 export type Parameters = { [path: string]: ValueInState };
 export type ComponentsState = {

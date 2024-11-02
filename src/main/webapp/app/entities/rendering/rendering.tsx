@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Col, Row } from 'reactstrap';
+import { Button, Col, Form, Row } from 'reactstrap';
 
 import SiteList from '../site/site-list';
 import { calculateTargetLocalContextPath, SmRefToResource } from './sm-resource-content';
@@ -9,7 +9,7 @@ import { SmDatasetList } from './sm-dataset-list';
 import { SmText } from './sm-text';
 import { SmInput } from './sm-input';
 import { SmAttRef } from './att-ref';
-import { ValueInState, RENDERING_CONTEXT, ComponentResourceContent, InputParameters } from './type';
+import { ValueInState, RENDERING_CONTEXT, ComponentResourceContent, InputParameters, SmFormParam } from './type';
 import { buildPath, useCalculatedValueState } from './shared';
 import { SmDatasetTable } from './sm-dataset-table';
 import { SmVerticalPanel } from './sm-vertical-panel';
@@ -26,6 +26,7 @@ import getStore from 'app/config/store';
 import { SmLink } from './sm-link';
 import { SmLayout } from './sm-layout';
 import { SmOldAttributeField, SmOldForm } from './sm-old-form';
+import { UseFormReturn } from 'react-hook-form';
 
 export const initialFilter: ValueInState = { loading: true, value: null };
 
@@ -43,7 +44,7 @@ export const MyElem = (props: {
   depth: string;
   localContextPath: string;
   inputs: InputParameters;
-  form?: any;
+  form?: any & { formPath?: string };
   itemParam?: any;
 }) => {
   if (props.input && props.input.display) {

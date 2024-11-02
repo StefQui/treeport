@@ -1,13 +1,13 @@
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { IAttribute, IAttributeValue, IAttributeWithValue, IBooleanValue, IDoubleValue } from 'app/shared/model/attribute.model';
 import React, { useEffect, useState } from 'react';
-import { FieldValues, useForm, UseFormReset } from 'react-hook-form';
+import { FieldValues, useForm, UseFormReset, UseFormReturn } from 'react-hook-form';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, Col, FormGroup, FormProps, Input, Label } from 'reactstrap';
 import { DoubleValue } from '../attribute-value/attribute-value';
 import { existsAndHasAValue } from './render-resource-page';
 import { MyElem, increment, hasChanged } from './rendering';
-import { getFieldAttributesAndConfig, saveAttributes, setAction } from './rendering.reducer';
+import { getFieldAttributesAndConfig, saveAttributes, setAction, setInRenderingStateSelf } from './rendering.reducer';
 import { SmRefToResource } from './sm-resource-content';
 import { buildPath, useCalculatedValueStateIfNotNull, PATH_SEPARATOR, useCalculatedValueState } from './shared';
 import {
@@ -17,6 +17,7 @@ import {
   RenderingSliceState,
   SmFormProps,
   SmFormButtonProps,
+  SmAttributeFieldProps,
 } from './type';
 
 const getValueFromField = (fieldId: string, att: IAttributeWithValue, value): IAttributeValue => {
@@ -50,7 +51,7 @@ const sendUpdateAttributesActionOnSave = (builtPath: string, updatedAttributeIds
 
 export const SmForm = (props: SmFormProps) => {
   const dispatch = useAppDispatch();
-  const { register, handleSubmit, reset, unregister } = useForm({ defaultValues: {} });
+  const { register, handleSubmit, reset, unregister }: UseFormReturn = useForm({ defaultValues: {} });
   const builtPath = buildPath(props);
 
   const onSubmit = values => {
@@ -77,6 +78,19 @@ export const SmForm = (props: SmFormProps) => {
   const updatedAttributeIds: string[] = useStateInSelf(builtPath, 'updatedAttributeIds');
 
   const [mapOfFields, setMapOfFields] = useState({});
+
+  useEffect(() => {
+    return () => {
+      console.log('leaving...', fieldAttributes);
+      if (fieldAttributes) {
+        Object.keys(fieldAttributes).forEach(element => {
+          console.log('leaving...element', element);
+          unregister(element);
+        });
+        setInRenderingStateSelf(null);
+      }
+    };
+  }, []);
 
   sendUpdateAttributesActionOnSave(builtPath, updatedAttributeIds, mapOfFields);
 
@@ -149,7 +163,7 @@ export const SmForm = (props: SmFormProps) => {
         input={{ ...formContent }}
         depth={increment(props.depth)}
         inputs={props.inputs}
-        form={{ register, unregister, formPath: buildPath(props) }}
+        form={{ register, unregister, reset, handleSubmit, formPath: buildPath(props) }}
         currentPath={props.currentPath}
         localContextPath={props.localContextPath}
       ></MyElem>
@@ -213,7 +227,7 @@ export const extractAttributeId = (props, params) => {
 export const useStateInSelf = (formPath: string, key: string) => {
   return useAppSelector((state: RenderingSliceState) => {
     const rs = state.rendering.componentsState[formPath];
-    // console.log('zzzzzzz',  key, self);
+    console.log('useStateInSelf', key, self);
     if (!rs || !rs.self) {
       return null;
     }
@@ -244,13 +258,13 @@ export const SmFormButton = (props: SmFormButtonProps) => {
   );
 };
 
-export const SmAttributeField = props => {
+export const SmAttributeField = (props: SmAttributeFieldProps) => {
   const form = props.form;
   // const action = useAppSelector(state => state.rendering.action);
   // const dispatch = useAppDispatch();
 
   const fieldId = props.params.fieldId;
-  console.log('SmAttributeField...', props.form, fieldId);
+  console.log('SmAttributeField...', props.form, fieldId, props.form.formPath);
 
   if (!form) {
     return <span>form is mandatory in AttributeField</span>;

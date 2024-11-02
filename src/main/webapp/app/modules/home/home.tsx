@@ -135,8 +135,8 @@ export const Home = () => {
           </Button>
         </p>
         <p>
-          <Button tag={Link} to={`/coca/render/rpage1`} color="link" size="sm">
-            /coca/render/rpage1
+          <Button tag={Link} to={`/coca/render/page6`} color="link" size="sm">
+            /coca/render/page6
           </Button>
         </p>
         <p>

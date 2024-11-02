@@ -817,6 +817,14 @@ const page8: ComponentResource = {
               },
               detail1: {
                 componentType: 'SmText',
+                display: {
+                  valueExists: {
+                    ruleType: 'refToLocalContext',
+                    path: '/content/grid',
+                    sourceParameterKey: 'sid91',
+                    sourceParameterProperty: 'id',
+                  },
+                },
                 params: {
                   textValue: {
                     ruleType: 'refToLocalContext',
@@ -830,6 +838,14 @@ const page8: ComponentResource = {
                 componentType: 'SmRefToResource',
                 path: 'tapmenu',
                 col: 12,
+                display: {
+                  valueExists: {
+                    ruleType: 'refToLocalContext',
+                    path: '/content/grid',
+                    sourceParameterKey: 'sid91',
+                    sourceParameterProperty: 'id',
+                  },
+                },
                 params: {
                   resourceId: 'theDetail',
                 },
@@ -845,6 +861,13 @@ const page8: ComponentResource = {
                 componentType: 'SmRefToResource',
                 path: 'tapmenu',
                 col: 12,
+                display: {
+                  valueExists: {
+                    ruleType: 'refToLocalContext',
+                    path: '/content/grid',
+                    sourceParameterKey: 'sid91',
+                  },
+                },
                 params: {
                   resourceId: 'theDetail',
                 },

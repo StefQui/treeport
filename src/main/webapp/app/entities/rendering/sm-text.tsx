@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { handleParameterDefinitions } from './parameter-definition';
 import { useCalculatedValueState } from './shared';
-import { SmTextProps, TextParams, ValueInState } from './type';
+import { RefToLocalContextRuleDefinition, SmTextProps, TextParams, ValueInState } from './type';
 
 export const SmText = (props: SmTextProps) => {
   if (!props.params) {
@@ -12,6 +12,20 @@ export const SmText = (props: SmTextProps) => {
       </span>
     );
   }
+
+  useEffect(() => {
+    return () => {
+      if (props.params.textValue.ruleType === 'refToLocalContext') {
+        console.log(
+          'cleaning sm-text refToLocalContext...',
+          props.params,
+          (props.params.textValue as RefToLocalContextRuleDefinition).sourceParameterKey,
+        );
+        return;
+      }
+      console.log('cleaning sm-text...', props.params, props.params.textValue.ruleType);
+    };
+  }, []);
 
   const textValue = props.params.textValue;
   if (!textValue) {

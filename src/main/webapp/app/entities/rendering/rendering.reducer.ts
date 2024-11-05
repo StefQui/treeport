@@ -579,7 +579,7 @@ function handleTree(treeNode: TreeNode, value: EntitiesValue | 'loading' | 'open
 // }
 
 function handleParameters2(localContextPath: any, parameterKey: string, target: SecondaryTarget, value: any) {
-  console.log('handleParameters', parameterKey, target);
+  console.log('handleParameters...', parameterKey, target);
   if (target.secondaryTargetType === 'anyValueFirstLevelInTarget') {
     const bbb = {
       [parameterKey]: {
@@ -590,11 +590,12 @@ function handleParameters2(localContextPath: any, parameterKey: string, target: 
     console.log('handle bbb', bbb);
     return bbb;
   } else if (target.secondaryTargetType === 'anyValueTreeInTarget') {
+    console.log('handle anyValueTreeInTarget');
     return {
       [parameterKey]: handleTree(localContextPath ? localContextPath.parameters[parameterKey] : {}, value, target.treePath),
     };
   } else {
-    // console.log('handle ddd', { [parameterKey]: value });
+    console.log('handle default', { [parameterKey]: value });
     return { [parameterKey]: value };
   }
 }

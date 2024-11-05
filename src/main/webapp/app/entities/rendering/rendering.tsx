@@ -48,12 +48,12 @@ export const MyElem = (props: {
   itemParam?: any;
 }) => {
   if (props.input && props.input.display) {
-    console.log('MyElem ----Display', props.input);
+    // console.log('MyElem ----Display', props.input);
   }
   // const shouldDisplay = useShouldDisplay(props.input);
 
   const renderSwitch = params => {
-    console.log('renderSwitch', params.componentType, props);
+    // console.log('renderSwitch', params.componentType, props);
 
     switch (params.componentType) {
       case 'SmText':
@@ -118,7 +118,7 @@ export const MyElem = (props: {
         depth: props.depth,
         localContextPath: props.localContextPath,
       }}
-      key={props.currentPath}
+      // key={props.currentPath}
     >
       {renderSwitch({
         ...props.input,

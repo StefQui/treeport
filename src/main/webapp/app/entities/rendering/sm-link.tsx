@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { handleParameterDefinitions } from './parameter-definition';
 import { useCalculatedValueState } from './shared';
@@ -39,6 +39,10 @@ export const SmLink = (props: SmLinkProps) => {
   };
 
   return (
+    // <Link to={url}>
+    //   {urlLabel}
+    //   {url}
+    // </Link>
     <Link onClick={e => nav(e)} to={''}>
       {urlLabel}
     </Link>

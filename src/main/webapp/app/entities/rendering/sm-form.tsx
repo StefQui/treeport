@@ -167,11 +167,29 @@ export const SmForm = (props: SmFormProps) => {
         currentPath={props.currentPath}
         localContextPath={props.localContextPath}
       ></MyElem>
+      {/* <MyElem
+        input={{
+          componentType: 'attributeField',
+          path: 'vsmattbool',
+          params: {
+            fieldId: 'theToCert',
+          },
+        }}
+        depth={increment(props.depth)}
+        inputs={props.inputs}
+        form={{ register, unregister, reset, handleSubmit, formPath: buildPath(props) }}
+        currentPath={props.currentPath}
+        localContextPath={props.localContextPath}
+      ></MyElem> */}
     </form>
   );
 };
 
 const fetchAttributes = (dispatch, builtPath, newMap) => {
+  // const attributeApiUrl = 'api/attributes';
+  // const requestUrl = `${attributeApiUrl}/${orgaId}/fieldsAttributesAndConfigs`;
+  // const fieldAttributesResponse = await axios.post<{ IFieldsAttributesConfigs }>(requestUrl, newMap);
+
   dispatch(
     getFieldAttributesAndConfig({
       attributeIdsMap: newMap,
@@ -227,7 +245,7 @@ export const extractAttributeId = (props, params) => {
 export const useStateInSelf = (formPath: string, key: string) => {
   return useAppSelector((state: RenderingSliceState) => {
     const rs = state.rendering.componentsState[formPath];
-    console.log('useStateInSelf', key, self);
+    console.log('useStateInSelf...', key, self);
     if (!rs || !rs.self) {
       return null;
     }
@@ -238,6 +256,8 @@ export const useStateInSelf = (formPath: string, key: string) => {
 export const useStateInSelfWithKey = (formPath: string, key1: string, key2: string) => {
   const key1State = useStateInSelf(formPath, key1);
   const [key2State, setKey2State] = useState();
+
+  // console.log('aaaaaaaa', key1, key2, key1State);
 
   useEffect(() => {
     // console.log('aaaaaaaa', key1, key2, key1State);
@@ -264,16 +284,22 @@ export const SmAttributeField = (props: SmAttributeFieldProps) => {
   // const dispatch = useAppDispatch();
 
   const fieldId = props.params.fieldId;
-  console.log('SmAttributeField...', props.form, fieldId, props.form.formPath);
+  console.log('SmAttributeField...', fieldId, props.form.formPath);
+
+  // useEffect(() => {
+  //   return () => (props.form as any).unregister(fieldId);
+  // }, []);
 
   if (!form) {
     return <span>form is mandatory in AttributeField</span>;
   }
   const attribute: IAttributeWithValue = useStateInSelfWithKey(props.form.formPath, 'fieldAttributes', fieldId);
+  // console.log('SmAttributeField..2.', attribute);
 
   if (!attribute) {
     return <span></span>;
   }
+  // return <span>{attribute.attributeValue.value}</span>;
   return renderFormAttributeField(props, attribute);
 };
 

@@ -74,7 +74,7 @@ export const SmRefToResource = (props: SmRefToResourceProps) => {
   const resource = usePageResourceContentFromResourceId(resourceId);
   const resourceContent = useResourceWithKey(resource, 'content');
 
-  handleParameterDefinitions(params, props);
+  // handleParameterDefinitions(params, props);
 
   console.log('resourceContentresourceContentresourceContentresourceContent', resource);
 

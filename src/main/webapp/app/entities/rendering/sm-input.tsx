@@ -29,14 +29,15 @@ export const SmInput = (props: { params: InputParams; depth: string; currentPath
 
   useEffect(() => {
     if (defaultValue) {
-      dispatch(
-        setInLocalState({
-          localContextPath: props.currentPath,
-          // localContextPath: props.localContextPath,
-          parameterKey: props.params.outputParameterKey,
-          value: defaultValue,
-        }),
-      );
+      console.log('aaaaaaaaaaaa', props.currentPath, props.params.outputParameterKey);
+      // dispatch(
+      //   setInLocalState({
+      //     localContextPath: props.currentPath,
+      //     // localContextPath: props.localContextPath,
+      //     parameterKey: props.params.outputParameterKey,
+      //     value: defaultValue,
+      //   }),
+      // );
 
       // dispatch(
       //   setInRenderingStateOutputs({

@@ -516,7 +516,7 @@ const page5: ComponentResource = {
               },
               theform: {
                 componentType: 'SmRefToResource',
-                path: 'ref-to-fform',
+                path: 'ref-to-fllform',
                 col: 12,
 
                 params: {
@@ -902,7 +902,7 @@ const page9: ComponentResource = {
               inp1: {
                 componentType: 'SmInput',
                 params: {
-                  outputParameterKey: 'theTerm',
+                  outputParameterKey: 'theaTerm',
                   defaultValue: {
                     ruleType: 'constant',
                     constValue: 'Sa',
@@ -924,14 +924,14 @@ const page9: ComponentResource = {
                   textValue: {
                     ruleType: 'refToLocalContext',
                     path: '/content/inp1',
-                    sourceParameterKey: 'theTerm',
+                    sourceParameterKey: 'theaTerm',
                   },
                 },
               },
               d: {
                 componentType: 'SmInput',
                 params: {
-                  outputParameterKey: 'theTerm',
+                  outputParameterKey: 'thebTerm',
                   defaultValue: {
                     ruleType: 'constant',
                     constValue: 'Sd',
@@ -953,7 +953,7 @@ const page9: ComponentResource = {
                   textValue: {
                     ruleType: 'refToLocalContext',
                     path: '/content/d',
-                    sourceParameterKey: 'theTerm',
+                    sourceParameterKey: 'thebTerm',
                   },
                 },
               },
@@ -1689,7 +1689,7 @@ const rDsWithForm: ComponentResource = {
             componentType: 'SmInput',
             path: 'vsm3d',
             params: {
-              outputParameterKey: 'theTerm',
+              outputParameterKey: 'theCCCCCCTerm',
               defaultValue: {
                 ruleType: 'constant',
                 constValue: 'S1',
@@ -1756,7 +1756,7 @@ const rDsWithForm: ComponentResource = {
                           terms: {
                             ruleType: 'refToLocalContext',
                             path: '',
-                            sourceParameterKey: 'theTerm',
+                            sourceParameterKey: 'theTermzzzzzzz',
                           },
                         },
                       },
@@ -1971,7 +1971,7 @@ const rds: ComponentResource = {
         componentType: 'SmInput',
         path: 'vsm3d',
         params: {
-          outputParameterKey: 'theTerm',
+          outputParameterKey: 'theTermRds',
           defaultValue: {
             ruleType: 'constant',
             constValue: 'S1',
@@ -2038,7 +2038,7 @@ const rds: ComponentResource = {
                       terms: {
                         ruleType: 'refToLocalContext',
                         path: '',
-                        sourceParameterKey: 'theTerm',
+                        sourceParameterKey: 'theTermZZZZZ',
                       },
                     },
                   },
